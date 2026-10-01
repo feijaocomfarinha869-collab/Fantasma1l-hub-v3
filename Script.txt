@@ -1,6 +1,6 @@
 --[[
     ==========================================================
-    FANTASMA1L HUB - COMPLETO UNIFICADO v22 (BACKROOMS ABERTA + SKYBOX PURA + MONSTRO SOB COMANDO)
+    FANTASMA1L HUB - COMPLETO UNIFICADO v23 (MOLDURAS COMPLETAS + TOMADAS 3D + BACKROOMS ABERTA)
     ==========================================================
 ]]--
 
@@ -81,6 +81,7 @@ local FLY_MOVE         = "rbxassetid://134861929761233"
 local KAMUI_IMG        = "rbxassetid://110456504694881"
 local KAMUI_SND        = "rbxassetid://997057912"
 local TACO_ID          = "5132229429"
+local OUTLET_MODEL_ID  = "112967019690019"
 
 local LIFEFORM_IMG     = "rbxassetid://92640402847884"
 local LIFEFORM_SOUND   = "rbxassetid://1840320106"
@@ -483,9 +484,9 @@ local function clearLifeform()
     end
 end
 
--- ================== BACKROOMS ABERTA COM PILARES ==================
+-- ================== BACKROOMS ABERTA COM TOMADAS E MOLDURAS COMPLETAS ==================
 local function spawnBackrooms(targetPartnerName)
-    notify("Backrooms", "Gerando salão aberto com pilares e rodapés 3D...")
+    notify("Backrooms", "Gerando salão aberto com molduras 3D e tomadas...")
 
     local old = workspace:FindFirstChild("Backrooms_Level0")
     if old then old:Destroy() end
@@ -510,7 +511,7 @@ local function spawnBackrooms(targetPartnerName)
     local WALL_T = 2
     local floorY = BASE.Y
 
-    -- Chão Gigante Aberto
+    -- Chão
     local floor = Instance.new("Part", folder)
     floor.Name = "Floor"
     floor.Size = Vector3.new(ROOM_SIZE, 2, ROOM_SIZE)
@@ -525,7 +526,7 @@ local function spawnBackrooms(targetPartnerName)
         tex.StudsPerTileV = 5
     end)
 
-    -- Teto Gigante Aberto
+    -- Teto
     local ceil = Instance.new("Part", folder)
     ceil.Name = "Ceiling"
     ceil.Size = Vector3.new(ROOM_SIZE, 2, ROOM_SIZE)
@@ -540,7 +541,36 @@ local function spawnBackrooms(targetPartnerName)
         tex.StudsPerTileV = 5
     end)
 
-    -- Função robusta para garantir texturas em todas as faces de paredes e pilares
+    -- Função para spawnar tomada 3D com fallback automático
+    local function spawnOutlet(pos, cframeRot)
+        task.spawn(function()
+            local outletModel = fetchAssetAsModel(OUTLET_MODEL_ID)
+            if outletModel then
+                outletModel.Parent = folder
+                for _, p in ipairs(outletModel:GetDescendants()) do
+                    if p:IsA("BasePart") then
+                        p.Anchored = true
+                        p.CanCollide = false
+                        p.CastShadow = false
+                    end
+                end
+                pcall(function() outletModel:ScaleTo(1) end)
+                outletModel:PivotTo(cframeRot)
+            else
+                -- Fallback se o asset falhar
+                local fallbackPart = Instance.new("Part", folder)
+                fallbackPart.Name = "OutletFallback"
+                fallbackPart.Size = Vector3.new(0.6, 0.6, 0.2)
+                fallbackPart.CFrame = cframeRot
+                fallbackPart.Anchored = true
+                fallbackPart.CanCollide = false
+                fallbackPart.Material = Enum.Material.SmoothPlastic
+                fallbackPart.Color = Color3.fromRGB(240, 240, 240)
+            end
+        end)
+    end
+
+    -- Função para criar parede com textura completa, molduras 3D em todos os lugares e tomadas
     local function makeWallWithTrims(size, pos, isHorizontal)
         local p = Instance.new("Part", folder)
         p.Name = "Wall"
@@ -610,6 +640,13 @@ local function spawnBackrooms(targetPartnerName)
             shd.Size = Vector3.new(0.9, 0.5, size.Z)
             shd.Position = Vector3.new(pos.X, pos.Y - (size.Y/2) + 0.25, pos.Z)
         end
+
+        -- Adiciona tomada em algumas paredes estrategicamente
+        if math.random() > 0.4 then
+            local outletPos = Vector3.new(pos.X, floorY - 0.3, pos.Z + (isHorizontal and 0 or (size.X > 0 and 1.1 or -1.1)))
+            local rotCF = isHorizontal and CFrame.new(pos.X, floorY - 0.3, pos.Z + 1.1) or CFrame.new(pos.X + 1.1, floorY - 0.3, pos.Z) * CFrame.Angles(0, math.rad(90), 0)
+            spawnOutlet(outletPos, rotCF)
+        end
     end
 
     local halfR = ROOM_SIZE / 2
@@ -619,7 +656,7 @@ local function spawnBackrooms(targetPartnerName)
     makeWallWithTrims(Vector3.new(WALL_T, WALL_H, ROOM_SIZE), Vector3.new(BASE.X - halfR, floorY + WALL_H/2, BASE.Z), false)
     makeWallWithTrims(Vector3.new(WALL_T, WALL_H, ROOM_SIZE), Vector3.new(BASE.X + halfR, floorY + WALL_H/2, BASE.Z), false)
 
-    -- Pilares e Paredes Divisórias Internas com Textura Completa
+    -- Pilares e Paredes Divisórias Internas com Textura Completa e Rodapés
     local step = 50
     for x = -halfR + 50, halfR - 50, step do
         for z = -halfR + 50, halfR - 50, step do
@@ -639,6 +676,16 @@ local function spawnBackrooms(targetPartnerName)
                         tex.StudsPerTileV = 5
                     end
                 end)
+
+                -- Molduras e Rodapés 3D ao redor do pilar
+                for _, offsetZ in ipairs({-3.08, 3.08}) do
+                    local pb1 = Instance.new("Part", folder)
+                    pb1.Size, pb1.Position, pb1.Anchored, pb1.CanCollide, pb1.CastShadow = Vector3.new(6.15, 0.5, 0.15), Vector3.new(pillar.Position.X, floorY - (WALL_H/2) + 0.25, pillar.Position.Z + offsetZ), true, true, false
+                    pb1.Material, pb1.Color = Enum.Material.SmoothPlastic, Color3.fromRGB(245, 245, 245)
+                    local pt1 = Instance.new("Part", folder)
+                    pt1.Size, pt1.Position, pt1.Anchored, pt1.CanCollide, pt1.CastShadow = Vector3.new(6.15, 0.4, 0.15), Vector3.new(pillar.Position.X, floorY + (WALL_H/2) - 0.2, pillar.Position.Z + offsetZ), true, true, false
+                    pt1.Material, pt1.Color = Enum.Material.SmoothPlastic, Color3.fromRGB(245, 245, 245)
+                end
             end
 
             if math.random() > 0.6 then
@@ -712,7 +759,7 @@ local function spawnBackrooms(targetPartnerName)
             end
         end
 
-        notify("Backrooms", "Teleportado para o salão aberto.")
+        notify("Backrooms", "Teleportado para o salão aberto com molduras e tomadas.")
     end)
 
     return true
