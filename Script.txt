@@ -20,7 +20,7 @@ local WHITELIST = {
     ["renegado6661l"]             = { Role = "DONO" },
     
     -- SUB DONO (2 VAGAS)
-    ["PREENCHA_AQUI_SUB_DONO_1"]  = { Role = "SUB DONO" },
+    ["BaconSigmaaira67420"]  = { Role = "SUB DONO" },
     ["PREENCHA_AQUI_SUB_DONO_2"]  = { Role = "SUB DONO" },
     
     -- ADMS (9 VAGAS)
