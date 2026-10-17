@@ -7588,6 +7588,7 @@ else
 end
 
 end -- fim IS_ADMIN
+
 ==========================================================
 -- FANTASMA1L HUB - BROOKHAVEN EDITION (COMPLETO v8.5.6)
 -- Server Lag (Phone Lag) + Anti-Lag System + Anti-Invisible Void
