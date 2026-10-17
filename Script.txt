@@ -21,7 +21,7 @@ local WHITELIST = {
     
     -- SUB DONO (2 VAGAS)
     ["BaconSigmaaura67420"]  = { Role = "SUB DONO" },
-    ["PREENCHA_AQUI_SUB_DONO_2"]  = { Role = "SUB DONO" },
+    ["darkADM_ofc"]  = { Role = "SUB DONO" },
     
     -- ADMS (9 VAGAS)
     ["PREENCHA_AQUI_ADM_1"]       = { Role = "ADM" },
