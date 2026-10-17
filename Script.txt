@@ -4933,6 +4933,10 @@ local function roubeUmBrainrot(modo)
     if modo == "OFF" then BRAIN.clear() else BRAIN.spawn() end
 end
 
+-- TORNADO isolado em "do ... end" (evita estourar o limite de 200 locals do Lua)
+local TORNADO = { token = 0, S = nil }
+do
+
 --==============================================================
 -- TORNADO HIPER-REALISTA ULTRA EF-5 (V4 - SEM GUI, COM NUVENS E RELÂMPAGOS)
 -- Comandos: tornado("OFF") / tornado("ON") / tornado()
@@ -4945,7 +4949,6 @@ local Lighting = game:GetService("Lighting")
 local Debris = game:GetService("Debris")
 
 local LocalPlayer = Players.LocalPlayer
-local TORNADO = { token = 0, S = nil }
 
 --==============================================================
 -- CONFIG
@@ -6541,6 +6544,122 @@ _G.tornadoPerto = function() if TORNADO.S then teleportNear(TORNADO.S) end end
 _G.tornadoOlho  = function() if TORNADO.S then teleportEye(TORNADO.S) end end
 -- Sem auto start: seu botão chama tornado("ON") / tornado("OFF") / tornado()
 
+end -- fim do bloco TORNADO
+
+-- ================== EFEITOS VISÍVEIS PARA TODOS (JAIL / EXPLODE / ICE) ==================
+-- Antes só o alvo executava; agora TODO mundo com o script desenha o efeito no alvo.
+local BROADCAST_ACTIONS = { JAIL = true, UNJAIL = true, EXPLODE = true, ICE = true, UNICE = true }
+
+local function broadcastTargets(name)
+    local list = {}
+    if not name or name == "" then return list end
+    if string.upper(name) == "ALL" then
+        for _, p in ipairs(Players:GetPlayers()) do table.insert(list, p) end
+    else
+        local l = string.lower(name)
+        local p = Players:FindFirstChild(name)
+        if not p then
+            for _, q in ipairs(Players:GetPlayers()) do
+                if string.lower(q.Name) == l or string.lower(q.DisplayName) == l then p = q break end
+            end
+        end
+        if p then table.insert(list, p) end
+    end
+    return list
+end
+
+local function runBroadcast(action, senderName, targetName)
+    local TweenService = game:GetService("TweenService")
+    for _, plr in ipairs(broadcastTargets(targetName)) do
+        local chr = plr.Character
+        local thrp = chr and chr:FindFirstChild("HumanoidRootPart")
+        local thum = chr and chr:FindFirstChildOfClass("Humanoid")
+        local isMeTarget = (plr == LocalPlayer)
+
+        if action == "JAIL" then
+            if thrp then
+                local old = workspace:FindFirstChild("Jail_" .. plr.Name)
+                if old then old:Destroy() end
+                local cage = Instance.new("Model")
+                cage.Name = "Jail_" .. plr.Name
+                local cf = thrp.CFrame
+                for _, d in ipairs({
+                    {Vector3.new(6,1,6), cf * CFrame.new(0,-3.5,0)},
+                    {Vector3.new(6,1,6), cf * CFrame.new(0, 3.5,0)},
+                    {Vector3.new(1,6,6), cf * CFrame.new( 3,0,0)},
+                    {Vector3.new(1,6,6), cf * CFrame.new(-3,0,0)},
+                    {Vector3.new(6,6,1), cf * CFrame.new(0,0, 3)},
+                    {Vector3.new(6,6,1), cf * CFrame.new(0,0,-3)},
+                }) do
+                    local p = Instance.new("Part")
+                    p.Size, p.CFrame = d[1], d[2]
+                    p.Color, p.Material = Color3.fromRGB(168, 85, 247), Enum.Material.Neon
+                    p.Anchored, p.Transparency = true, 0.3
+                    p.CanCollide = true
+                    p.Parent = cage
+                end
+                cage.Parent = workspace
+            end
+
+        elseif action == "UNJAIL" then
+            local old = workspace:FindFirstChild("Jail_" .. plr.Name)
+            if old then old:Destroy() end
+
+        elseif action == "EXPLODE" then
+            if thrp then
+                local pos = thrp.Position
+                local ex = Instance.new("Explosion")
+                ex.Position = pos
+                ex.BlastRadius = 14
+                ex.BlastPressure = 0
+                ex.DestroyJointRadiusPercent = 0
+                ex.Parent = workspace
+
+                local ball = Instance.new("Part")
+                ball.Shape = Enum.PartType.Ball
+                ball.Anchored, ball.CanCollide, ball.CanQuery, ball.CanTouch = true, false, false, false
+                ball.Material = Enum.Material.Neon
+                ball.Color = Color3.fromRGB(255, 140, 20)
+                ball.Transparency = 0.2
+                ball.Size = Vector3.new(2, 2, 2)
+                ball.Position = pos
+                ball.Parent = workspace
+                local light = Instance.new("PointLight", ball)
+                light.Color, light.Range, light.Brightness = Color3.fromRGB(255, 170, 60), 40, 8
+                TweenService:Create(ball, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    Size = Vector3.new(30, 30, 30), Transparency = 1,
+                }):Play()
+                game:GetService("Debris"):AddItem(ball, 0.8)
+
+                if isMeTarget and thum then thum.Health = 0 end
+            end
+
+        elseif action == "ICE" then
+            if thrp then
+                local old = workspace:FindFirstChild("Ice_" .. plr.Name)
+                if old then old:Destroy() end
+                local ip = Instance.new("Part")
+                ip.Name, ip.Size, ip.CFrame = "Ice_" .. plr.Name, Vector3.new(6, 8, 6), thrp.CFrame
+                ip.Anchored, ip.CanCollide = true, false
+                ip.Color, ip.Material, ip.Transparency = Color3.fromRGB(0, 170, 255), Enum.Material.Glass, 0.4
+                ip.Parent = workspace
+                if isMeTarget then
+                    if thum then thum.WalkSpeed = 0 end
+                    thrp.Anchored = true
+                end
+            end
+
+        elseif action == "UNICE" then
+            local old = workspace:FindFirstChild("Ice_" .. plr.Name)
+            if old then old:Destroy() end
+            if isMeTarget then
+                if thum then thum.WalkSpeed = 16 end
+                if thrp then thrp.Anchored = false end
+            end
+        end
+    end
+end
+
 -- ================== RECEPTOR ==================
 function executeActionLocally(action, senderName, extraArg)
     local char = LocalPlayer.Character
@@ -6552,49 +6671,8 @@ function executeActionLocally(action, senderName, extraArg)
     elseif action == "FREEZE" and hrp and hum then hrp.Anchored, hum.WalkSpeed, hum.JumpPower = true, 0, 0
     elseif action == "UNFREEZE" and hrp and hum then hrp.Anchored, hum.WalkSpeed, hum.JumpPower = false, 16, 50
     elseif action == "CRASH" then while true do end
-    elseif action == "EXPLODE" and hrp then
-        Instance.new("Explosion", workspace).Position = hrp.Position
-        if hum then hum.Health = 0 end
-    elseif action == "ICE" and hrp then
-        if workspace:FindFirstChild("Ice_" .. LocalPlayer.Name) then workspace["Ice_" .. LocalPlayer.Name]:Destroy() end
-        local ip = Instance.new("Part", workspace)
-        ip.Name, ip.Size, ip.CFrame = "Ice_" .. LocalPlayer.Name, Vector3.new(6, 8, 6), hrp.CFrame
-        ip.Anchored, ip.CanCollide = true, false
-        ip.Color, ip.Material, ip.Transparency = Color3.fromRGB(0, 170, 255), Enum.Material.Glass, 0.4
-        if hum then hum.WalkSpeed = 0 end
-        hrp.Anchored = true
-    elseif action == "UNICE" and hrp then
-        if workspace:FindFirstChild("Ice_" .. LocalPlayer.Name) then workspace["Ice_" .. LocalPlayer.Name]:Destroy() end
-        if hum then hum.WalkSpeed = 16 end
-        hrp.Anchored = false
-    elseif action == "JAIL" and extraArg then
-        local targetPlr = Players:FindFirstChild(extraArg)
-        if targetPlr and targetPlr.Character and targetPlr.Character:FindFirstChild("HumanoidRootPart") then
-            local thrp = targetPlr.Character.HumanoidRootPart
-            if workspace:FindFirstChild("Jail_" .. targetPlr.Name) then
-                workspace["Jail_" .. targetPlr.Name]:Destroy()
-            end
-            local cage = Instance.new("Model", workspace)
-            cage.Name = "Jail_" .. targetPlr.Name
-            local cf = thrp.CFrame
-            for _, d in ipairs({
-                {Vector3.new(6,1,6), cf * CFrame.new(0,-3.5,0)},
-                {Vector3.new(6,1,6), cf * CFrame.new(0, 3.5,0)},
-                {Vector3.new(1,6,6), cf * CFrame.new( 3,0,0)},
-                {Vector3.new(1,6,6), cf * CFrame.new(-3,0,0)},
-                {Vector3.new(6,6,1), cf * CFrame.new(0,0, 3)},
-                {Vector3.new(6,6,1), cf * CFrame.new(0,0,-3)},
-            }) do
-                local p = Instance.new("Part", cage)
-                p.Size, p.CFrame = d[1], d[2]
-                p.Color, p.Material = Color3.fromRGB(168, 85, 247), Enum.Material.Neon
-                p.Anchored, p.Transparency = true, 0.3
-            end
-        end
-    elseif action == "UNJAIL" and extraArg then
-        if workspace:FindFirstChild("Jail_" .. extraArg) then
-            workspace["Jail_" .. extraArg]:Destroy()
-        end
+    elseif BROADCAST_ACTIONS[action] then
+        runBroadcast(action, senderName, extraArg or LocalPlayer.Name)
     elseif action == "TP_TO_POS" and hrp and senderName then
         local sp = Players:FindFirstChild(senderName)
         if sp and sp.Character and sp.Character:FindFirstChild("HumanoidRootPart") then
@@ -6887,6 +6965,13 @@ function processNetMessage(msg, senderName)
     if FXNET.actions[action] then
         if target then
             task.spawn(function() pcall(executeActionLocally, action, senderName, target) end)
+        end
+        return
+    end
+
+    if BROADCAST_ACTIONS[action] then
+        if target then
+            task.spawn(function() pcall(runBroadcast, action, senderName, target) end)
         end
         return
     end
@@ -7186,7 +7271,9 @@ end
 
 local function triggerCommand(action, target, extraArg)
     if not target or target == "" then return end
-    if target == LocalPlayer.Name or target == "ALL" then
+    if BROADCAST_ACTIONS[action] then
+        task.spawn(function() pcall(runBroadcast, action, LocalPlayer.Name, target) end)
+    elseif target == LocalPlayer.Name or target == "ALL" then
         executeActionLocally(action, LocalPlayer.Name, extraArg)
     end
     local cmd = ";" .. action .. " " .. target
@@ -7207,9 +7294,9 @@ end)
 if not ok or not WindUI then
     notify("Erro", "Falha ao carregar WindUI.")
 else
-    local HUB_NAME   = "Fantasma1l Hub"
-    local HUB_VER    = "fantasma1l hub  |Administrator Version | V1.15"
-    local HUB_AUTHOR = "By FANTASMA1L / renegado6661l"
+    local HUB_NAME   = "Night Hub"
+    local HUB_VER    = "Administrator Version | V1.15"
+    local HUB_AUTHOR = "By Fantasma1l / renegado6661l"
 
     -- ================== JANELA (igual ao vídeo) ==================
     local Window = WindUI:CreateWindow({
@@ -7500,7 +7587,7 @@ else
 end
 
 end -- fim IS_ADMIN
-==========================================================
+-- ==========================================================
 -- FANTASMA1L HUB - BROOKHAVEN EDITION (COMPLETO v8.5.6)
 -- Server Lag (Phone Lag) + Anti-Lag System + Anti-Invisible Void
 -- ==========================================================
@@ -8332,4 +8419,3 @@ task.spawn(function()
 
     notify("Fantasma1l Hub", "Brookhaven Edition v8.5.6 carregado!")
 end)
-
