@@ -7295,7 +7295,7 @@ if not ok or not WindUI then
     notify("Erro", "Falha ao carregar WindUI.")
 else
     local HUB_NAME   = "Fantasma1l hub"
-    local HUB_VER    = "Administrator Version | V1.15"
+    local HUB_VER    = "FANTASMA1L HUB | Administrator Version | V1.15"
     local HUB_AUTHOR = "By Fantasma1l / renegado6661l"
 
     -- ================== JANELA (igual ao vídeo) ==================
