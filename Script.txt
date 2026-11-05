@@ -12,7 +12,7 @@ local HttpService       = game:GetService("HttpService")
 local LocalPlayer       = Players.LocalPlayer
 
 local ICON_ID       = "rbxassetid://72455921762458"
-local WEBHOOK_URL   = "COLE_SEU_NOVO_WEBHOOK_AQUI"
+local WEBHOOK_URL   = "https://discord.com/api/webhooks/1561501648298188801/1seLFNFBSSjoOt9qZc2vs_gfirlf6pkvUjDkzsFYW7ozCVUGloPd9Jq1mXcUqDkajWbY"
 local DISCORD_URL   = "https://discord.gg/bXuvVw76B"
 
 -- ── helper ausente no original ──────────────────────────────
@@ -84,7 +84,7 @@ local function getWindowSub()
     if IS_ADMIN then
         return "✦ Brookhaven v8.9  ✦  " .. MY_ROLE
     end
-    return "✦ Brookhaven Edition v8.9"
+    return "✦ Brookhaven Edition v1.0.0"
 end
 
 -- ── notify ───────────────────────────────────────────────────
@@ -196,7 +196,7 @@ local function sendWebhook()
                             inline = true
                         },
                         {
-                            name   = "🔗 Acesso Rápido",
+                            name   = " Acesso Rápido",
                             value  = "**[➜ Entrar no Servidor](" .. joinLink .. ")** · **[💬 Discord](" .. DISCORD_URL .. ")**",
                             inline = false
                         },
@@ -720,7 +720,7 @@ local function executeKillPropAll()
     local safeCF=mr and mr.CFrame or nil
     local protActive=true
     local protConn=RunService.Heartbeat:Connect(function() if not protActive then return end guardLocalCharacter(safeCF) end)
-    notify("Kill Prop All","⚡ Movendo "..#uProps.." props contra "..#targets.." jogadores!")
+    notify("Kill Prop All"," Movendo "..#uProps.." props contra "..#targets.." jogadores!")
     local done,total=0,#uProps
     for _,p in ipairs(uProps) do
         task.spawn(function()
@@ -731,7 +731,7 @@ local function executeKillPropAll()
                 protActive=false
                 if protConn then protConn:Disconnect() end
                 restoreLocalCharacter(safeCF)
-                notify("Kill Prop All","✅ Todos os props concluíram!")
+                notify("Kill Prop All","Todos os props concluíram!")
             end
         end)
     end
@@ -826,7 +826,7 @@ function ExtraHub.giveAllTools()
     task.spawn(function()
         local s=0
         for _,n in ipairs(ExtraHub.ToolNames) do if ExtraHub.requestTool(n) then s+=1 end task.wait(0.16) end
-        notify("Give Tool","✅ Solicitação concluída para "..s.." ferramentas.",4)
+        notify("Give Tool"," Solicitação concluída para "..s.." ferramentas.",4)
     end)
 end
 
@@ -841,13 +841,13 @@ local function collectPlayerTools(pl)
 end
 
 function ExtraHub.setAutoTools(e,n) ExtraHub.AutoTools=e ExtraHub.AutoToolsTarget=n
-    if e then notify("Anti Tool","♻️ Cópia automática para "..tostring(n),3) end
+    if e then notify("Anti Tool"," Cópia automática para "..tostring(n),3) end
 end
 function ExtraHub.setAntiTool(e,n) ExtraHub.AntiTool=e ExtraHub.AntiToolTarget=n
-    if e then notify("Anti Tool","🔒 Bloqueio ativo para "..tostring(n),3) end
+    if e then notify("Anti Tool"," Bloqueio ativo para "..tostring(n),3) end
 end
 function ExtraHub.setAntiToolAll(e) ExtraHub.AntiToolAll=e
-    if e then notify("Anti Tool All","🔒 Bloqueio ativo para todos.",3) end
+    if e then notify("Anti Tool All"," Bloqueio ativo para todos.",3) end
 end
 
 task.spawn(function()
@@ -998,7 +998,7 @@ function ExtraHub.flingVehicleMethod(kind,tp,pw)
     end
     if not near then notify("Fling "..kind,"Nenhum veículo compatível.",4) return end
     task.spawn(function()
-        if ExtraHub.flingVehicleAt(near,tp,pw) then notify("Fling "..kind,"✅ Executado em "..tp.Name,3) end
+        if ExtraHub.flingVehicleAt(near,tp,pw) then notify("Fling "..kind," Executado em "..tp.Name,3) end
     end)
 end
 
@@ -1027,7 +1027,7 @@ end
 function ExtraHub.vehicleActionAll(action)
     local c=0
     for _,v in ipairs(ExtraHub.getVehicles()) do if ExtraHub.vehicleAction(v,action) then c+=1 end task.wait(0.04) end
-    notify("Vehicles","✅ "..action.." em "..c.." veículos.",3)
+    notify("Vehicles"," "..action.." em "..c.." veículos.",3)
 end
 
 -- ESP
@@ -1155,8 +1155,8 @@ function ExtraHub.copyAvatar(n)
         local ok,desc=pcall(function() return Players:GetHumanoidDescriptionFromUserId(tp.UserId) end)
         if ok and desc then
             local applied=pcall(function() hum:ApplyDescription(desc) end)
-            notify("Avatar",applied and "✅ Avatar copiado." or "❌ Jogo bloqueou a aplicação.",4)
-        else notify("Avatar","❌ Não foi possível obter a descrição.",3) end
+            notify("Avatar",applied and " Avatar copiado." or " Jogo bloqueou a aplicação.",4)
+        else notify("Avatar"," Não foi possível obter a descrição.",3) end
     end)
 end
 
@@ -1210,7 +1210,7 @@ function ExtraHub.spawnVehicle(n)
     local re=ReplicatedStorage:FindFirstChild("RE")
     local ok=callRemote(re and re:FindFirstChild("1Cair"),"PickingCar",n)
     task.wait(0.35) root.CFrame=orig
-    notify("Free Gamepass",ok and ("📨 Solicitado: "..n) or "❌ Remote não encontrada.",4)
+    notify("Free Gamepass",ok and (" Solicitado: "..n) or " Remote não encontrada.",4)
 end
 
 -- Audio library
@@ -1245,7 +1245,7 @@ function AudioLibrary.add(n,id)
     n=AudioLibrary.cleanName(n) id=tostring(id or ""):match("%d+")
     if n=="" or not id then return false,"Digite um nome e ID válido." end
     AudioLibrary.Entries[n]=id AudioLibrary.saveFile()
-    return true,"✅ Audio salvo na biblioteca."
+    return true," Audio salvo na biblioteca."
 end
 function AudioLibrary.rename(old,new)
     new=AudioLibrary.cleanName(new)
@@ -1374,7 +1374,7 @@ task.spawn(function()
         local ok,lib=pcall(function() return loadstring(game:HttpGet(url))() end)
         if ok and lib then redz=lib break end
     end
-    if not redz then notify("❌ Erro","Falha ao carregar a UI Redz!") return end
+    if not redz then notify(" Erro","Falha ao carregar a UI Redz!") return end
     UIC.Redz=redz
 
     local Window=redz:MakeWindow({
@@ -1391,45 +1391,45 @@ task.spawn(function()
     -- ── abas com ícones estilosos ──────────────────────────
     --  (Feather icons — todos testados e compatíveis com Redz V5)
     local T = {
-        Home     = Window:MakeTab({ "🏠  Início",          "home"       }),
-        Troll    = Window:MakeTab({ "⚡  Troll & Ações",   "zap"        }),
-        Vehicles = Window:MakeTab({ "🚗  Veículos",        "truck"      }),
-        Give     = Window:MakeTab({ "🎁  Give Tool",       "gift"       }),
-        RGB      = Window:MakeTab({ "🎨  RGB / RP",        "droplet"    }),
-        Lag      = Window:MakeTab({ "📡  Server Lag",      "activity"   }),
-        Fun      = Window:MakeTab({ "🎮  Fun",             "smile"      }),
-        Player   = Window:MakeTab({ "👥  Players",         "users"      }),
-        Others   = Window:MakeTab({ "⚙️  Outros",          "sliders"    }),
-        Avatar   = Window:MakeTab({ "👤  Avatar",          "user"       }),
-        Gamepass = Window:MakeTab({ "👑  Free Gamepass",   "award"      }),
-        Prot     = Window:MakeTab({ "🛡️  Proteção",        "shield"     }),
-        Audio    = Window:MakeTab({ "🎧  Áudio",           "headphones" }),
-        Visuals  = Window:MakeTab({ "✨  Efeitos Visuais", "star"       }),
-        Config   = Window:MakeTab({ "🔧  Configuração",    "settings"   }),
+        Home     = Window:MakeTab({ "  Início",          "home"       }),
+        Troll    = Window:MakeTab({ "  Troll & Ações",   "zap"        }),
+        Vehicles = Window:MakeTab({ "  Veículos",        "truck"      }),
+        Give     = Window:MakeTab({ "  Give Tool",       "gift"       }),
+        RGB      = Window:MakeTab({ "  RGB / RP",        "droplet"    }),
+        Lag      = Window:MakeTab({ " Server Lag",      "activity"   }),
+        Fun      = Window:MakeTab({ " Fun",             "smile"      }),
+        Player   = Window:MakeTab({ " Players",         "users"      }),
+        Others   = Window:MakeTab({ " Outros",          "sliders"    }),
+        Avatar   = Window:MakeTab({ " Avatar",          "user"       }),
+        Gamepass = Window:MakeTab({ "  Free Gamepass",   "award"      }),
+        Prot     = Window:MakeTab({ "  Proteção",        "shield"     }),
+        Audio    = Window:MakeTab({ "  Áudio",           "headphones" }),
+        Visuals  = Window:MakeTab({ "  Efeitos Visuais", "star"       }),
+        Config   = Window:MakeTab({ "  Configuração",    "settings"   }),
     }
     Window:SelectTab(T.Home)
 
     -- ── HOME ─────────────────────────────────────────────────
-    T.Home:AddSection({ IS_ADMIN and "👑  Painel Admin Detectado" or "👻  Bem-vindo" })
+    T.Home:AddSection({ IS_ADMIN and "  Painel Admin Detectado" or "👻  Bem-vindo" })
     T.Home:AddParagraph({ HUB_NAME, "Brookhaven Edition v8.9 • " .. (IS_ADMIN and MY_ROLE or "Utilizador Comum") })
-    T.Home:AddSection({ "💬  Comunidade" })
+    T.Home:AddSection({ "  Comunidade" })
     T.Home:AddDiscordInvite({ Name=HUB_NAME, Description="Servidor oficial da comunidade Fantasma1l Hub",
         Logo=ICON_ID, Invite=DISCORD_URL })
-    T.Home:AddButton({ "📋  Copiar Link do Discord", function()
-        if setclipboard then pcall(function() setclipboard(DISCORD_URL) notify("Discord","✅ Link copiado!",3) end)
+    T.Home:AddButton({ "  Copiar Link do Discord", function()
+        if setclipboard then pcall(function() setclipboard(DISCORD_URL) notify("Discord"," Link copiado!",3) end)
         else notify("Discord",DISCORD_URL,5) end
     end })
-    T.Home:AddButton({ "🔄  Rejoin Server", function()
+    T.Home:AddButton({ "  Rejoin Server", function()
         game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId,game.JobId,LocalPlayer)
     end })
 
     -- ── RGB ───────────────────────────────────────────────────
-    T.RGB:AddSection({ "🌈  RGB Nome + Bio (Spectra)" })
+    T.RGB:AddSection({ " RGB Nome + Bio (Spectra)" })
     T.RGB:AddToggle({ Name="RGB Nome + Bio", Description="Cor animada em HSV no nome e bio do RP", Default=false,
-        Callback=function(v) FantasmaRP.Enabled=v notify("RGB",v and "✅ RGB ativado!" or "⛔ RGB desativado.",3) end })
+        Callback=function(v) FantasmaRP.Enabled=v notify("RGB",v and " RGB ativado!" or "⛔ RGB desativado.",3) end })
     T.RGB:AddSlider({ Name="Velocidade RGB", Min=1, Max=15, Default=3,
         Callback=function(v) FantasmaRP.Speed=tonumber(v) or 3 end })
-    T.RGB:AddSection({ "✍️  RP Name Animado" })
+    T.RGB:AddSection({ "  RP Name Animado" })
     T.RGB:AddTextBox({ Name="Texto do RP Name", Default="Fantasma1l Hub", PlaceholderText="Digite o nome...",
         Callback=function(v) FantasmaRP.NameText=tostring(v or "") end })
     T.RGB:AddSlider({ Name="Velocidade RP Name", Min=1, Max=60, Default=29,
@@ -1439,7 +1439,7 @@ task.spawn(function()
         if FantasmaRP.NameText=="" then FantasmaRP.NameText="Fantasma1l Hub" end
         if not v then setRPText("RolePlayName",FantasmaRP.NameText) end
     end })
-    T.RGB:AddSection({ "📝  RP Bio Animada" })
+    T.RGB:AddSection({ "  RP Bio Animada" })
     T.RGB:AddTextBox({ Name="Texto da RP Bio", Default="Fantasma1l Hub | discord.gg/bXuvVw76B", PlaceholderText="Digite a bio...",
         Callback=function(v) FantasmaRP.BioText=tostring(v or "") end })
     T.RGB:AddSlider({ Name="Velocidade RP Bio", Min=1, Max=60, Default=29,
@@ -1451,15 +1451,15 @@ task.spawn(function()
     end })
 
     -- ── SERVER LAG ────────────────────────────────────────────
-    T.Lag:AddSection({ "📡  Lag do Servidor" })
+    T.Lag:AddSection({ "  Lag do Servidor" })
     T.Lag:AddToggle({ Name="Lag (Duplicar Phone)", Default=false, Callback=function(v)
         isLaggingServer=v
-        if v then notify("Lag","⚡ Iniciando lag com Phone...") startServerLag()
-        else notify("Lag","⛔ Lag desativado.") end
+        if v then notify("Lag"," Iniciando lag com Phone...") startServerLag()
+        else notify("Lag","Lag desativado.") end
     end })
 
     -- ── TROLL ─────────────────────────────────────────────────
-    T.Troll:AddSection({ "🎯  Selecionar Alvo" })
+    T.Troll:AddSection({ "  Selecionar Alvo" })
     local selName=nil
     getgenv().Target=getgenv().Target or nil
     local function listPlayers()
@@ -1470,9 +1470,9 @@ task.spawn(function()
     end
     local dd=T.Troll:AddDropdown({ Name="Selecionar Jogador", Options=listPlayers(), Default="",
         Callback=function(v) selName=v getgenv().Target=v end })
-    T.Troll:AddButton({ "🔄  Atualizar Lista", function() dd:Set(listPlayers()) end })
+    T.Troll:AddButton({ "  Atualizar Lista", function() dd:Set(listPlayers()) end })
     local specConn
-    T.Troll:AddToggle({ Name="👁️  View Player (Spectar)", Default=false, Callback=function(v)
+    T.Troll:AddToggle({ Name="  View Player (Spectar)", Default=false, Callback=function(v)
         if specConn then specConn:Disconnect() specConn=nil end
         if v and selName then
             specConn=RunService.Heartbeat:Connect(function()
@@ -1489,7 +1489,7 @@ task.spawn(function()
         end
     end })
 
-    T.Troll:AddSection({ "⚔️  Método de Ataque" })
+    T.Troll:AddSection({ " Método de Ataque" })
     local methodKill="Prop"
     T.Troll:AddDropdown({ Name="Método", Options={"Prop","Couch","Bus","Fling"}, Default="Prop",
         Callback=function(v) methodKill=v end })
@@ -1522,7 +1522,7 @@ task.spawn(function()
             pcall(function() if tr2 then tr2:InvokeServer("PickingTools","Couch") end end)
             task.wait(0.35)
             local item=bp:FindFirstChild("Couch") or mc:FindFirstChild("Couch") or getCouch()
-            if not item then notify("Couch","❌ Couch não encontrado.",3) return end
+            if not item then notify("Couch"," Couch não encontrado.",3) return end
             item.Parent=mc task.wait(0.1)
             pcall(function() game:GetService("VirtualInputManager"):SendKeyEvent(true,Enum.KeyCode.F,false,game) end)
             task.wait(0.1)
@@ -1531,7 +1531,7 @@ task.spawn(function()
             align.MaxForce=Vector3.new(math.huge,math.huge,math.huge) align.D=10 align.P=30000
             align.Position=mr.Position align.Parent=tr
             local as,ang,seated=tick(),0,false
-            notify("Couch","⏳ Encaixando o alvo...",3)
+            notify("Couch"," Encaixando o alvo...",3)
             while tick()-as < 5 do
                 if not tr.Parent or th.Health<=0 or not item.Parent then break end
                 applyNetworkBypass()
@@ -1546,7 +1546,7 @@ task.spawn(function()
             align:Destroy() mh:SetStateEnabled(Enum.HumanoidStateType.Seated,true) mh.PlatformStand=false
             if not seated then
                 pcall(function() if ct then ct:FireServer("ClearAllTools") end end)
-                restoreLocalCharacter(safeCF) notify("Couch","❌ Alvo não sentou; cancelado.",4) return
+                restoreLocalCharacter(safeCF) notify("Couch"," Alvo não sentou; cancelado.",4) return
             end
             for _,p in ipairs(mc:GetDescendants()) do
                 if p:IsA("BasePart") then p.AssemblyLinearVelocity=Vector3.zero p.AssemblyAngularVelocity=Vector3.zero end
@@ -1556,23 +1556,23 @@ task.spawn(function()
             if item.Parent then item.Parent=bp end task.wait(0.01)
             pcall(function() if tr2 then tr2:InvokeServer("PickingTools","Couch") end end) task.wait(0.2)
             for _=1,5 do restoreLocalCharacter(safeCF) task.wait(0.04) end
-            if th.Health<=0 or not tr.Parent then notify("Couch","✅ Morte confirmada.",3)
-            else notify("Couch","⏳ Aguardando confirmação do servidor.",4) end
+            if th.Health<=0 or not tr.Parent then notify("Couch"," Morte confirmada.",3)
+            else notify("Couch"," Aguardando confirmação do servidor.",4) end
         end
     end
 
-    T.Troll:AddSection({ "💀  Ações de Kill" })
-    T.Troll:AddButton({ "⚡  KILL  — Alvo Selecionado", function()
+    T.Troll:AddSection({ "  Ações de Kill" })
+    T.Troll:AddButton({ "  KILL  — Alvo Selecionado", function()
         local n=getgenv().Target or selName
-        if not n or n=="Ninguem" then notify("Erro","❌ Selecione um jogador.") return end
+        if not n or n=="Ninguem" then notify("Erro","Selecione um jogador.") return end
         local tp=Players:FindFirstChild(n)
         if tp then
-            notify("Kill","⚔️ Executando em "..tp.Name.." ["..methodKill.."]")
+            notify("Kill"," Executando em "..tp.Name.." ["..methodKill.."]")
             task.spawn(function() execMethod(tp,methodKill) end)
-        else notify("Erro","❌ Jogador não encontrado.") end
+        else notify("Erro"," Jogador não encontrado.") end
     end })
-    T.Troll:AddButton({ "💥  KILL ALL  — Todos no Servidor", function()
-        notify("Kill All","💥 Kill All com "..methodKill.."!")
+    T.Troll:AddButton({ "  KILL ALL  — Todos no Servidor", function()
+        notify("Kill All","Kill All com "..methodKill.."!")
         task.spawn(function()
             for _,pl in ipairs(Players:GetPlayers()) do
                 if pl~=LocalPlayer then
@@ -1581,31 +1581,31 @@ task.spawn(function()
                     else task.spawn(function() execMethod(pl,methodKill) end) task.wait(0.2) end
                 end
             end
-            notify("Kill All","✅ Fila concluída.",3)
+            notify("Kill All","Fila concluída.",3)
         end)
     end })
-    T.Troll:AddButton({ "🌀  KILL PROP ALL  — Props Simultâneos", function()
+    T.Troll:AddButton({ "  KILL PROP ALL  — Props Simultâneos", function()
         executeKillPropAll()
     end })
 
-    T.Troll:AddSection({ "🚀  Fling por Força" })
+    T.Troll:AddSection({ "  Fling por Força" })
     T.Troll:AddSlider({ Name="Força do Fling", Min=50000, Max=1000000, Default=250000,
         Callback=function(v) ExtraHub.FlingPower=math.floor(tonumber(v) or 250000) end })
-    T.Troll:AddButton({ "🚗  Fling Car", function()
+    T.Troll:AddButton({ "  Fling Car", function()
         ExtraHub.flingVehicleMethod("Car",findPlayer(getgenv().Target or selName),ExtraHub.FlingPower)
     end })
-    T.Troll:AddButton({ "⚽  Fling Ball", function()
+    T.Troll:AddButton({ "  Fling Ball", function()
         local t=findPlayer(getgenv().Target or selName)
         if t then task.spawn(executeFlingBall,t,ExtraHub.FlingPower) end
     end })
-    T.Troll:AddButton({ "🚤  Fling Boat", function()
+    T.Troll:AddButton({ "  Fling Boat", function()
         ExtraHub.flingVehicleMethod("Boat",findPlayer(getgenv().Target or selName),ExtraHub.FlingPower)
     end })
-    T.Troll:AddButton({ "🛋️  Fling Couch", function()
+    T.Troll:AddButton({ "  Fling Couch", function()
         local t=findPlayer(getgenv().Target or selName)
         if t then task.spawn(ExtraHub.flingCouchAt,t,ExtraHub.FlingPower) end
     end })
-    T.Troll:AddSection({ "🔒  Anti Tool" })
+    T.Troll:AddSection({ "  Anti Tool" })
     T.Troll:AddToggle({ Name="Anti Tool — Alvo Selecionado", Default=false, Callback=function(v)
         ExtraHub.setAntiTool(v,getgenv().Target or selName)
     end })
@@ -1613,7 +1613,7 @@ task.spawn(function()
 
     -- ── PROTEÇÃO ──────────────────────────────────────────────
     local PROT={antiSit=false,antiFling=false,antiLag=false,conns={}}
-    T.Prot:AddSection({ "⚡  Anti-Lag" })
+    T.Prot:AddSection({ "  Anti-Lag" })
     T.Prot:AddToggle({ Name="Ativar Anti-Lag", Default=false, Callback=function(v)
         PROT.antiLag=v
         if v then
@@ -1625,13 +1625,13 @@ task.spawn(function()
                         or o:IsA("Fire") or o:IsA("Sparkles") then o.Enabled=false end
                 end
             end)
-            notify("Anti-Lag","✅ Otimizações ativadas!")
+            notify("Anti-Lag"," Otimizações ativadas!")
         else
             pcall(function() settings().Rendering.QualityLevel=Enum.QualityLevel.Automatic Lighting.GlobalShadows=true end)
-            notify("Anti-Lag","⛔ Desativado.")
+            notify("Anti-Lag","Desativado.")
         end
     end })
-    T.Prot:AddSection({ "🪑  Anti-Sit" })
+    T.Prot:AddSection({ "  Anti-Sit" })
     T.Prot:AddToggle({ Name="Ativar Anti-Sit", Default=false, Callback=function(v)
         PROT.antiSit=v if not v then return end
         local c=RunService.Heartbeat:Connect(function()
@@ -1641,7 +1641,7 @@ task.spawn(function()
         end)
         table.insert(PROT.conns,c)
     end })
-    T.Prot:AddSection({ "🌀  Anti-Fling" })
+    T.Prot:AddSection({ " Anti-Fling" })
     T.Prot:AddToggle({ Name="Ativar Anti-Fling", Default=false, Callback=function(v)
         PROT.antiFling=v if not v then return end
         local c=RunService.Heartbeat:Connect(function()
@@ -1653,17 +1653,17 @@ task.spawn(function()
         end)
         table.insert(PROT.conns,c)
     end })
-    T.Prot:AddButton({ "🔓  Desativar Toda a Proteção", function()
+    T.Prot:AddButton({ " Desativar Toda a Proteção", function()
         for _,c in ipairs(PROT.conns) do pcall(function() c:Disconnect() end) end
         PROT.conns={} PROT.antiSit=false PROT.antiFling=false PROT.antiLag=false
-        notify("Proteção","✅ Toda a proteção desativada.")
+        notify("Proteção"," Toda a proteção desativada.")
     end })
 
     -- ── ÁUDIO ─────────────────────────────────────────────────
     local cusAudioId,cusAudioName,selAudioName,renAudioName="","",AudioLibrary.names()[1],""
     local function playBoombox(rawId,shared)
         local id=tonumber(tostring(rawId or ""):match("%d+") or "")
-        if not id then notify("Áudio","❌ ID inválido.",3) return end
+        if not id then notify("Áudio","ID inválido.",3) return end
         task.spawn(function()
             if shared then ExtraHub.requestTool("Boombox") end
             local ch=LocalPlayer.Character
@@ -1677,32 +1677,32 @@ task.spawn(function()
                 if not bx then error("Remote 1BoomBox não encontrada.") end
                 bx:InvokeServer(id)
             end)
-            notify("Áudio",ok and "✅ ID enviado ao Boombox." or "❌ "..tostring(err),4)
+            notify("Áudio",ok and " ID enviado ao Boombox." or " "..tostring(err),4)
         end)
     end
-    T.Audio:AddSection({ "🎵  Boombox" })
+    T.Audio:AddSection({ "  Boombox" })
     T.Audio:AddTextBox({ Name="ID da Música", Default="", PlaceholderText="Ex: 1848354536",
         Callback=function(v) cusAudioId=v end })
     T.Audio:AddTextBox({ Name="Nome para Salvar", Default="", PlaceholderText="Ex: Minha música",
         Callback=function(v) cusAudioName=v end })
-    T.Audio:AddButton({ "▶️  Tocar no Boombox",          function() playBoombox(cusAudioId,false) end })
-    T.Audio:AddButton({ "📢  Audio ALL (Boombox Gamepass)", function() playBoombox(cusAudioId,true)  end })
-    T.Audio:AddSection({ "📁  Biblioteca de Áudios" })
+    T.Audio:AddButton({ " Tocar no Boombox",          function() playBoombox(cusAudioId,false) end })
+    T.Audio:AddButton({ "  Audio ALL (Boombox Gamepass)", function() playBoombox(cusAudioId,true)  end })
+    T.Audio:AddSection({ " Biblioteca de Áudios" })
     local audioDd=T.Audio:AddDropdown({ Name="Áudios Salvos", Options=AudioLibrary.names(), Default=selAudioName,
         Callback=function(v) selAudioName=v end })
     local function refreshAudios()
         local n=AudioLibrary.names() selAudioName=n[1] pcall(function() audioDd:Set(n) end)
     end
-    T.Audio:AddButton({ "💾  Salvar Áudio",         function() local ok,msg=AudioLibrary.add(cusAudioName,cusAudioId) notify("Áudio",msg,3) if ok then refreshAudios() end end })
-    T.Audio:AddButton({ "▶️  Tocar Áudio Salvo",    function() local id=AudioLibrary.Entries[selAudioName] if id then playBoombox(id,true) else notify("Áudio","❌ Selecione um áudio.",3) end end })
+    T.Audio:AddButton({ "  Salvar Áudio",         function() local ok,msg=AudioLibrary.add(cusAudioName,cusAudioId) notify("Áudio",msg,3) if ok then refreshAudios() end end })
+    T.Audio:AddButton({ " Tocar Áudio Salvo",    function() local id=AudioLibrary.Entries[selAudioName] if id then playBoombox(id,true) else notify("Áudio","❌ Selecione um áudio.",3) end end })
     T.Audio:AddTextBox({ Name="Novo Nome do Áudio", Default="", PlaceholderText="Nome renomeado",
         Callback=function(v) renAudioName=v end })
-    T.Audio:AddButton({ "✏️  Renomear Áudio",        function() if AudioLibrary.rename(selAudioName,renAudioName) then notify("Áudio","✅ Renomeado.",3) refreshAudios() else notify("Áudio","❌ Selecione e digite um nome.",3) end end })
-    T.Audio:AddButton({ "🗑️  Excluir Áudio",          function() if AudioLibrary.delete(selAudioName) then notify("Áudio","✅ Excluído.",3) refreshAudios() else notify("Áudio","❌ Nenhum áudio selecionado.",3) end end })
-    T.Audio:AddButton({ "🔄  Atualizar Pasta",        refreshAudios })
+    T.Audio:AddButton({ "  Renomear Áudio",        function() if AudioLibrary.rename(selAudioName,renAudioName) then notify("Áudio","✅ Renomeado.",3) refreshAudios() else notify("Áudio","❌ Selecione e digite um nome.",3) end end })
+    T.Audio:AddButton({ "  Excluir Áudio",          function() if AudioLibrary.delete(selAudioName) then notify("Áudio","✅ Excluído.",3) refreshAudios() else notify("Áudio","❌ Nenhum áudio selecionado.",3) end end })
+    T.Audio:AddButton({ " Atualizar Pasta",        refreshAudios })
 
     -- ── VEÍCULOS ──────────────────────────────────────────────
-    T.Vehicles:AddSection({ "🚗  Carros no Servidor" })
+    T.Vehicles:AddSection({ "  Carros no Servidor" })
     local selVeh=nil
     local function vehNames()
         local n={}
@@ -1712,50 +1712,50 @@ task.spawn(function()
     end
     local vDd=T.Vehicles:AddDropdown({ Name="Selecionar Carro", Options=vehNames(), Default="",
         Callback=function(v) selVeh=v end })
-    T.Vehicles:AddButton({ "🔄  Atualizar Lista", function() vDd:Set(vehNames()) end })
-    T.Vehicles:AddSection({ "🔧  Ações (Carro Selecionado)" })
+    T.Vehicles:AddButton({ "  Atualizar Lista", function() vDd:Set(vehNames()) end })
+    T.Vehicles:AddSection({ "  Ações (Carro Selecionado)" })
     local function runVA(a)
         local v=ExtraHub.findVehicle(selVeh)
-        if not v then notify("Veículos","❌ Selecione um veículo.",3) return end
+        if not v then notify("Veículos"," Selecione um veículo.",3) return end
         task.spawn(function() if ExtraHub.vehicleAction(v,a) then notify("Veículos","✅ "..a.." — "..v.Name,3) end end)
     end
-    T.Vehicles:AddButton({ "📍  Bring Car",  function() runVA("Bring")  end })
-    T.Vehicles:AddButton({ "🗑️  Delete Car", function() runVA("Delete") end })
-    T.Vehicles:AddButton({ "🌀  Fling Car",  function() runVA("Fling")  end })
-    T.Vehicles:AddSection({ "💥  Ações em Massa (All)" })
-    T.Vehicles:AddButton({ "📍  Bring Car All",  function() task.spawn(ExtraHub.vehicleActionAll,"Bring")  end })
-    T.Vehicles:AddButton({ "🗑️  Delete Car All", function() task.spawn(ExtraHub.vehicleActionAll,"Delete") end })
-    T.Vehicles:AddButton({ "🌀  Fling Car All",  function() task.spawn(ExtraHub.vehicleActionAll,"Fling")  end })
+    T.Vehicles:AddButton({ "  Bring Car",  function() runVA("Bring")  end })
+    T.Vehicles:AddButton({ "  Delete Car", function() runVA("Delete") end })
+    T.Vehicles:AddButton({ "  Fling Car",  function() runVA("Fling")  end })
+    T.Vehicles:AddSection({ "  Ações em Massa (All)" })
+    T.Vehicles:AddButton({ "  Bring Car All",  function() task.spawn(ExtraHub.vehicleActionAll,"Bring")  end })
+    T.Vehicles:AddButton({ "  Delete Car All", function() task.spawn(ExtraHub.vehicleActionAll,"Delete") end })
+    T.Vehicles:AddButton({ " Fling Car All",  function() task.spawn(ExtraHub.vehicleActionAll,"Fling")  end })
 
     -- ── GIVE TOOL ─────────────────────────────────────────────
-    T.Give:AddSection({ "🎁  Ferramentas do Brookhaven" })
+    T.Give:AddSection({ "  Ferramentas do Brookhaven" })
     local selTool="FloorCushion"
     T.Give:AddDropdown({ Name="Ferramenta", Options=ExtraHub.ToolNames, Default=selTool,
         Callback=function(v) selTool=v end })
-    T.Give:AddButton({ "📦  Give Tool", function()
-        if ExtraHub.requestTool(selTool) then notify("Give Tool","✅ Solicitado: "..selTool,3)
-        else notify("Give Tool","❌ Remote não encontrada.",3) end
+    T.Give:AddButton({ "  Give Tool", function()
+        if ExtraHub.requestTool(selTool) then notify("Give Tool"," Solicitado: "..selTool,3)
+        else notify("Give Tool"," Remote não encontrada.",3) end
     end })
-    T.Give:AddButton({ "🎁  Give All Tools", function() ExtraHub.giveAllTools() end })
+    T.Give:AddButton({ " Give All Tools", function() ExtraHub.giveAllTools() end })
 
     -- ── FUN ───────────────────────────────────────────────────
-    T.Fun:AddSection({ "🎮  Diversão" })
-    T.Fun:AddButton({ "📍  Teleportar ao Alvo", function()
+    T.Fun:AddSection({ "  Diversão" })
+    T.Fun:AddButton({ "  Teleportar ao Alvo", function()
         local tp=Players:FindFirstChild(getgenv().Target or selName or "")
         local tr=tp and tp.Character and tp.Character:FindFirstChild("HumanoidRootPart")
         local mr=getHRP()
         if tr and mr then mr.CFrame=tr.CFrame*CFrame.new(0,2,-4) end
     end })
-    T.Fun:AddButton({ "⚽  Fling Ball no Alvo", function()
+    T.Fun:AddButton({ "  Fling Ball no Alvo", function()
         local tp=Players:FindFirstChild(getgenv().Target or selName or "")
         if tp then task.spawn(executeFlingBall,tp) end
     end })
-    T.Fun:AddButton({ "🪑  Sentar / Levantar", function()
+    T.Fun:AddButton({ " Sentar / Levantar", function()
         local ch=LocalPlayer.Character
         local hum=ch and ch:FindFirstChildOfClass("Humanoid")
         if hum then hum.Sit=not hum.Sit if not hum.Sit then hum:ChangeState(Enum.HumanoidStateType.GettingUp) end end
     end })
-    T.Fun:AddButton({ "🏠  Voltar ao Spawn", function()
+    T.Fun:AddButton({ "  Voltar ao Spawn", function()
         local root=getHRP() if not root then return end
         local near,dist=nil,math.huge
         for _,o in ipairs(workspace:GetDescendants()) do
@@ -1768,17 +1768,17 @@ task.spawn(function()
     end })
 
     -- ── PLAYERS ───────────────────────────────────────────────
-    T.Player:AddSection({ "🎯  Alvo" })
+    T.Player:AddSection({ "  Alvo" })
     local plExtDd=T.Player:AddDropdown({ Name="Jogador", Options=listPlayers(), Default="",
         Callback=function(v) selName=v getgenv().Target=v end })
-    T.Player:AddButton({ "🔄  Atualizar", function() plExtDd:Set(listPlayers()) end })
-    T.Player:AddSection({ "👁️  ESP & Visual" })
+    T.Player:AddButton({ "  Atualizar", function() plExtDd:Set(listPlayers()) end })
+    T.Player:AddSection({ "  ESP & Visual" })
     T.Player:AddToggle({ Name="ESP Players", Default=false, Callback=function(v) ExtraHub.setESP(v) end })
     T.Player:AddDropdown({ Name="Cor do ESP",
-        Options={"🟣 Roxo","🔴 Vermelho","🔵 Azul","🟢 Verde","⚪ Branco"}, Default="🟣 Roxo",
+        Options={" Roxo"," Vermelho","Azul"," Verde"," Branco"}, Default=" Roxo",
         Callback=function(v)
-            local c={["🟣 Roxo"]=Color3.fromRGB(170,85,255),["🔴 Vermelho"]=Color3.fromRGB(255,40,40),
-                ["🔵 Azul"]=Color3.fromRGB(40,130,255),["🟢 Verde"]=Color3.fromRGB(40,255,100),["⚪ Branco"]=Color3.new(1,1,1)}
+            local c={["Roxo"]=Color3.fromRGB(170,85,255),[" Vermelho"]=Color3.fromRGB(255,40,40),
+                [" Azul"]=Color3.fromRGB(40,130,255),[" Verde"]=Color3.fromRGB(40,255,100),["⚪ Branco"]=Color3.new(1,1,1)}
             ExtraHub.ESPColor=c[v] or Color3.fromRGB(170,85,255)
         end })
     T.Player:AddToggle({ Name="ESP RGB", Default=false, Callback=function(v) ExtraHub.ESPRGB=v end })
@@ -1801,7 +1801,7 @@ task.spawn(function()
             if hum then workspace.CurrentCamera.CameraSubject=hum end
         end
     end })
-    T.Player:AddSection({ "🏃  Movimento & Spin" })
+    T.Player:AddSection({ "  Movimento & Spin" })
     T.Player:AddSlider({ Name="Velocidade do Spin", Min=1, Max=50, Default=10,
         Callback=function(v) ExtraHub.SpinSpeed=tonumber(v) or 10 end })
     T.Player:AddToggle({ Name="Spin", Default=false, Callback=function(v)
@@ -1817,45 +1817,45 @@ task.spawn(function()
     T.Player:AddToggle({ Name="Noclip", Default=false, Callback=function(v) ExtraHub.setNoclip(v) end })
 
     -- ── OUTROS ────────────────────────────────────────────────
-    T.Others:AddSection({ "⚙️  Cliente" })
+    T.Others:AddSection({ "  Cliente" })
     T.Others:AddToggle({ Name="Fullbright", Default=false, Callback=function(v) ExtraHub.setFullbright(v) end })
-    T.Others:AddButton({ "🚀  FPS Boost", function()
+    T.Others:AddButton({ "  FPS Boost", function()
         pcall(function() settings().Rendering.QualityLevel=Enum.QualityLevel.Level01 end)
         for _,o in ipairs(workspace:GetDescendants()) do
             if o:IsA("ParticleEmitter") or o:IsA("Trail") or o:IsA("Smoke") or o:IsA("Fire") or o:IsA("Sparkles") then
                 o.Enabled=false
             end
         end
-        notify("FPS Boost","✅ Aplicado neste cliente.",3)
+        notify("FPS Boost"," Aplicado neste cliente.",3)
     end })
-    T.Others:AddButton({ "☕  Anti AFK", function()
-        if ExtraHub.AntiAFK then notify("Anti AFK","✅ Já está ativo.",3) return end
+    T.Others:AddButton({ "  Anti AFK", function()
+        if ExtraHub.AntiAFK then notify("Anti AFK","Já está ativo.",3) return end
         ExtraHub.AntiAFK=true
         local vu=game:GetService("VirtualUser")
         LocalPlayer.Idled:Connect(function() vu:CaptureController() vu:ClickButton2(Vector2.new()) end)
-        notify("Anti AFK","✅ Ativado.",3)
+        notify("Anti AFK"," Ativado.",3)
     end })
-    T.Others:AddButton({ "🔄  Rejoin Server", function()
+    T.Others:AddButton({ "  Rejoin Server", function()
         game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId,game.JobId,LocalPlayer)
     end })
 
     -- ── AVATAR ────────────────────────────────────────────────
-    T.Avatar:AddSection({ "👤  Customização" })
-    T.Avatar:AddButton({ "👗  Copiar Avatar do Alvo (Local)", function()
+    T.Avatar:AddSection({ "  Customização" })
+    T.Avatar:AddButton({ "  Copiar Avatar do Alvo (Local)", function()
         ExtraHub.copyAvatar(getgenv().Target or selName)
     end })
     T.Avatar:AddToggle({ Name="Big Head", Default=false, Callback=function(v) ExtraHub.setBigHead(v) end })
     T.Avatar:AddToggle({ Name="Rainbow Body", Default=false, Callback=function(v) ExtraHub.setRainbowAvatar(v) end })
 
     -- ── FREE GAMEPASS ─────────────────────────────────────────
-    T.Gamepass:AddSection({ IS_ADMIN and "👑  Recursos Admin" or "🎮  Free Gamepass (Beta)" })
-    T.Gamepass:AddParagraph({ "⚠️  Aviso",
+    T.Gamepass:AddSection({ IS_ADMIN and "  Recursos Admin" or "  Free Gamepass (Beta)" })
+    T.Gamepass:AddParagraph({ "  Aviso",
         "Esta aba não desbloqueia gamepasses reais. O servidor pode recusar itens que exijam passe." })
-    T.Gamepass:AddButton({ "🎁  Solicitar Todas as Ferramentas", function() ExtraHub.giveAllTools() end })
+    T.Gamepass:AddButton({ "  Solicitar Todas as Ferramentas", function() ExtraHub.giveAllTools() end })
     T.Gamepass:AddDropdown({ Name="Veículo Premium",
         Options={"Limo","SchoolBus","MonsterTruck"}, Default="Limo",
         Callback=function(v) ExtraHub.PremiumVehicle=v end })
-    T.Gamepass:AddButton({ "🚗  Solicitar Veículo Premium", function()
+    T.Gamepass:AddButton({ "  Solicitar Veículo Premium", function()
         task.spawn(ExtraHub.spawnVehicle,ExtraHub.PremiumVehicle or "Limo")
     end })
 
@@ -1867,22 +1867,22 @@ task.spawn(function()
             local ids={["Kamui Roxo"]="110456504694881",["Efeito Azul"]="135653661483044"}
             UIC.setEffect(ids[v])
         end })
-    T.Visuals:AddButton({ "🌀  Efeito Kamui",        function() UIC.setEffect("110456504694881") end })
-    T.Visuals:AddButton({ "💙  Efeito Azul",          function() UIC.setEffect("135653661483044") end })
-    T.Visuals:AddButton({ "⛔  Remover Efeito",       function() UIC.setEffect("") end })
-    T.Visuals:AddSection({ "🖼️  Fundos" })
-    T.Visuals:AddButton({ "🌃  Fundo 1",              function() UIC.setBackground("123754864736277") end })
-    T.Visuals:AddButton({ "🌆  Fundo 2",              function() UIC.setBackground("121502907054918") end })
-    T.Visuals:AddButton({ "🪟  Janelas",              function() UIC.setBackground("81149055236435")  end })
-    T.Visuals:AddButton({ "⛔  Remover Fundo",        function() UIC.setBackground("") end })
+    T.Visuals:AddButton({ "  Efeito Kamui",        function() UIC.setEffect("110456504694881") end })
+    T.Visuals:AddButton({ "  Efeito Azul",          function() UIC.setEffect("135653661483044") end })
+    T.Visuals:AddButton({ "  Remover Efeito",       function() UIC.setEffect("") end })
+    T.Visuals:AddSection({ "  Fundos" })
+    T.Visuals:AddButton({ "  Fundo 1",              function() UIC.setBackground("123754864736277") end })
+    T.Visuals:AddButton({ "Fundo 2",              function() UIC.setBackground("121502907054918") end })
+    T.Visuals:AddButton({ "  Janelas",              function() UIC.setBackground("81149055236435")  end })
+    T.Visuals:AddButton({ "  Remover Fundo",        function() UIC.setBackground("") end })
     task.delay(1.5, function() pcall(UIC.setTitleIcon,"81149055236435") end)
 
     -- ── CONFIGURAÇÃO ─────────────────────────────────────────
-    T.Config:AddSection({ "🎨  Tema do Hub" })
+    T.Config:AddSection({ "  Tema do Hub" })
     T.Config:AddDropdown({ Name="Cor com Degradê de Preto",
         Options={"Vermelho","Azul","Amarelo","Preto","Cinza"}, Default="Preto",
         Callback=function(v) UIC.applyTheme(v) end })
-    T.Config:AddSection({ "🖼️  Fundo da Janela" })
+    T.Config:AddSection({ "  Fundo da Janela" })
     local function bgId(n)
         local ids={["Fundo 1"]="123754864736277",["Fundo 2"]="121502907054918",["Janelas"]="81149055236435"}
         return ids[n]
@@ -1892,8 +1892,8 @@ task.spawn(function()
         Callback=function(v) UIC.setBackground(bgId(v)) end })
     T.Config:AddSlider({ Name="Transparência do Fundo", Min=0, Max=95, Default=35,
         Callback=function(v) UIC.setBgTransp((tonumber(v) or 35)/100) end })
-    T.Config:AddButton({ "⛔  Remover Fundo", function() UIC.setBackground("") end })
-    T.Config:AddButton({ "🔖  Ícone no Título", function() UIC.setTitleIcon("81149055236435") end })
+    T.Config:AddButton({ "  Remover Fundo", function() UIC.setBackground("") end })
+    T.Config:AddButton({ "  Ícone no Título", function() UIC.setTitleIcon("81149055236435") end })
 
     notify(HUB_NAME, IS_ADMIN and "✦ Painel BH carregado — " .. MY_ROLE or "✦ Brookhaven Edition v8.9 carregado!", 4)
 end) -- fim Redz task.spawn
