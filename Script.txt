@@ -1,1 +1,1899 @@
---[[ v1.0.0 https://wearedevs.net/obfuscator ]] return(function(...)local E={"4NapJU\'I\",","4ArcL9";"4hdd";"4Qe+U`[bZ@FrY","40hpmFp\"","4N2L!$\"64%%\"O-P>K@h","4he[qU0*9:PR(M";"40R1KAbdEbZ","4NF-%ahdGipTXk8Maq";"40q9c>XI?";"4";"4XIgP2","4R==<6","4k`;:&";"4b$tJUAc4","40*9:PR(M","4k`;.nRk";"4p49hZbm";"4#=fkQb9o;8X.C_8","4AK+Z/XIS","4Qe#Is#dHUI#:IT9bJ";"4XJ\"rFX[#";"4R0imkb%%_U:M97(#s";"4hdS","4rOXtO#;YDZrFS\"i0N";"4A)/","4X`Lt>";"4h=hmfbMQUHpKkM^Rk";"4j:%8#\"P+^\"Q3lBjRk";"4RR]%TP>u>![;M`.";"4hf5&bP=(1c[Hg]=plo","4R(^S<","40R1M7R=\'t^";"4bdQ*-:5h","4r.R>,XE:b0oomHhh,9","4AVepMT6Ua]#RYYk","4V,Y?nVR$o?H\'^B([XQCb.^mbTa3bs&\'7o]a[RMW\\Wj(Xsf#aM*<m]\\mdlKkS>8G=YL/Z6;`\"?Ze,LCHe6%pNB()f$0Q,o)Dlo_hjISjc-b6F.=8PRelkY*:b\"AgK@ZVr2/,pDb%kj","4[-Qm8pEplgpE.Bl0hV?-","4k`;+dp\'g?";"4A_K`3";"40ZB\"opE.XMXP05W";"4Li,Pd=<$h","4pER3Qbm","4\'.7pk:n#-Cp2>?W";"4Lm","4k`;Sg0hAa6X.CE","4b-[[Uhg";"4bWqeJRCs"}local function I(I)return E[I+(-826830+883346)]end for I,T in ipairs({{1991581761%10593520,-300525+300573};{915042229%5613756;-489444-(-489476)};{453278-453245;2675541954%11838681}})do while T[-584837+584838]<T[75797732%5053182]do E[T[-38559-(-38560)]],E[T[3206577923%13762137]],T[187504-187503],T[1020185-1020183]=E[T[1771871080%8771639]],E[T[208265773%5340148]],T[-308026+308027]+(78945-78944),T[-126982-(-126984)]-(-420728-(-420729))end end do local I={["3"]=744643-744617;J=1021674+-1021658,q=-217671-(-217723);["/"]=-716160+716196;K=-197681+197681;C=418954+-418903;W=-363071+363116,["4"]=-195346+195377;t=914097883%3856953,M=-334980+335015;b=270858141%14255691,N=77612351%5970180,B=46641717%613706,U=26975-26943;Y=88504345%355439,j=881610557%9688028,c=66386350%1475252;m=2913233981%11988617,z=-712152-(-712200);s=-500882+500888,h=290197070%1511443,i=80215814%1485477,A=130715-130711,["1"]=2453951478%13709226,I=-242482+242520,D=470445-470383,e=1316891689%11160099;O=617597989%4901571,g=323175785%6595423,y=398101-398100;o=956784-956781,x=389429-389383,r=685646+-685627;v=-303084-(-303123);d=484454+-484394;["0"]=66594-66552;T=2867463067%12150267;H=2009474268%12032780,["2"]=1023818+-1023793,L=393056-393003;p=901782930%14090358;E=953762-953734;k=-34583+34640,Q=-988631+988680;V=223501+-223464,["6"]=2816693019%13673267,X=375691169%1869110,P=883668+-883653,R=-688922-(-688952),F=-907822-(-907845);["9"]=1615912753%10845052;w=906428+-906388,G=218571-218527,["7"]=640395-640374;["5"]=-157445-(-157478),Z=-534821-(-534823);n=-47533-(-47580),S=-659367+659430,f=-866174-(-866215);l=520168585%14861959,["8"]=393380231%1812812;["+"]=2794909251%15614018,a=146858242%825046;u=1056176617%5588236}local T=string.sub local V=table.concat local U=string.char local M=string.len local L=math.floor local b=table.insert local s={[")"]=905955+-905907;T=-619244+619272,["."]=61197695%2781711,F=-241603+241682,["<"]=1454422070%5960746,["$"]=585762+-585695;["0"]=325617+-325580,g=174097858%9163042;["("]=187227689%5200768,A=-335016+335049,R=736539945%4661645;X=-141838-(-141869);S=-216156-(-216212),["#"]=-588899-(-588925);m=1574063047%13929761,C=990376-990307;I=-260845+260925;P=2091342817%11815496;["&"]=248719592%12435977;["7"]=1120436036%16238203,K=-765812-(-765832);D=440713+-440670,n=-342679+342738;Q=221465-221450;a=-942756-(-942780);h=42367-42333;s=-401802-(-401804),i=636442018%3857224,["8"]=2116738494%16537019;[":"]=887524-887486;["="]=240768-240755,o=-531000+531016;N=10442-10419;["!"]=773921351%14883102;["9"]=670176833%8935691,p=688736964%7486271,["@"]=171270+-171187,["\\"]=1570662281%14150110,G=1203445356%5928302,["4"]=895158+-895080;["/"]=-686534-(-686534),l=-174249-(-174326);M=-522843-(-522848);["5"]=110857504%1421250;["]"]=369987225%1728912,["?"]=300231-300147;["2"]=1217626206%10496777,[">"]=63483530%1923743,["\'"]=-948964+948986,j=897762+-897745,["*"]=-409501+409510,_=249166+-249147;["-"]=3249633025%13050735,q=1969475928%13397795,k=-1016659+1016689;f=835844176%10319063;e=-684555+684627;Y=533998+-533953;W=234729814%998850,H=105030+-104969,["3"]=1046192-1046122,t=880670-880664,["1"]=302786+-302711,E=182952+-182901,["\""]=-981543-(-981582),[","]=171205-171139,["+"]=-586598+586642,B=2010571624%12111877;b=-155866-(-155902),c=1026532-1026518,["^"]=-558983+559065,d=1728573265%8642866;[";"]=716813-716773,u=660995913%4348657,["`"]=30290095%6058008,J=-773872-(-773953);U=1043517633%10331857;["6"]=227177-227176;O=-1048105-(-1048108);Z=304417+-304410,["%"]=-992909-(-992921);L=-456286-(-456304);V=937376+-937308,["["]=-324293-(-324320),r=-194759-(-194780)}local g=E local y=type for E=80051765%3078914,#g,46889-46888 do local u=g[E]if y(u)=="string"then local y=T(u,836422+-836421,599889567%5503574)if y=="B"then u=T(u,817260-817258)local s=M(u)local y={}local K=-238813-(-238814)local C=171014-171014 local k=3269731530%16767854 while K<=s do local E=T(u,K,K)local V=I[E]if V then C=C+V*((387718476%5239438)^(((-51259-(-51262))-k)))k=k+(-1004797+1004798)if k==-635232-(-635236)then k=1334362332%10185972 local E=L(C/(904923+-839387))local I=L((C%(144840361%1744275))/(977562-977306))local T=C%(1674355434%7376014)b(y,U(E,I,T))C=875827712%13684808 end elseif E=="="then b(y,U(L(C/(1091904340%9175116))))if K>=s or T(u,K+(725634-725633),K+941109857%8113016)~="="then b(y,U(L((C%(393499-327963))/(204664239%5531459))))end break end K=K+296356105%12348171 end g[E]=V(y)elseif y=="4"then u=T(u,582493-582491)local I=M(u)local y={}local K=651526-651525 while K<=I do local E=(I-K)+3407163255%14079187 local V=E>=380903-380898 and-714906+714911 or E local M=236484-236484 local g=V>478476751%1913907 for E=734132-734132,1307074360%5186803,-47949+47950 do local I if E<V then local V=T(u,K+E,K+E)I=s[V]if not I then g=false break end else I=557495882%15067454 end M=M*(470934+-470849)+I end if g then local E=L(M/(-916854+17694070))%(369128+-368872)local I=L(M/(-152395+217931))%(438310+-438054)local T=L(M/(-864170-(-864426)))%(556372+-556116)local s=M%(26113996%2176145)if V==-826194-(-826199)then b(y,U(E,I,T,s))elseif V==282114+-282110 then b(y,U(E,I,T))elseif V==-274973+274976 then b(y,U(E,I))elseif V==245957-245955 then b(y,U(E))end end K=K+V end g[E]=V(y)end end end end return(function(V,E,b,L,U,s,M,P,G,H,k,g,C,f,S,u,w,y,K,T)K,u,G,C,S,T,y,f,H,w,P,g,k=502393+-502393,function()K=K+(123989+-123988)y[K]=-459653+459654 return K end,function(E,I)local V=C(I)local U=function(U,M,L,b,s)return T(E,{U;M,L;b;s},I,V)end return U end,function(E)for I=1945966065%8176328,#E,3697433432%16288253 do y[E[I]]=y[E[I]]+(-105722+105723)end if U then local T=U(true)local V=L(T)V[I(-464781-(-408288))],V[I(-347270+290800)],V[I(459039+-515554)]=E,k,function()return 2694856-(-679110)end return T else return M({},{[I(-505680-(-449210))]=k,[I(352236-408729)]=E,[I(869708-926223)]=function()return 1702444174%19307616 end})end end,function(E)y[E]=y[E]-1275584279%5619314 if y[E]==684637-684637 then y[E],g[E]=nil,nil end end,function(T,U,M,L)local Z,x,K,e,B,l,Y,C,h,H,O,X,W,r,q,N,t,k,D,Ef,J,A,m,Q,c,j,s,n,o,z,R,a,v,F,y,i,p,d while T do if T<7568018-(-792651)then if T>-1032554+5734604 then if T>-915753+7600464 then if T>7946793-324626 then if T<719681093%13952796 then if T<-57958+7852644 then i,e=-814315-(-814316),-279500+279501 p=#l j=v(e,p)e=J(l,j)p=g[Q]o=e-i O=k(o)p[e]=O e,o=nil,504877+-504877 O=#l j=nil p=O==o T=p and 13346209-245412 or-976973+8656167 elseif T<948448+7047714 then J,T=l,j T=l and 16491323-648294 or 10855388-914218 else H,T,A=35184372273685-184853,{},-179335+179336 g[M[-528511+528513]]=T s=g[M[-198098-(-198101)]]k=s s=K%H Z=72153-71898 g[M[2247980388%10807598]]=s N=K%Z Z=1605740104%6662822 H=N+Z J=1095234253%4803659 g[M[365948993%1710042]]=H v=J J,Z=1565186961%8109777,I(-38761+-17712)N=#y C[K]=Z c,Q,l,T=I(-2261+-54212),N,v<J,2930161412%20856331 J,Z=A-v,-583922-(-584126)end else if T<-753775+8931933 then T=15171603-(-111972)elseif T<2523066877%14536170 then B=765580+-765579 t=m[B]z,T=t,14019534-(-42015)else Ef=T t=g[K]z,T=t,t and 9279698-1018232 or 3867569781%17595928 end end else if T<1438681154%9058743 then if 409380958%13871887>T then a=u()F=391034644%9093823 g[a]=W r=I(169314+-225785)x=E[r]r=I(573789-630273)i=x[r]X,m,n,r=802182+-802181,616325+-616225,1340064588%10984054,144343-144342 x=i(r,m)z=889278628%8389421 i=u()m=76529820%7652982 g[i]=x x=g[Q]r=x(m,F)x=u()g[x]=r r=g[Q]d=g[i]B,D,F=I(-414911-(-358435)),820272+-820272,120982-120981 m=r(F,d)r=u()g[r]=m F=g[Q]d=F(X,z)F=33794-33793 m=d==F d,z=I(445227+-501717),I(10944-67431)F=u()g[F]=m t=E[B]R=g[Q]h={R(D,n)}m=I(255737+-312219)B=t(V(h))m,t=p[m],I(248489+-304976)Ef=B..t X=z..Ef m=m(p,d,X)d=u()g[d]=m Ef=G(9302253-(-916848),{Q,a,J,k;K;O;F,d;i,r,x;v})z=I(-983717-(-927232))X=E[z]z={X(Ef)}X=g[F]T,m=X and 2806183744%15536204 or 7598033-(-759435),{V(z)}elseif T<800281+6494377 then A=1967119760%9065068 c=Z==A T=c and 6879927-694779 or 4329168-(-606024)elseif 1164268486%8263643>T then c=-426022+426023 s=Z==c T=s and 1693008703%10736523 or-177857+15679498 else A=641232+13028289<11633018-153736 c=g[K]s=c==A T=s and-1039181+9134031 or 14894038-(-389537)end else if 1123903181%18302307>T then K=g[M[913719192%11866483]]k=nil y=#K T=E[I(829306-885813)]C=g[M[987324-987323]]K=C[y]s={K}C=g[M[-418434-(-418435)]]C[y]=k elseif T<2235575350%23453082 then T=3995091096%20651583 else s,C,K=13274117-(-217731),3970494-308750,I(-1042692-(-986192))y=K^C T=s-y s,y=I(615719-672199),T T=s/y s={T}T=E[I(-238498-(-181987))]end end end else if 506852+5012990>T then if T>-249170+5359686 then if 1634263160%14289117>T then T=1588677-929663 elseif 2709463493%22163805>T then T=9766381-(-670649)else T=g[M[-740917+740924]]T=T and 413816+2769677 or-811729+6342205 end else if T<2935627863%15264708 then T=1458737463%12928575 elseif 515734+4370963>T then y=nil g[M[20116554%300247]]=s T=613032+4896177 elseif T<-836330+5835298 then Q=279394-279389 A=Z==Q T=A and 734848+1821828 or 12294420-11006 else j=e i,T=j,2302258014%12614473 l[j]=i j=nil end end else if T>195429+5920756 then if T<1245694497%6291647 then T,c=546192739%16531325,590635+9215455<3162919-(-937647)g[K]=c elseif T<6712590-353162 then H=I(-660226-(-603758))N=u()v=w(1450551584%17102694,{N})T=6668902-644281~=1586649943%19236351 g[K]=T Z=T k=E[H]H=I(151932-208444)C=k[H]H=u()J=I(266303+-322788)k=u()g[k]=C C=G(284499754%19627038,{})g[H]=C C=3516440414%14377450<=456957+2293970 g[N]=C Q=E[J]J=Q(v)T,C=J and 9105645-(-56508)or 1756433612%22952188,J else i,e=not o,O+e j=p>=e j=i and j i=p<=e i=o and i j=i or j i=5985507-922762 T=j and i j=10069811-(-954832)T=T or j end else if T<1079329055%15338949 then T={}C=g[M[249255204%2026465]]y,K,k=T,84306+-84305,C C=1996348057%8115236 H=C C=854041162%5849597 N,T=C>H,492750+16022125 C=K-H elseif-796138+6657136>T then W=363677+1919277~=6765545-(-126333)T=W and 10502208-(-212631)or 15708540-(-814412)else T=4919390-(-755384)end end end end else if T<179944617%3690754 then if T<-53613+2003056 then if T<824428893%5965956 then if T<-688839+764228 then A,c,K=36955+-36700,-535108-(-535108),C T=g[M[1010767927%8284983]]Z=T(c,A)T=16097249-(-417626)y[K]=Z K=nil elseif 737178+-362301>T then T=-960765+6635539 elseif 2963689001%14453740>T then T,Z=1344632505%6908034,nil else i,W=not o,W+q a=Y>=W a=i and a i=Y<=W i=o and i a=i or a i=-204914+7150409 T=a and i a=811398+10865273 T=T or a end else if T<1179570-(-525105)then T=2761617058%18839738 elseif 1028849+841921>T then A,W=J,I(-50181+-6287)a=E[W]W=I(781773-838278)O=a[W]a=O(y,A)A=nil O=g[M[1576954230%7300714]]W=O()p=a+W e=p+Z p=1046164+-1045908 j=e%p Z,a=j,1000241+-1000240 O=Z+a T=823407504%19360296 p=k[O]e=c..p c=e else O=I(989964+-1046443)p=E[O]O,T=I(499334+-555808),475474444%10390317 e=p[O]l=e end end else if T<2374954-48822 then if T<993638622%14371337 then K=g[M[706856-706854]]C=373937+-373724 y=K*C K=27552855017688-546491 s=y+K y=-475420+35184372564252 T=s%y g[M[-622351+622353]]=T T=9575370-(-317093)elseif T<-974234+3123069 then T=-689675+4413639 elseif T<831755031%18432528 then A=102569492%3266354>=936586-(-236249)T=A and 13024441-278205 or 1157335688%8436258 else W=G(5223624796%21473973,{H})Y={W()}T,s=E[I(643318+-699822)],{V(Y)}end else if 2948363382%15923884>T then h=3005664851%15573393 R=m[h]T=9762537-(-355950)h=g[d]B=R==h Ef=B elseif T<2436350932%14149461 then J=12652457-(-732374)<866664+11425238 Q=g[K]A=Q==J T=A and 10355078-(-373253)or 15610815-(-619550)else h,t=274792-274791,T R=m[h]h=11410359-(-68251)>-317257+12523526 B=R==h Ef,T=B,B and 1308996-(-1024013)or 11162527-1044040 end end end else if T<-814612+4487065 then if 3409087-121057>T then if 3108477-190441>T then s,T={K},E[I(-453994+397481)]elseif 2287290134%19035184>T then g[K]=a T=W W=g[K]T=W and 712269+1322115 or 2972088823%18877229 elseif T<4002911-838023 then T=9388059-52482 else y=I(104424-160913)T=E[y]C=-258908-(-258908)K=g[M[460903388%5834220]]y=T(K,C)T=4932355577%19473617 end else if 582813+2830241>T then s,C,K=3153841611%13556053,3056606483%17480867,I(880003-936505)y=K^C T=s-y s,y=I(185106+-241575),T T=s/y s={T}T=E[I(-664185+607707)]elseif T<-284097+3811339 then A,T=2654067107%17080617>1886047408%21752667,890653094%11124926 g[K]=A else s=2313758-(-163566)~=14033734-(-748037)g[K]=s T=-165049+824063 end end else if T>-322282+4455956 then if 910980482%11054217>T then C,Z=C+H,not N s=C<=k s=Z and s Z=C>=k Z=N and Z s=Z or s Z=9365092-309416 T=s and Z s=6533935-239007 T=T or s elseif T<812206+3802752 then g[K]=X T=z T=3693096884%21140425 else T=28835629%11838671 end else if 1965529040%8383656>T then H=S(H)v=S(v)k=S(k)J=S(J)C=nil O=S(O)j,v=nil,I(249758-306226)K=S(K)k,p,C,K=-422079+422081,nil,nil,nil e=nil Q=S(Q)Z,j=nil,I(-657342-(-600871))Q=u()N=S(N)H=u()Z=I(-906464-(-849993))g[H]=k l=nil N=E[Z]Z=I(-1043081-(-986567))k=N[Z]e=570991936%10573920 Z=u()N=u()g[N]=k k=1426396640%7352560 g[Z]=k k={}g[Q]=k l=I(211890-268369)J=E[v]v=I(868434-924906)k=J[v]v=E[l]p,T,l=e,6111876-(-312052),I(105125-161623)J=v[l]l=E[j]j=I(-454037-(-397553))v=l[j]l,j={},1065538801%7399575 e=1074289945%6886474 O=e e=-396310+396310 o=O<e e=j-O elseif T<3429947398%15093212 then T,s=E[I(-441586-(-385085))],{K}else T=-74556+5232843 end end end end end else if 2583671368%26239450>T then if T<-681790+11161286 then if T>257714817%9916319 then if 2689245591%24135827>T then if 3726267970%17447658>T then C=-886729+886930 K=g[M[-887745-(-887748)]]y=K*C C,K=803342881%7438360,232875-232618 s=y%K g[M[558655743%6207286]]=s K=g[M[81666255%3024676]]y=K~=C T=y and 10178819-470937 or 3284137760%13815381 elseif 1471524324%16607892>T then j=I(-741037+684563)l=E[j]J,T=l,1013592+14829437 else T=t T,X=4181490-(-413977),Ef end else if T<131120+10115966 then H,k=3722733197%15707735,-798941-(-798942)K=g[M[847606-847605]]C=K(k,H)K=812535967%4103717 y=C==K s,T=y,y and 11627472-(-632132)or-551605+11073568 elseif T<10658615-302564 then J,j=J+v,not l A=Q>=J A=j and A j=Q<=J j=l and j A=j or A j=2510784-669775 T=A and j A=11339090-21092 T=T or A else T=14347833-621929~=8366469-43721 T=T and 15576321-(-58288)or 15729051-487207 end end else if T>2562468237%13950639 then if 9806524-119071>T then z=T Ef=g[K]X,T=Ef,Ef and 440215756%11823923 or 1950612192%13420805 elseif T<1904949522%21784310 then Q,C=-803882+803884,548987954%9465309 K=g[M[-936502+936505]]y=K%C C=-20184+20197 N=g[M[-218439+218442]]H=N-y N=839204+-839172 k=H/N K=C-k H=g[M[952399+-952395]]T=2359220401%16331913 c=g[M[353814-353812]]A=Q^K Z=c/A N=H(Z)H,A=4295020114-52818,960738626%5489935 k=N%H N=-13806+13808 H=N^y C=k/H v=1213927417%12514713 H=g[M[1035168-1035164]]c=C%A A=4295679689-712393 Z=c*A N=H(Z)H=g[M[564141-564137]]Z=H(C)j=877695+-877439 k=N+Z c=1008117-942581 N=-503525-(-569061)H=k%N Z=k-H A=703575040%2780928 N=Z/c c=H%A J=H%v Q=H-J J,y,H=897124446%14469745,nil,nil A=Q/J C,J,k,K=nil,1699908064%7455736,nil,nil Q=N%J l=N%j v=N-l l,N=193254+-192998,nil J=v/l Z={c;A,Q,J}g[M[875186-875185]]=Z else y,s=I(-674928+618434),I(-697572+641083)T=E[s]s=T(y)s,T={},E[I(-171166+114691)]end else if T<3577430373%17843603 then T=909485+1409771 elseif T<2585193298%11103812 then Z,s=C,124737-124737 T=Z==s T=T and-808545+16442143 or 8085715-743375 elseif 2161909725%10449810>T then Q=g[N]T,C=2337511374%23973650,Q else c=657821+5771013<=2138930832%16483347 T=c and 2225842-(-920441)or 5429761-795312 end end end else if 1272920644%19117414>T then if T>2666641685%15622914 then if T<2838191430%11446583 then Q=198158+4517237<=1956091537%21587829 A=g[K]c=A==Q T=c and 3688982714%18334275 or 2960061095%17166053 elseif T<10752062-(-267914)then T=-297266+956280 else T=8538936-859742 end else if T<10605353-(-13048)then T=2176715404%20812075 K=g[M[643524471%2692571]]C=g[M[740563+-740560]]y=K==C s=y elseif 11599514-877929>T then W=g[Q]q,o=494044999%4016626,183668+-183662 Y=W(q,o)W,o=I(-108467+51986),I(-738520+682039)E[W]=Y q=E[o]o=697848-697846 W=q>o T=W and 12266763-(-725282)or 12420590-(-720701)elseif T<355586689%24632428 then T=-541960+11557270 else T=967347858%27216647>=13209277-(-702409)T=T and-1031550+5801202 or 11560780-(-829770)end end else if T<11177659-(-694338)then if T<-516505+11981062 then N,T,Z,A=nil,79997432%4286177,nil,c C[K]=A k,c=nil,nil elseif 3126123887%13966278>T then y=g[M[1022478-1022477]]s=#y y=-952222+952222 T=s==y T=T and 911185+1087170 or 8310204-885275 else Y=g[K]W,a=T,Y T=Y and-446438+12597370 or 1019683+1970143 end else if T<12795425-713977 then p,v,J=I(-171552+115073),I(-334870-(-278391)),I(306413+-362884)Q=E[J]J,T=I(586470+-642954),Z Z=Q[J]Q=u()g[Q]=Z J=E[v]j,v=T,I(-419226-(-362716))Z=J[v]e=E[p]l,v=e,T T=e and 1670602-(-229930)or 232545+7677634 elseif T<132822523%17242753 then T=10133585-(-603478)else T=3288859-299033 Y=l==j a=Y end end end end else if 966543+13502956>T then if 12641594-(-416412)>T then if T<5238569360%21866046 then if T<2024171009%15476150 then T=s and 12810983-388487 or-43929+5553138 elseif 986846+11350136>T then Q=948340-948334 A=Z==Q T=A and 2863844-(-569698)or 963239-304225 elseif 105680+12300843>T then T=-166922+15783319 else s=I(-918776-(-862277))A=w(814821+2577746,{})k,c=I(-873363-(-816887)),I(-155528+99043)T=E[s]y=g[M[1446105276%10633127]]C=E[k]Z=E[c]c={Z(A)}N,Z={V(c)},-352443-(-352445)H=N[Z]k=C(H)C=I(320-56810)K=y(k,C)y={K()}s=T(V(y))y=s K=g[M[-48007+48012]]s,T=K,K and 2481858385%19439710 or 122190438%10668385 end else if T<12552845-(-316295)then T=765098+1498189 elseif 1789611118%24675104>T then q,i=I(623560+-680036),I(687087+-743595)W=E[q]o=E[i]q=W(o)W=I(863010-919491)E[W]=q T=799422+-708682 else C=g[M[123002716%897830]]T=2528449867%20028664 K=C==y s=K end end else if-831115+14734419>T then if 14069645-948601>T then e=u()j={}p=f(-454122+12065238,{e,Z;H;N})d=nil O=u()r,v,o=I(-623253-(-566760)),nil,I(289177-345668)g[e]=j j=u()F=I(689918-746404)g[j]=p p,i={},{}g[O]=p p=E[o]m=g[O]T,J,x=E[I(415215+-471718)],nil,{[r]=m,[F]=d}o=p(i,x)v=I(-46225-10270)p=G(2736385017%15819113,{O,e;Q,Z;H;j})K,k=o,nil O=S(O)C=p H=S(H)l=nil Q=S(Q)l=22126428475115-(-137556)N=S(N)H=I(74849+-131326)Z=S(Z)k=E[H]s={}j=S(j)e=S(e)Z=I(-131961+75469)N=E[Z]J=C(v,l)C=nil Q=K[J]K,J=nil,I(-171055+114572)J=N[J]Z={J(N,Q)}H=k(V(Z))k=H()elseif T<-16665+13527970 then o=I(-248201+191720)W=E[o]o=I(434791+-491299)E[o]=W T=463866-373126 else T=g[M[-229680+229690]]K=g[M[-239804+239815]]y[T]=K T=g[M[220641-220629]]K={T(y)}T,s=E[I(76107+-132604)],{V(K)}end else if 902076+13091342>T then T=649346+642411~=10957358-57083 g[M[-498666-(-498667)]]=T T,s=E[I(-416311-(-359823))],{}elseif 14943197-774390>T then D=18955+-18954 g[K]=z h=g[r]T=Ef R=h+D B=m[R]t=l+B B=-1021917-(-1022173)Ef=t%B l=Ef R=g[x]B=j+R T,R=13796705-(-866229),-932193+932449 t=B%R j=t else y,T,s=U,I(138882+-195388),1661887458%13189583 K=u()C=399628138%2682068 k=C C=304733+-304732 H=C C=-288138+288138 N=H<C C=s-H g[K]=T T=3747443-(-726466)end end end else if T>2893633112%17233527 then if 16374132-287655>T then if 16699770-960951>T then s=I(670273+-726754)T=E[s]y=I(-276571-(-220063))s=E[y]y=I(223320-279828)E[y]=T y=I(-380117+323636)E[y]=s y=g[M[-197806-(-197807)]]K=y()T=941729058%13695471 elseif T<4402738614%23971835 then T=v a=P(-407313+7972454,{})e=170015285%4722645 v=u()o=I(805643-862119)g[v]=J j,O=-11751+11754,I(-716012-(-659527))J=g[Q]l=J(j,e)J=u()g[J]=l l,j=-890171+890171,991048960%12388112 T=-751175+1436764 p=E[O]O={p(a)}e={V(O)}O=275423-275421 p=e[O]a=I(586384+-642883)O=E[a]W=g[k]q=E[o]o=q(p)q=I(-139051-(-82561))Y=W(o,q)W={Y()}a=O(V(W))O=u()g[O]=a W=g[J]a,Y=346846605%13340254,W W=482600251%6521625 q=W W=290746+-290746 o=q<W W=a-q else A=69364+-69361 c=Z==A T=c and 10350942-(-404606)or 97310+7149666 end else if 495353+15877267>T then T=175496757%7531890 elseif 17508050-989137>T then Z,C=not N,H+C K=k>=C K=Z and K Z=C>=k Z=N and Z K=Z or K Z=1988512978%11696782 T=K and Z K=13623851-(-257469)T=T or K else T,s=E[I(-553457+496961)],{}end end else if T>2061925486%25904125 then if T<4299035383%17555231 then c=1020904-1020902 s=Z==c T=s and 2551674368%16874526 or 5178148798%20164868 elseif 16527031-902034>T then T=1400801096%16544921>=13790911-(-615288)g[K]=T T=2574376156%10859566 else s=g[K]c=I(1046891+-1103397)T=s~=c T=T and-772141+12867714 or-68096+15684493 end else if T<14477420-(-474969)then T=1529852-844263 F=S(F)d=S(d)a=S(a)i=S(i)m=nil r=S(r)x=S(x)elseif T<14596622-(-666087)then s,T={},E[I(274230+-330739)]elseif 731334058%20455528>T then T=602066+56948 else y,K=U[411136+-411135],U[-604058-(-604060)]T=g[M[-896604+896605]]C=T T=C[K]T=T and 1993144175%12917929 or-444439+8526584 end end end end end end end T=#L return V(s)end,{},function(E,I)local V=C(I)local U=function()return T(E,{},I,V)end return U end,function(E,I)local V=C(I)local U=function(...)return T(E,{...},I,V)end return U end,function(E,I)local V=C(I)local U=function(U)return T(E,{U},I,V)end return U end,function(E,I)local V=C(I)local U=function(U,M,L)return T(E,{U,M,L},I,V)end return U end,{},function(E)local I,T=556023161%2527378,E[-256583-(-256584)]while T do y[T],I=y[T]-(-40713+40714),I+(715282-715281)if y[T]==-525343+525343 then y[T],g[T]=nil,nil end T=E[I]end end return(H(-604395+14880460,{}))(V(s))end)(unpack or table[I(71436+-127910)],getfenv and getfenv()or _ENV,select,getmetatable,newproxy,{...},setmetatable)end)(...)
+-- ==========================================================
+-- FANTASMA1L HUB - BROOKHAVEN EDITION (v8.9)
+-- ✦ Ícones estilosos  ✦ Webhook premium  ✦ Coroa dourada ADM
+-- ==========================================================
+
+local Players           = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService        = game:GetService("RunService")
+local StarterGui        = game:GetService("StarterGui")
+local Lighting          = game:GetService("Lighting")
+local HttpService       = game:GetService("HttpService")
+local LocalPlayer       = Players.LocalPlayer
+
+local ICON_ID       = "rbxassetid://72455921762458"
+local WEBHOOK_URL   = "COLE_SEU_NOVO_WEBHOOK_AQUI"
+local DISCORD_URL   = "https://discord.gg/bXuvVw76B"
+
+-- ── helper ausente no original ──────────────────────────────
+local function findPlayer(name)
+    return Players:FindFirstChild(tostring(name or ""))
+end
+
+-- ── detecção de cargo ────────────────────────────────────────
+local IS_ADMIN    = false
+local MY_ROLE     = "Utilizador Comum"
+local DETECT_REASON = "Sem Painel Admin"
+local HUB_NAME    = "Fantasma1l Hub"
+
+local function detectarHub()
+    local isOwner = string.lower(LocalPlayer.Name) == "renegado6661l"
+    local temWind = false
+    pcall(function()
+        if (getgenv and getgenv().WindUI) or _G.WindUI then temWind = true end
+    end)
+    local pg = LocalPlayer:FindFirstChild("PlayerGui")
+    if not temWind and pg then
+        for _, g in ipairs(pg:GetDescendants()) do
+            local txt = ""
+            if g:IsA("TextLabel") or g:IsA("TextButton") or g:IsA("TextBox") then
+                txt = g.Text:lower()
+            end
+            if txt:find("administrator version") or txt:find("renegado6661l")
+                or g.Name:lower():find("windui") or txt:find("fantasma1l hub") then
+                temWind = true break
+            end
+        end
+    end
+    if temWind then
+        if isOwner then return true, "Painel Admin Ativo", "DONO 👑 (renegado6661l)" end
+        return true, "Painel Admin Ativo", "Admin / VIP 👑"
+    end
+    return false, "Sem Painel Admin", "Utilizador Comum"
+end
+
+IS_ADMIN, DETECT_REASON, MY_ROLE = detectarHub()
+
+-- ── cores e badges de cargo ──────────────────────────────────
+local function getRoleColor()
+    local n = string.lower(LocalPlayer.Name)
+    if n == "renegado6661l"           then return 0xFFD700 end -- ouro
+    if MY_ROLE:find("SUB DONO")       then return 0xC084FC end -- roxo
+    if IS_ADMIN                        then return 0xFF4444 end -- vermelho
+    return 0x4ADE80                                            -- verde
+end
+
+local function getRoleBadge()
+    local n = string.lower(LocalPlayer.Name)
+    if n == "renegado6661l"     then return "👑  DONO SUPREMO"    end
+    if MY_ROLE:find("SUB DONO") then return "💎  SUB DONO"        end
+    if IS_ADMIN                 then return "🔴  ADMINISTRADOR"   end
+    return "🟢  Utilizador"
+end
+
+local function getWindowTitle()
+    if string.lower(LocalPlayer.Name) == "renegado6661l" then
+        return "👑 " .. HUB_NAME .. " — DONO"
+    elseif IS_ADMIN then
+        return "🔱 " .. HUB_NAME .. " — Admin"
+    end
+    return "👻 " .. HUB_NAME
+end
+
+local function getWindowSub()
+    if IS_ADMIN then
+        return "✦ Brookhaven v8.9  ✦  " .. MY_ROLE
+    end
+    return "✦ Brookhaven Edition v8.9"
+end
+
+-- ── notify ───────────────────────────────────────────────────
+local function notify(title, text, duration)
+    pcall(function()
+        StarterGui:SetCore("SendNotification",
+            { Title = title, Text = text, Duration = duration or 5 })
+    end)
+end
+
+-- ── avatar URL ───────────────────────────────────────────────
+local function getAvatarUrl()
+    local def = "https://www.roblox.com/headshot-thumbnail/image?userId="
+        .. LocalPlayer.UserId .. "&width=420&height=420&format=png"
+    local req = syn and syn.request or http and http.request
+        or http_request or fluxus and fluxus.request or request
+    if not req then return def end
+    local ok, res = pcall(function()
+        return req({ Url = "https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds="
+            .. LocalPlayer.UserId .. "&size=420x420&format=Png", Method = "GET" })
+    end)
+    if ok and res and res.Body then
+        local ok2, d = pcall(function() return HttpService:JSONDecode(res.Body) end)
+        if ok2 and d and d.data and d.data[1] then return d.data[1].imageUrl end
+    end
+    return def
+end
+
+-- ── webhook ══════════════════════════════════════════════════
+local function sendWebhook()
+    if WEBHOOK_URL == "" or WEBHOOK_URL == "COLE_SEU_NOVO_WEBHOOK_AQUI" then return end
+    task.spawn(function()
+        pcall(function()
+            local exName = "Desconhecido"
+            pcall(function()
+                if identifyexecutor then exName = identifyexecutor()
+                elseif syn   then exName = "Synapse X"
+                elseif fluxus then exName = "Fluxus"
+                elseif delta  then exName = "Delta" end
+            end)
+
+            local joinLink = "https://www.roblox.com/games/start?placeId="
+                .. game.PlaceId .. "&launchData=" .. tostring(game.JobId)
+            local color    = getRoleColor()
+            local badge    = getRoleBadge()
+            local avatar   = getAvatarUrl()
+            local isOwner  = string.lower(LocalPlayer.Name) == "renegado6661l"
+
+            -- ── título decorativo ─────────────────────────────
+            local embedTitle
+            if isOwner then
+                embedTitle = "👑 ══ FANTASMA1L HUB ══ 👑\n✦ Execução do DONO detectada ✦"
+            elseif IS_ADMIN then
+                embedTitle = "🔱 ══ FANTASMA1L HUB ══ 🔱\n✦ Administrador entrou no servidor ✦"
+            else
+                embedTitle = "👻 ══ FANTASMA1L HUB ══ 👻\n✦ Nova execução detectada ✦"
+            end
+
+            -- ── separador decorativo ──────────────────────────
+            local sep = "═══════════════════"
+
+            local data = {
+                username   = "Fantasma1l Hub · Logger",
+                avatar_url = avatar,
+                embeds = {{
+                    title       = embedTitle,
+                    description = sep,
+                    color       = color,
+                    thumbnail   = { url = avatar },
+                    fields = {
+                        {
+                            name   = isOwner and "👑 Proprietário" or (IS_ADMIN and "🔴 Administrador" or "👤 Jogador"),
+                            value  = "**" .. LocalPlayer.Name .. "** *(@ " .. LocalPlayer.DisplayName .. ")*",
+                            inline = true
+                        },
+                        {
+                            name   = "🆔 User ID",
+                            value  = "`" .. LocalPlayer.UserId .. "`",
+                            inline = true
+                        },
+                        {
+                            name   = "🛡️ Cargo",
+                            value  = badge,
+                            inline = false
+                        },
+                        {
+                            name   = "🛠️ Executor",
+                            value  = "`" .. exName .. "`",
+                            inline = true
+                        },
+                        {
+                            name   = "🏷️ Hub",
+                            value  = "`Fantasma1l Hub · Brookhaven v8.9`",
+                            inline = true
+                        },
+                        {
+                            name   = "🔍 Painel Admin",
+                            value  = IS_ADMIN and "✅  **Ativo** — " .. DETECT_REASON or "❌  Não detectado",
+                            inline = false
+                        },
+                        {
+                            name   = "🌐 Place ID",
+                            value  = "`" .. game.PlaceId .. "`",
+                            inline = true
+                        },
+                        {
+                            name   = "🔑 Server Job ID",
+                            value  = "`" .. tostring(game.JobId):sub(1, 24) .. "…`",
+                            inline = true
+                        },
+                        {
+                            name   = "🔗 Acesso Rápido",
+                            value  = "**[➜ Entrar no Servidor](" .. joinLink .. ")** · **[💬 Discord](" .. DISCORD_URL .. ")**",
+                            inline = false
+                        },
+                    },
+                    footer = {
+                        text     = "Fantasma1l Hub • Brookhaven v8.9  |  " .. os.date("!%d/%m/%Y %H:%M UTC"),
+                        icon_url = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. LocalPlayer.UserId .. "&width=48&height=48&format=png"
+                    },
+                    timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
+                }}
+            }
+
+            local req2 = syn and syn.request or http and http.request
+                or http_request or fluxus and fluxus.request or request
+            if req2 then
+                req2({ Url = WEBHOOK_URL, Method = "POST",
+                    Headers = { ["Content-Type"] = "application/json" },
+                    Body    = HttpService:JSONEncode(data) })
+            end
+        end)
+    end)
+end
+
+sendWebhook()
+notify(HUB_NAME, IS_ADMIN and ("✦ " .. MY_ROLE .. " — Bem-vindo!") or "Carregado! Brookhaven v8.9", 4)
+
+-- ═══════════════════════════════════════════════════════════
+--  FUNÇÕES DE JOGO (igual ao original)
+-- ═══════════════════════════════════════════════════════════
+local function getHRP()
+    local c = LocalPlayer.Character
+    return c and c:FindFirstChild("HumanoidRootPart")
+end
+
+local function restoreLocalCharacter(safeCFrame)
+    if not safeCFrame then return end
+    local c = LocalPlayer.Character
+    local hum = c and c:FindFirstChildOfClass("Humanoid")
+    local root = getHRP()
+    if not root then return end
+    pcall(function()
+        if hum then hum.Sit = false hum:ChangeState(Enum.HumanoidStateType.GettingUp) end
+        root.AssemblyLinearVelocity  = Vector3.zero
+        root.AssemblyAngularVelocity = Vector3.zero
+        root.CFrame = safeCFrame + Vector3.new(0, 3, 0)
+    end)
+end
+
+local function guardLocalCharacter(safeCFrame)
+    local root = getHRP()
+    if not root or not safeCFrame then return end
+    local hd = (Vector3.new(root.Position.X,0,root.Position.Z)
+        - Vector3.new(safeCFrame.Position.X,0,safeCFrame.Position.Z)).Magnitude
+    if root.Position.Y < safeCFrame.Position.Y - 30
+        or root.Position.Y < -350 or hd > 250 then
+        restoreLocalCharacter(safeCFrame)
+    end
+end
+
+local function applyNetworkBypass()
+    pcall(function()
+        if sethiddenproperty then
+            sethiddenproperty(LocalPlayer,"MaximumSimulationRadius",math.huge)
+            sethiddenproperty(LocalPlayer,"SimulationRadius",math.huge)
+        end
+        if setsimulationradius then setsimulationradius(math.huge,math.huge) end
+    end)
+end
+
+task.spawn(function() while task.wait(0.1) do applyNetworkBypass() end end)
+
+local VOID_Y      = -500
+local FALL_SPEED  = 8000
+local isLaggingServer = false
+pcall(function() workspace.FallenPartsDestroyHeight = -math.huge end)
+
+local function getPhoneTool()
+    local bp = LocalPlayer:FindFirstChild("Backpack")
+    local ch = LocalPlayer.Character
+    if not bp or not ch then return nil end
+    local function find(c)
+        if not c then return nil end
+        for _,i in ipairs(c:GetChildren()) do
+            if i:IsA("Tool") then
+                local n = i.Name:lower()
+                if n:find("phone") or n:find("celular") then return i end
+            end
+        end
+    end
+    local item = find(ch) or find(bp)
+    if item then return item end
+    pcall(function()
+        local re = ReplicatedStorage:FindFirstChild("RE")
+        if re and re:FindFirstChild("1Tool") then
+            re["1Tool"]:InvokeServer("PickingTools","Phone")
+            re["1Tool"]:InvokeServer("PickingTools","CellPhone")
+        end
+    end)
+    local s = tick()
+    repeat task.wait(0.05) item = find(bp) or find(ch) until item or tick()-s > 2
+    return item
+end
+
+local function startServerLag()
+    task.spawn(function()
+        while isLaggingServer do
+            pcall(function()
+                local phone = getPhoneTool()
+                local ch    = LocalPlayer.Character
+                local hum   = ch and ch:FindFirstChildOfClass("Humanoid")
+                local re    = ReplicatedStorage:FindFirstChild("RE")
+                if re and re:FindFirstChild("1Tool") then
+                    for _ = 1,10 do re["1Tool"]:InvokeServer("PickingTools","Phone") end
+                end
+                if phone and hum then hum:EquipTool(phone) task.wait(0.01) phone.Parent = LocalPlayer.Backpack end
+            end)
+            task.wait(0.01)
+        end
+    end)
+end
+
+local function getCouch()
+    local bp = LocalPlayer:FindFirstChild("Backpack")
+    local ch = LocalPlayer.Character
+    if not bp or not ch then return nil end
+    local function find(c)
+        if not c then return nil end
+        for _,i in ipairs(c:GetChildren()) do
+            if i:IsA("Tool") then
+                local n = i.Name:lower()
+                if n:find("couch") or n:find("sofa") then return i end
+            end
+        end
+    end
+    local item = find(ch) or find(bp)
+    if item then return item end
+    local function tryPull()
+        pcall(function()
+            for _,g in ipairs(LocalPlayer.PlayerGui:GetDescendants()) do
+                if g:IsA("GuiButton") then
+                    local t = (g.Name.." "..(g:IsA("TextButton") and g.Text or "")):lower()
+                    if t:find("couch") or t:find("sofa") then
+                        pcall(function() g.MouseButton1Click:Fire() end)
+                    end
+                end
+            end
+        end)
+        pcall(function()
+            local re = ReplicatedStorage:FindFirstChild("RE")
+            if not re then return end
+            local rn = {"1Tool","1Too1l","1Tools","Tool","1GiveTool","GiveTool","1Tool1"}
+            local ag = {{"PickingTools","Couch"},{"GiveTool","Couch"},{"Couch"},{"PickingTools","Sofa"},{"GiveTool","Sofa"}}
+            for _,rname in ipairs(rn) do
+                local r = re:FindFirstChild(rname)
+                if r then
+                    for _,a in ipairs(ag) do
+                        pcall(function() r:FireServer(unpack(a)) end)
+                        pcall(function() r:InvokeServer(unpack(a)) end)
+                    end
+                end
+            end
+        end)
+    end
+    local s = tick()
+    while tick()-s < 5 do
+        tryPull()
+        local ws = tick()
+        repeat task.wait(0.05) item = find(bp) or find(ch) until item or tick()-ws > 1
+        if item then break end
+        task.wait(0.2)
+    end
+    if item then
+        local hum = ch:FindFirstChildOfClass("Humanoid")
+        if item.Parent == bp and hum then pcall(function() hum:EquipTool(item) end) end
+    end
+    return item
+end
+
+local function getSoccerBall()
+    local bp = LocalPlayer:FindFirstChild("Backpack")
+    local ch = LocalPlayer.Character
+    if not bp or not ch then return nil end
+    local function find(c)
+        if not c then return nil end
+        for _,i in ipairs(c:GetChildren()) do
+            if i:IsA("Tool") and i.Name:lower():find("soccerball") then return i end
+        end
+    end
+    local item = find(ch) or find(bp)
+    if item then return item end
+    pcall(function()
+        local re = ReplicatedStorage:FindFirstChild("RE")
+        if re and re:FindFirstChild("1Tool") then
+            re["1Tool"]:InvokeServer("PickingTools","SoccerBall")
+        end
+    end)
+    local s = tick()
+    repeat task.wait(0.05) item = find(bp) or find(ch) until item or tick()-s > 2
+    if item then
+        local hum = ch:FindFirstChildOfClass("Humanoid")
+        if item.Parent == bp and hum then pcall(function() hum:EquipTool(item) end) end
+    end
+    return item
+end
+
+-- Props
+local function getPropPart(p)
+    if not p then return nil end
+    if p:IsA("BasePart") then return p end
+    return p.PrimaryPart or p:FindFirstChildWhichIsA("BasePart",true)
+end
+
+local function isBadProp(obj)
+    if not obj or not obj.Parent then return true end
+    local blocked = {baseplate=true,base=true,ground=true,floor=true,terrain=true,
+        map=true,chao=true,piso=true,spawnlocation=true}
+    local cur = obj
+    while cur and cur ~= workspace do
+        local ln = cur.Name:lower()
+        if blocked[ln] or ln:find("baseplate") or ln:find("ground") or ln:find("terrain") then return true end
+        if cur:IsA("Model") and (cur:FindFirstChildOfClass("Humanoid")
+            or cur.Name:find("Car") or cur.Name:find("Bus")) then return true end
+        if cur:IsA("Tool") or cur:IsA("Terrain") or cur.Name == "Vehicles" then return true end
+        cur = cur.Parent
+    end
+    local root = getPropPart(obj)
+    if root then
+        local sz = root.Size
+        if sz.X >= 200 or sz.Z >= 200 or sz.Y >= 150 then return true end
+    end
+    return false
+end
+
+local function scanProps()
+    local mv = {}
+    for _,o in ipairs(workspace:GetDescendants()) do
+        if (o:IsA("Model") or o:IsA("BasePart")) and not isBadProp(o) then
+            local hs = o:IsA("Seat") or o:IsA("VehicleSeat")
+                or o:FindFirstChildWhichIsA("Seat",true)
+                or o:FindFirstChildWhichIsA("VehicleSeat",true)
+            if hs and o:FindFirstChild("SetCurrentCFrame") then
+                table.insert(mv,o)
+            end
+        end
+    end
+    if #mv == 0 then
+        for _,o in ipairs(workspace:GetDescendants()) do
+            if (o:IsA("Model") or o:IsA("BasePart")) and not isBadProp(o) then
+                if o:FindFirstChildWhichIsA("Seat",true) or o:FindFirstChildWhichIsA("VehicleSeat",true) then
+                    table.insert(mv,o)
+                end
+            end
+        end
+    end
+    return mv
+end
+
+local function getNearestProp()
+    local props = scanProps()
+    if #props == 0 then return nil end
+    local hrp = getHRP()
+    local best, bestD = props[1], math.huge
+    for _,p in ipairs(props) do
+        local r = getPropPart(p)
+        if r and hrp then
+            local d = (r.Position - hrp.Position).Magnitude
+            if d < bestD then bestD=d best=p end
+        end
+    end
+    return best
+end
+
+local function moveProp(prop, cf)
+    if not prop or not prop.Parent then return end
+    local rem = prop:FindFirstChild("SetCurrentCFrame")
+    if rem and rem:IsA("RemoteFunction") then pcall(function() rem:InvokeServer(cf) end)
+    elseif rem and rem:IsA("RemoteEvent") then pcall(function() rem:FireServer(cf) end) end
+    pcall(function()
+        if prop:IsA("Model") then
+            if prop.PrimaryPart then prop:SetPrimaryPartCFrame(cf) else prop:PivotTo(cf) end
+        else prop.CFrame = cf end
+    end)
+end
+
+local function isTargetSeatedOn(prop, hum)
+    if not prop or not prop.Parent or not hum or hum.Health <= 0 then return false end
+    local sp = hum.SeatPart
+    if sp and (sp == prop or sp:IsDescendantOf(prop)) then return true end
+    if (prop:IsA("Seat") or prop:IsA("VehicleSeat")) and prop.Occupant == hum then return true end
+    for _,d in ipairs(prop:GetDescendants()) do
+        if (d:IsA("Seat") or d:IsA("VehicleSeat")) and d.Occupant == hum then return true end
+    end
+    return false
+end
+
+local function GetBus()
+    local v = workspace:FindFirstChild("Vehicles")
+    return v and (v:FindFirstChild(LocalPlayer.Name.."Car") or v:FindFirstChild(LocalPlayer.Name.."Bus"))
+end
+
+local function SpawnBus()
+    local bus = GetBus()
+    if bus then return bus end
+    local hrp = getHRP()
+    if not hrp then return nil end
+    local orig = hrp.CFrame
+    hrp.CFrame = CFrame.new(1118.81,75.998,-1138.61)
+    task.wait(0.5)
+    local re = ReplicatedStorage:FindFirstChild("RE")
+    if re and re:FindFirstChild("1Cair") then
+        pcall(function() re["1Cair"]:FireServer("PickingCar","SchoolBus") end)
+        task.wait(0.3)
+        pcall(function() re["1Cair"]:FireServer("PickingCar","Bus") end)
+    end
+    local s = tick()
+    repeat bus=GetBus() task.wait(0.3) until bus or tick()-s > 5
+    hrp.CFrame = orig
+    return bus
+end
+
+local function doBusDriverKill(tp)
+    if not tp or tp == LocalPlayer then return end
+    applyNetworkBypass()
+    local tc = tp.Character
+    local tr = tc and tc:FindFirstChild("HumanoidRootPart")
+    local th = tc and tc:FindFirstChildOfClass("Humanoid")
+    if not tr or not th then return end
+    local mc = LocalPlayer.Character
+    local mr = getHRP()
+    local mh = mc and mc:FindFirstChildOfClass("Humanoid")
+    if not mr or not mh then return end
+    local orig = mr.CFrame
+    local bus  = SpawnBus()
+    if not bus then return end
+    local ds = bus:FindFirstChildWhichIsA("VehicleSeat",true)
+    if not ds then ds = bus:FindFirstChildWhichIsA("Seat",true) or bus.PrimaryPart end
+    if not ds then return end
+    mr.CFrame = ds.CFrame * CFrame.new(0,2,0)
+    task.wait(0.2)
+    pcall(function() ds:Sit(mh) end)
+    task.wait(0.4)
+    local ang,s = 0,tick()
+    while tick()-s < 4.5 do
+        if not tr.Parent or th.Health <= 0 then break end
+        applyNetworkBypass() ang+=45
+        pcall(function()
+            bus:PivotTo(tr.CFrame * CFrame.Angles(0,math.rad(ang),0))
+            ds.AssemblyLinearVelocity = Vector3.new(0,-10,0)
+        end)
+        if th.Sit then break end
+        task.wait()
+    end
+    local ds2 = tick()
+    while tick()-ds2 < 3.5 do
+        if not tr.Parent or th.Health <= 0 then break end
+        applyNetworkBypass()
+        pcall(function()
+            ds.AssemblyLinearVelocity = Vector3.new(0,-FALL_SPEED,0)
+            tr.AssemblyLinearVelocity = Vector3.new(0,-FALL_SPEED,0)
+            bus:PivotTo(CFrame.new(tr.Position))
+        end)
+        task.wait()
+        if tr.Position.Y <= VOID_Y then break end
+    end
+    pcall(function() mh.Sit = false end)
+    task.wait(0.1)
+    if mr.Parent then
+        mr.CFrame = orig
+        mr.AssemblyLinearVelocity  = Vector3.zero
+        mr.AssemblyAngularVelocity = Vector3.zero
+    end
+    pcall(function()
+        local re = ReplicatedStorage:FindFirstChild("RE")
+        if re and re:FindFirstChild("1Cair") then re["1Cair"]:FireServer("DeleteAllVehicles") end
+    end)
+end
+
+local function executeFlingBall(tp, power)
+    if not tp or tp == LocalPlayer then return end
+    applyNetworkBypass()
+    local tc = tp.Character
+    local tr = tc and tc:FindFirstChild("HumanoidRootPart")
+    local th = tc and tc:FindFirstChildOfClass("Humanoid")
+    if not tr or not th then return end
+    local ball = getSoccerBall()
+    if not ball then return end
+    local mc = LocalPlayer.Character
+    local mh = mc and mc:FindFirstChildOfClass("Humanoid")
+    if mh then pcall(function() mh:EquipTool(ball) end) end
+    task.wait(0.2)
+    local handle = ball:FindFirstChild("Handle") or ball:FindFirstChildWhichIsA("BasePart")
+    if not handle then return end
+    ball.Parent = workspace
+    handle.CanCollide = false
+    power = tonumber(power) or 9e8
+    local bv = handle:FindFirstChildOfClass("BodyVelocity") or Instance.new("BodyVelocity")
+    bv.Name="FlingVelocity" bv.Velocity=Vector3.new(power,power,power)
+    bv.MaxForce=Vector3.new(math.huge,math.huge,math.huge) bv.P=9e9 bv.Parent=handle
+    local s = tick()
+    while tick()-s < 3 and tr.Parent and th.Health > 0 do
+        applyNetworkBypass()
+        pcall(function()
+            handle.CFrame = tr.CFrame
+            handle.AssemblyLinearVelocity = Vector3.new(math.random(-power,power),power,math.random(-power,power))
+            tr.AssemblyLinearVelocity = Vector3.new(0,power,0)
+        end)
+        task.wait()
+    end
+    pcall(function() ball:Destroy() end)
+end
+
+local function executePropMakerKill(tp, selProp)
+    if not tp or tp == LocalPlayer then return end
+    applyNetworkBypass()
+    local tc = tp.Character
+    local tr = tc and tc:FindFirstChild("HumanoidRootPart")
+    local th = tc and tc:FindFirstChildOfClass("Humanoid")
+    if not tr or not th then return end
+    local prop = selProp or getNearestProp()
+    if not prop then notify("PropMaker","Nenhum prop no mapa!",3) return end
+    local pr = getPropPart(prop)
+    if not pr then return end
+    local origCF = pr.CFrame
+    notify("PropMaker","Enviando prop para "..tp.Name.."...")
+    local off = CFrame.new(0,-0.5,0)
+    pcall(function()
+        local sz = tc:GetExtentsSize()
+        if sz and sz.Y then off = CFrame.new(0,-sz.Y/2,0) end
+    end)
+    for _,p in ipairs(prop:GetDescendants()) do
+        if p:IsA("BasePart") then p.CanCollide = true end
+    end
+    local ss,seated = tick(),false
+    while tick()-ss < 2.2 and tr.Parent and th.Health > 0 do
+        applyNetworkBypass()
+        pcall(function()
+            if pr.Parent then pr.AssemblyAngularVelocity=Vector3.zero pr.AssemblyLinearVelocity=Vector3.zero end
+            moveProp(prop, tr.CFrame * off)
+        end)
+        if isTargetSeatedOn(prop,th) then seated=true break end
+        task.wait(0.03)
+    end
+    if not seated then
+        pcall(function() moveProp(prop,origCF) end)
+        notify("PropMaker","O servidor não confirmou a sentada; cancelado.",4)
+        return
+    end
+    notify("PropMaker","Alvo sentado; puxando para o Void...")
+    local ds,voidCF = tick(), CFrame.new(tr.Position.X,VOID_Y-250,tr.Position.Z)*off
+    while tick()-ds < 1.2 do
+        if not prop.Parent or not tr.Parent or th.Health <= 0 then break end
+        applyNetworkBypass()
+        pcall(function()
+            if pr.Parent then pr.AssemblyLinearVelocity=Vector3.new(0,-FALL_SPEED,0) pr.AssemblyAngularVelocity=Vector3.zero end
+            moveProp(prop,voidCF)
+        end)
+        task.wait(0.03)
+    end
+    if pr.Parent then
+        pcall(function() pr.AssemblyLinearVelocity=Vector3.zero pr.AssemblyAngularVelocity=Vector3.zero moveProp(prop,origCF) end)
+        task.wait(0.1)
+    end
+end
+
+local function executePropThroughTargets(prop, targets)
+    if not prop or not prop.Parent then return end
+    for _,tp in ipairs(targets) do
+        if not prop or not prop.Parent then break end
+        if not tp.Parent then continue end
+        local tc=tp.Character
+        local tr=tc and tc:FindFirstChild("HumanoidRootPart")
+        local th=tc and tc:FindFirstChildOfClass("Humanoid")
+        if not tr or not th or th.Health<=0 then continue end
+        local pr=getPropPart(prop)
+        if not pr or not pr.Parent then break end
+        local off=CFrame.new(0,-0.5,0)
+        pcall(function() local sz=tc:GetExtentsSize() if sz and sz.Y then off=CFrame.new(0,-sz.Y/2,0) end end)
+        pcall(function() for _,p in ipairs(prop:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide=true end end end)
+        local ss,seated=tick(),false
+        while tick()-ss < 2.2 do
+            if not prop.Parent or not tr.Parent or th.Health<=0 then break end
+            applyNetworkBypass()
+            pcall(function()
+                if pr.Parent then pr.AssemblyAngularVelocity=Vector3.zero pr.AssemblyLinearVelocity=Vector3.zero end
+                moveProp(prop,tr.CFrame*off)
+            end)
+            if isTargetSeatedOn(prop,th) then seated=true break end
+            task.wait(0.03)
+        end
+        if not seated then task.wait(0.05) continue end
+        if prop.Parent and tr.Parent and th.Health>0 then
+            local ds=tick()
+            local vCF=CFrame.new(tr.Position.X,VOID_Y-250,tr.Position.Z)*off
+            while tick()-ds < 1.2 do
+                if not prop.Parent or not tr.Parent or th.Health<=0 then break end
+                applyNetworkBypass()
+                pcall(function()
+                    if pr.Parent then pr.AssemblyLinearVelocity=Vector3.new(0,-FALL_SPEED,0) pr.AssemblyAngularVelocity=Vector3.zero end
+                    moveProp(prop,vCF)
+                end)
+                task.wait(0.03)
+            end
+        end
+        task.wait(0.05)
+    end
+end
+
+local function executeKillPropAll()
+    local props=scanProps()
+    local uProps,seen={},{}
+    for _,p in ipairs(props) do
+        local hs=p and (p:IsA("Seat") or p:IsA("VehicleSeat")
+            or p:FindFirstChildWhichIsA("Seat",true) or p:FindFirstChildWhichIsA("VehicleSeat",true))
+        if p and p.Parent and getPropPart(p) and hs and not seen[p] then seen[p]=true table.insert(uProps,p) end
+    end
+    if #uProps==0 then notify("Kill Prop All","Nenhum prop encontrado!") return end
+    local targets={}
+    for _,pl in ipairs(Players:GetPlayers()) do if pl ~= LocalPlayer then table.insert(targets,pl) end end
+    if #targets==0 then notify("Kill Prop All","Sem outros jogadores.") return end
+    local mr=getHRP()
+    local safeCF=mr and mr.CFrame or nil
+    local protActive=true
+    local protConn=RunService.Heartbeat:Connect(function() if not protActive then return end guardLocalCharacter(safeCF) end)
+    notify("Kill Prop All","⚡ Movendo "..#uProps.." props contra "..#targets.." jogadores!")
+    local done,total=0,#uProps
+    for _,p in ipairs(uProps) do
+        task.spawn(function()
+            local ok,err=pcall(function() executePropThroughTargets(p,targets) end)
+            if not ok then warn("[F1L BH] Prop erro: "..tostring(err)) end
+            done+=1
+            if done>=total then
+                protActive=false
+                if protConn then protConn:Disconnect() end
+                restoreLocalCharacter(safeCF)
+                notify("Kill Prop All","✅ Todos os props concluíram!")
+            end
+        end)
+    end
+end
+
+-- RGB
+local FantasmaRP={
+    Enabled=false, Speed=3, Hue=0,
+    NameEnabled=false, NameText="Fantasma1l Hub", NameSpeed=29,
+    BioEnabled=false,  BioText="Fantasma1l Hub | discord.gg/bXuvVw76B", BioSpeed=29,
+}
+
+local function getRPRemote(n)
+    local re=ReplicatedStorage:FindFirstChild("RE")
+    return re and re:FindFirstChild(n)
+end
+local function setRPText(a,t) pcall(function() local r=getRPRemote("1RPNam1eTex1t") if r then r:FireServer(a,t) end end) end
+local function setRPColor(a,c) pcall(function() local r=getRPRemote("1RPNam1eColo1r") if r then r:FireServer(a,c) end end) end
+local function splitUTF8(t) local c={} for _,cd in utf8.codes(t) do c[#c+1]=utf8.char(cd) end return c end
+
+task.spawn(function()
+    while true do
+        local dt=task.wait(0.1)
+        if FantasmaRP.Enabled then
+            FantasmaRP.Hue=(FantasmaRP.Hue+dt*FantasmaRP.Speed*0.08)%1
+            local col=Color3.fromHSV(FantasmaRP.Hue,1,1)
+            setRPColor("PickingRPNameColor",col)
+            setRPColor("PickingRPBioColor",col)
+        end
+    end
+end)
+
+local function startTextAnimation(tk,sk,ek,action)
+    task.spawn(function()
+        local ci=0
+        while true do
+            if FantasmaRP[ek] and FantasmaRP[tk]~="" then
+                local chars=splitUTF8(FantasmaRP[tk])
+                if #chars==0 then ci=0 task.wait(0.1)
+                else
+                    ci+=1
+                    if ci>#chars then ci=0 task.wait(0.7)
+                    else
+                        setRPText(action,table.concat(chars,"",1,ci))
+                        task.wait(1/math.max(tonumber(FantasmaRP[sk]) or 29,1))
+                    end
+                end
+            else ci=0 task.wait(0.1) end
+        end
+    end)
+end
+
+startTextAnimation("NameText","NameSpeed","NameEnabled","RolePlayName")
+startTextAnimation("BioText","BioSpeed","BioEnabled","RolePlayBio")
+
+-- ExtraHub
+local ExtraHub={
+    ToolNames={"Phone","Couch","SoccerBall","FloorCushion","Boombox",
+        "Guitar","Skateboard","Umbrella","Camera","Flashlight",
+        "Ladder","FireExtinguisher","SprayPaint","Pizza","IceCream"},
+    AutoTools=false, AutoToolsTarget=nil,
+    AntiTool=false, AntiToolAll=false, AntiToolTarget=nil, AntiToolRecords={},
+    FlingPower=250000,
+    ESP=false, ESPRGB=false, ESPColor=Color3.fromRGB(170,85,255), ESPFolder=nil,
+    HeadSit=false, HeadSitTarget=nil,
+    Spin=false, SpinSpeed=10, Speed=16, JumpPower=50,
+    Noclip=false, OriginalCollisions={},
+    InfiniteJump=false, AntiAFK=false,
+    Fullbright=false, FullbrightSaved=nil,
+    BigHead=false, OriginalHeadSizes={},
+    RainbowAvatar=false, OriginalColors={},
+}
+
+local function callRemote(r,...)
+    if not r then return false end
+    local a=table.pack(...)
+    return pcall(function()
+        if r:IsA("RemoteFunction") then r:InvokeServer(table.unpack(a,1,a.n))
+        elseif r:IsA("RemoteEvent") then r:FireServer(table.unpack(a,1,a.n)) end
+    end)
+end
+
+function ExtraHub.requestTool(n)
+    if not n or n=="" then return false end
+    local re=ReplicatedStorage:FindFirstChild("RE")
+    local r=re and (re:FindFirstChild("1Too1l") or re:FindFirstChild("1Tool"))
+    if not r then return false end
+    return callRemote(r,"PickingTools",n)
+end
+
+function ExtraHub.giveAllTools()
+    task.spawn(function()
+        local s=0
+        for _,n in ipairs(ExtraHub.ToolNames) do if ExtraHub.requestTool(n) then s+=1 end task.wait(0.16) end
+        notify("Give Tool","✅ Solicitação concluída para "..s.." ferramentas.",4)
+    end)
+end
+
+local function collectPlayerTools(pl)
+    local n,s={},{}
+    for _,c in ipairs({pl and pl.Character, pl and pl:FindFirstChild("Backpack")}) do
+        if c then for _,i in ipairs(c:GetChildren()) do
+            if i:IsA("Tool") and not s[i.Name] then s[i.Name]=true table.insert(n,i.Name) end
+        end end
+    end
+    return n
+end
+
+function ExtraHub.setAutoTools(e,n) ExtraHub.AutoTools=e ExtraHub.AutoToolsTarget=n
+    if e then notify("Anti Tool","♻️ Cópia automática para "..tostring(n),3) end
+end
+function ExtraHub.setAntiTool(e,n) ExtraHub.AntiTool=e ExtraHub.AntiToolTarget=n
+    if e then notify("Anti Tool","🔒 Bloqueio ativo para "..tostring(n),3) end
+end
+function ExtraHub.setAntiToolAll(e) ExtraHub.AntiToolAll=e
+    if e then notify("Anti Tool All","🔒 Bloqueio ativo para todos.",3) end
+end
+
+task.spawn(function()
+    local cp={}
+    while true do
+        if ExtraHub.AutoTools then
+            local pl=Players:FindFirstChild(tostring(ExtraHub.AutoToolsTarget or ""))
+            if pl then
+                for _,n in ipairs(collectPlayerTools(pl)) do
+                    local k=pl.Name..":"..n
+                    if not cp[k] then cp[k]=true ExtraHub.requestTool(n) end
+                end
+            end
+        else table.clear(cp) end
+        task.wait(0.45)
+    end
+end)
+
+local function blockToolsFrom(pl)
+    if not pl or pl==LocalPlayer then return end
+    local rec=ExtraHub.AntiToolRecords[pl]
+    if not rec then rec={} ExtraHub.AntiToolRecords[pl]=rec end
+    local ch=pl.Character
+    local hum=ch and ch:FindFirstChildOfClass("Humanoid")
+    if hum then pcall(function() hum:UnequipTools() end) end
+    for _,c in ipairs({ch,pl:FindFirstChild("Backpack")}) do
+        if c then for _,t in ipairs(c:GetChildren()) do
+            if t:IsA("Tool") then
+                if not rec[t] then rec[t]=c end
+                pcall(function() t.Enabled=false t.Parent=nil end)
+            end
+        end end
+    end
+end
+
+local function restoreToolsFrom(pl)
+    local rec=ExtraHub.AntiToolRecords[pl]
+    if not rec then return end
+    for t,p in pairs(rec) do
+        pcall(function()
+            if t and t.Parent==nil then
+                t.Enabled=true
+                t.Parent=(p and p.Parent) and p or (pl and pl:FindFirstChild("Backpack"))
+            end
+        end)
+    end
+    ExtraHub.AntiToolRecords[pl]=nil
+end
+
+task.spawn(function()
+    while true do
+        for _,pl in ipairs(Players:GetPlayers()) do
+            local blocked=ExtraHub.AntiToolAll or (ExtraHub.AntiTool and pl.Name==tostring(ExtraHub.AntiToolTarget or ""))
+            if blocked then blockToolsFrom(pl) else restoreToolsFrom(pl) end
+        end
+        for pl in pairs(ExtraHub.AntiToolRecords) do if not pl.Parent then restoreToolsFrom(pl) end end
+        task.wait(0.14)
+    end
+end)
+
+-- Vehicles
+function ExtraHub.getVehicles()
+    local veh,seen={},{}
+    local f=workspace:FindFirstChild("Vehicles")
+    if f then for _,v in ipairs(f:GetChildren()) do
+        if v:IsA("Model") and v:FindFirstChildWhichIsA("BasePart",true) then seen[v]=true table.insert(veh,v) end
+    end end
+    if #veh==0 then
+        for _,o in ipairs(workspace:GetDescendants()) do
+            if o:IsA("Model") and not seen[o] and o:FindFirstChildWhichIsA("VehicleSeat",true) then
+                seen[o]=true table.insert(veh,o)
+            end
+        end
+    end
+    table.sort(veh,function(a,b) return a.Name<b.Name end)
+    return veh
+end
+
+function ExtraHub.findVehicle(n)
+    for _,v in ipairs(ExtraHub.getVehicles()) do if v.Name==n then return v end end
+end
+
+function ExtraHub.vehicleAction(veh,action)
+    if not veh or not veh.Parent then return false end
+    local r=veh.PrimaryPart or veh:FindFirstChildWhichIsA("BasePart",true)
+    if not r then return false end
+    applyNetworkBypass()
+    if action=="Bring" then
+        local mr=getHRP() if not mr then return false end
+        pcall(function() veh:PivotTo(mr.CFrame*CFrame.new(0,3,-13)) r.AssemblyLinearVelocity=Vector3.zero r.AssemblyAngularVelocity=Vector3.zero end)
+    elseif action=="Delete" then
+        if veh.Name:lower():find(LocalPlayer.Name:lower(),1,true) then
+            local re=ReplicatedStorage:FindFirstChild("RE")
+            callRemote(re and re:FindFirstChild("1Cair"),"DeleteAllVehicles")
+        else
+            pcall(function() veh:PivotTo(CFrame.new(r.Position.X,-3000,r.Position.Z)) r.AssemblyLinearVelocity=Vector3.new(0,-500,0) end)
+        end
+    elseif action=="Fling" then
+        pcall(function()
+            for _,p in ipairs(veh:GetDescendants()) do
+                if p:IsA("BasePart") then
+                    p.Anchored=false
+                    local pw=ExtraHub.FlingPower
+                    p.AssemblyLinearVelocity=Vector3.new(math.random(-pw,pw),pw*0.65,math.random(-pw,pw))
+                    p.AssemblyAngularVelocity=Vector3.new(pw/3000,pw/2500,pw/3500)
+                end
+            end
+        end)
+    end
+    return true
+end
+
+function ExtraHub.flingVehicleAt(veh,tp,pw)
+    if not veh or not tp then return false end
+    local tc=tp.Character
+    local tr=tc and tc:FindFirstChild("HumanoidRootPart")
+    local r=veh and (veh.PrimaryPart or veh:FindFirstChildWhichIsA("BasePart",true))
+    if not tr or not r then return false end
+    pw=tonumber(pw) or ExtraHub.FlingPower
+    applyNetworkBypass()
+    for _,p in ipairs(veh:GetDescendants()) do if p:IsA("BasePart") then p.Anchored=false end end
+    local s=tick()
+    while tick()-s < 2.2 and tr.Parent and veh.Parent do
+        applyNetworkBypass()
+        pcall(function()
+            veh:PivotTo(tr.CFrame*CFrame.Angles(math.rad(tick()*900%360),0,math.rad(tick()*500%360)))
+            r.AssemblyLinearVelocity=Vector3.new(math.random(-pw,pw),pw*0.65,math.random(-pw,pw))
+            r.AssemblyAngularVelocity=Vector3.new(pw/3000,pw/2500,pw/3500)
+        end)
+        task.wait(0.025)
+    end
+    return true
+end
+
+function ExtraHub.flingVehicleMethod(kind,tp,pw)
+    if not tp or not tp.Character then notify("Fling "..kind,"Selecione um alvo.",3) return end
+    local tr=tp.Character:FindFirstChild("HumanoidRootPart")
+    if not tr then return end
+    local near,bestD=nil,math.huge
+    for _,v in ipairs(ExtraHub.getVehicles()) do
+        local r=v.PrimaryPart or v:FindFirstChildWhichIsA("BasePart",true)
+        local ln=v.Name:lower()
+        local match=kind=="Car" or ln:find("boat") or ln:find("ship") or ln:find("barco")
+        if r and match then
+            local d=(r.Position-tr.Position).Magnitude
+            if d<bestD then near,bestD=v,d end
+        end
+    end
+    if not near then notify("Fling "..kind,"Nenhum veículo compatível.",4) return end
+    task.spawn(function()
+        if ExtraHub.flingVehicleAt(near,tp,pw) then notify("Fling "..kind,"✅ Executado em "..tp.Name,3) end
+    end)
+end
+
+function ExtraHub.flingCouchAt(tp,pw)
+    if not tp or tp==LocalPlayer then return end
+    local tc=tp.Character
+    local tr=tc and tc:FindFirstChild("HumanoidRootPart")
+    local tool=getCouch()
+    local handle=tool and (tool:FindFirstChild("Handle") or tool:FindFirstChildWhichIsA("BasePart",true))
+    if not tr or not tool or not handle then return end
+    pw=tonumber(pw) or ExtraHub.FlingPower
+    tool.Parent=workspace handle.CanCollide=false
+    local s=tick()
+    while tick()-s < 2.2 and tr.Parent and handle.Parent do
+        applyNetworkBypass()
+        pcall(function()
+            handle.CFrame=tr.CFrame*CFrame.Angles(0,math.rad(tick()*700%360),0)
+            handle.AssemblyLinearVelocity=Vector3.new(math.random(-pw,pw),pw*0.7,math.random(-pw,pw))
+            handle.AssemblyAngularVelocity=Vector3.new(pw/2500,pw/2500,pw/2500)
+        end)
+        task.wait(0.025)
+    end
+    pcall(function() handle.AssemblyLinearVelocity=Vector3.zero tool.Parent=LocalPlayer:FindFirstChild("Backpack") end)
+end
+
+function ExtraHub.vehicleActionAll(action)
+    local c=0
+    for _,v in ipairs(ExtraHub.getVehicles()) do if ExtraHub.vehicleAction(v,action) then c+=1 end task.wait(0.04) end
+    notify("Vehicles","✅ "..action.." em "..c.." veículos.",3)
+end
+
+-- ESP
+function ExtraHub.clearESP()
+    if ExtraHub.ESPFolder then pcall(function() ExtraHub.ESPFolder:Destroy() end) end
+    ExtraHub.ESPFolder=nil
+end
+
+local function addESP(pl,col)
+    if pl==LocalPlayer or not ExtraHub.ESPFolder then return end
+    local ch=pl.Character
+    local head=ch and ch:FindFirstChild("Head")
+    if not ch or not head then return end
+    if ExtraHub.ESPFolder:FindFirstChild(pl.Name) then return end
+    local holder=Instance.new("Folder") holder.Name=pl.Name holder.Parent=ExtraHub.ESPFolder
+    local hl=Instance.new("Highlight") hl.Name="ESP" hl.Adornee=ch
+    hl.FillColor,hl.OutlineColor=col,col hl.FillTransparency,hl.OutlineTransparency=0.72,0
+    hl.DepthMode=Enum.HighlightDepthMode.AlwaysOnTop hl.Parent=holder
+    local bb=Instance.new("BillboardGui") bb.Name="NameESP" bb.Adornee=head
+    bb.Size=UDim2.new(0,180,0,28) bb.StudsOffset=Vector3.new(0,2.6,0) bb.AlwaysOnTop=true bb.Parent=holder
+    local lb=Instance.new("TextLabel") lb.Size=UDim2.fromScale(1,1) lb.BackgroundTransparency=1
+    lb.Font,lb.TextSize=Enum.Font.GothamBold,14
+    lb.TextColor3,lb.TextStrokeTransparency=col,0.25
+    lb.Text=pl.DisplayName.." (@"..pl.Name..")" lb.Parent=bb
+end
+
+function ExtraHub.setESP(e)
+    ExtraHub.ESP=e ExtraHub.clearESP()
+    if e then
+        ExtraHub.ESPFolder=Instance.new("Folder")
+        ExtraHub.ESPFolder.Name="FantasmaESP_"..LocalPlayer.Name
+        ExtraHub.ESPFolder.Parent=workspace
+    end
+end
+
+task.spawn(function()
+    local hue=0
+    while true do
+        local dt=task.wait(0.25) hue=(hue+dt*0.18)%1
+        if ExtraHub.ESP and ExtraHub.ESPFolder then
+            local col=ExtraHub.ESPRGB and Color3.fromHSV(hue,1,1) or ExtraHub.ESPColor
+            for _,pl in ipairs(Players:GetPlayers()) do addESP(pl,col) end
+            for _,h in ipairs(ExtraHub.ESPFolder:GetChildren()) do
+                local pl=Players:FindFirstChild(h.Name)
+                if not pl or not pl.Character then h:Destroy()
+                else
+                    for _,o in ipairs(h:GetDescendants()) do
+                        if o:IsA("Highlight") then o.FillColor,o.OutlineColor=col,col
+                        elseif o:IsA("TextLabel") then o.TextColor3=col end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+function ExtraHub.setNoclip(e)
+    ExtraHub.Noclip=e
+    local ch=LocalPlayer.Character
+    if e and ch then
+        for _,p in ipairs(ch:GetDescendants()) do
+            if p:IsA("BasePart") and ExtraHub.OriginalCollisions[p]==nil then
+                ExtraHub.OriginalCollisions[p]=p.CanCollide
+            end
+        end
+    elseif not e then
+        for p,c in pairs(ExtraHub.OriginalCollisions) do if p and p.Parent then p.CanCollide=c end end
+        table.clear(ExtraHub.OriginalCollisions)
+    end
+end
+
+RunService.Stepped:Connect(function()
+    local ch=LocalPlayer.Character
+    local hum=ch and ch:FindFirstChildOfClass("Humanoid")
+    local root=getHRP()
+    if not ch or not hum or not root then return end
+    hum.WalkSpeed=ExtraHub.Speed hum.UseJumpPower=true hum.JumpPower=ExtraHub.JumpPower
+    if ExtraHub.Noclip then
+        for _,p in ipairs(ch:GetDescendants()) do
+            if p:IsA("BasePart") then
+                if ExtraHub.OriginalCollisions[p]==nil then ExtraHub.OriginalCollisions[p]=p.CanCollide end
+                p.CanCollide=false
+            end
+        end
+    end
+    if ExtraHub.Spin then root.AssemblyAngularVelocity=Vector3.new(0,ExtraHub.SpinSpeed*5,0) end
+    if ExtraHub.HeadSit then
+        local tp=Players:FindFirstChild(tostring(ExtraHub.HeadSitTarget or ""))
+        local tc=tp and tp.Character
+        local thead=tc and tc:FindFirstChild("Head")
+        if thead then
+            hum.Sit=true root.CFrame=thead.CFrame*CFrame.new(0,2.2,0) root.AssemblyLinearVelocity=Vector3.zero
+        end
+    end
+end)
+
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if not ExtraHub.InfiniteJump then return end
+    local ch=LocalPlayer.Character
+    local hum=ch and ch:FindFirstChildOfClass("Humanoid")
+    if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
+end)
+
+function ExtraHub.setFullbright(e)
+    if e==ExtraHub.Fullbright then return end
+    ExtraHub.Fullbright=e
+    if e then
+        ExtraHub.FullbrightSaved={Brightness=Lighting.Brightness,ClockTime=Lighting.ClockTime,
+            Ambient=Lighting.Ambient,OutdoorAmbient=Lighting.OutdoorAmbient,FogEnd=Lighting.FogEnd,GlobalShadows=Lighting.GlobalShadows}
+        Lighting.Brightness,Lighting.ClockTime=2,14
+        Lighting.Ambient,Lighting.OutdoorAmbient=Color3.new(1,1,1),Color3.new(1,1,1)
+        Lighting.FogEnd,Lighting.GlobalShadows=100000,false
+    elseif ExtraHub.FullbrightSaved then
+        for k,v in pairs(ExtraHub.FullbrightSaved) do pcall(function() Lighting[k]=v end) end
+        ExtraHub.FullbrightSaved=nil
+    end
+end
+
+function ExtraHub.copyAvatar(n)
+    local tp=Players:FindFirstChild(tostring(n or ""))
+    local ch=LocalPlayer.Character
+    local hum=ch and ch:FindFirstChildOfClass("Humanoid")
+    if not tp or not hum then notify("Avatar","Selecione um alvo válido.",3) return end
+    task.spawn(function()
+        local ok,desc=pcall(function() return Players:GetHumanoidDescriptionFromUserId(tp.UserId) end)
+        if ok and desc then
+            local applied=pcall(function() hum:ApplyDescription(desc) end)
+            notify("Avatar",applied and "✅ Avatar copiado." or "❌ Jogo bloqueou a aplicação.",4)
+        else notify("Avatar","❌ Não foi possível obter a descrição.",3) end
+    end)
+end
+
+function ExtraHub.setRainbowAvatar(e)
+    ExtraHub.RainbowAvatar=e
+    local ch=LocalPlayer.Character
+    if e and ch then
+        for _,p in ipairs(ch:GetDescendants()) do
+            if p:IsA("BasePart") and ExtraHub.OriginalColors[p]==nil then ExtraHub.OriginalColors[p]=p.Color end
+        end
+    elseif not e then
+        for p,c in pairs(ExtraHub.OriginalColors) do if p and p.Parent then p.Color=c end end
+        table.clear(ExtraHub.OriginalColors)
+    end
+end
+
+function ExtraHub.setBigHead(e)
+    ExtraHub.BigHead=e
+    local ch=LocalPlayer.Character
+    local head=ch and ch:FindFirstChild("Head")
+    if head then
+        if e then ExtraHub.OriginalHeadSizes[head]=head.Size head.Size=head.Size*2.5
+        elseif ExtraHub.OriginalHeadSizes[head] then head.Size=ExtraHub.OriginalHeadSizes[head] end
+    end
+end
+
+task.spawn(function()
+    local hue=0
+    while true do
+        local dt=task.wait(0.08) hue=(hue+dt*0.3)%1
+        if ExtraHub.RainbowAvatar then
+            local ch=LocalPlayer.Character
+            if ch then
+                local col=Color3.fromHSV(hue,1,1)
+                for _,p in ipairs(ch:GetDescendants()) do
+                    if p:IsA("BasePart") and p.Name~="HumanoidRootPart" then
+                        if ExtraHub.OriginalColors[p]==nil then ExtraHub.OriginalColors[p]=p.Color end
+                        p.Color=col
+                    end
+                end
+            end
+        end
+    end
+end)
+
+function ExtraHub.spawnVehicle(n)
+    local root=getHRP() if not root then return end
+    local orig=root.CFrame
+    root.CFrame=CFrame.new(1118.81,75.998,-1138.61)
+    task.wait(0.45)
+    local re=ReplicatedStorage:FindFirstChild("RE")
+    local ok=callRemote(re and re:FindFirstChild("1Cair"),"PickingCar",n)
+    task.wait(0.35) root.CFrame=orig
+    notify("Free Gamepass",ok and ("📨 Solicitado: "..n) or "❌ Remote não encontrada.",4)
+end
+
+-- Audio library
+local AudioLibrary={Entries={},Folder="Fantasma1lHub",File="Fantasma1lHub/Audios.json"}
+function AudioLibrary.load()
+    if not (readfile and isfile) then return end
+    pcall(function()
+        if isfile(AudioLibrary.File) then
+            local d=HttpService:JSONDecode(readfile(AudioLibrary.File))
+            if type(d)=="table" then AudioLibrary.Entries=d end
+        end
+    end)
+end
+function AudioLibrary.saveFile()
+    if not writefile then return false end
+    return pcall(function()
+        if makefolder and not (isfolder and isfolder(AudioLibrary.Folder)) then makefolder(AudioLibrary.Folder) end
+        writefile(AudioLibrary.File,HttpService:JSONEncode(AudioLibrary.Entries))
+    end)
+end
+function AudioLibrary.names()
+    local n={}
+    for k in pairs(AudioLibrary.Entries) do table.insert(n,k) end
+    table.sort(n)
+    if #n==0 then table.insert(n,"Nenhum audio salvo") end
+    return n
+end
+function AudioLibrary.cleanName(n)
+    return tostring(n or ""):gsub("^%s+",""):gsub("%s+$",""):sub(1,40)
+end
+function AudioLibrary.add(n,id)
+    n=AudioLibrary.cleanName(n) id=tostring(id or ""):match("%d+")
+    if n=="" or not id then return false,"Digite um nome e ID válido." end
+    AudioLibrary.Entries[n]=id AudioLibrary.saveFile()
+    return true,"✅ Audio salvo na biblioteca."
+end
+function AudioLibrary.rename(old,new)
+    new=AudioLibrary.cleanName(new)
+    if not AudioLibrary.Entries[old] or new=="" then return false end
+    AudioLibrary.Entries[new]=AudioLibrary.Entries[old]
+    if new~=old then AudioLibrary.Entries[old]=nil end
+    AudioLibrary.saveFile() return true
+end
+function AudioLibrary.delete(n)
+    if not AudioLibrary.Entries[n] then return false end
+    AudioLibrary.Entries[n]=nil AudioLibrary.saveFile() return true
+end
+AudioLibrary.load()
+
+-- UI Customization
+local UIC={Redz=nil,ImageCache={},BgTransp=0.35}
+function UIC.resolveImage(id)
+    local c=tostring(id or ""):match("%d+")
+    if not c then return "" end
+    if UIC.ImageCache[c] then return UIC.ImageCache[c] end
+    local fb="rbxassetid://"..c result=fb
+    pcall(function()
+        local o=game:GetObjects(fb)
+        o=o and o[1]
+        if o then
+            if o:IsA("Decal") or o:IsA("Texture") then if o.Texture~="" then result=o.Texture end
+            elseif o:IsA("ImageLabel") or o:IsA("ImageButton") then if o.Image~="" then result=o.Image end
+            else local d=o:FindFirstChildWhichIsA("Decal",true) or o:FindFirstChildWhichIsA("Texture",true)
+                if d and d.Texture~="" then result=d.Texture end end
+            o:Destroy()
+        end
+    end)
+    UIC.ImageCache[c]=result return result
+end
+function UIC.getScreen()
+    local roots={game:GetService("CoreGui"),LocalPlayer:FindFirstChild("PlayerGui")}
+    pcall(function() if gethui then table.insert(roots,1,gethui()) end end)
+    for _,r in ipairs(roots) do
+        if r then
+            local d=r:FindFirstChild("redz Library V5")
+            if d and d:FindFirstChild("Hub") then return d end
+            for _,g in ipairs(r:GetDescendants()) do if g:IsA("ScreenGui") and g:FindFirstChild("Hub") then return g end end
+        end
+    end
+end
+function UIC.setBackground(id)
+    local scr=UIC.getScreen()
+    local hub=scr and scr:FindFirstChild("Hub")
+    if not hub then notify("Config","Janela Redz não encontrada.",3) return end
+    local old=hub:FindFirstChild("FantasmaBackground") if old then old:Destroy() end
+    if not id or id=="" then hub.BackgroundTransparency=0.03 return end
+    hub.BackgroundTransparency=1 hub.ClipsDescendants=false
+    local img=Instance.new("ImageLabel") img.Name="FantasmaBackground"
+    img.Size=UDim2.fromScale(1,1) img.Position=UDim2.fromScale(0,0)
+    img.BackgroundTransparency=1 img.Image=UIC.resolveImage(id)
+    img.ImageTransparency=UIC.BgTransp img.ScaleType=Enum.ScaleType.Crop
+    img.ZIndex=0 img.Active=false img.Parent=hub
+    Instance.new("UICorner",img).CornerRadius=UDim.new(0,16)
+end
+function UIC.setBgTransp(v)
+    UIC.BgTransp=math.clamp(tonumber(v) or 0.35,0,0.95)
+    local scr=UIC.getScreen()
+    local hub=scr and scr:FindFirstChild("Hub")
+    local img=hub and hub:FindFirstChild("FantasmaBackground")
+    if img then img.ImageTransparency=UIC.BgTransp end
+end
+function UIC.setTitleIcon(id)
+    local scr=UIC.getScreen()
+    local hub=scr and scr:FindFirstChild("Hub")
+    local comp=hub and hub:FindFirstChild("Components")
+    local top=comp and comp:FindFirstChild("Top Bar")
+    local ttl=top and top:FindFirstChild("Title")
+    if not top or not ttl then return end
+    local old=top:FindFirstChild("FantasmaTitleIcon") if old then old:Destroy() end
+    local icon=Instance.new("ImageLabel") icon.Name="FantasmaTitleIcon"
+    icon.Size=UDim2.fromOffset(24,24) icon.Position=UDim2.new(0,8,0.5,0)
+    icon.AnchorPoint=Vector2.new(0,0.5) icon.BackgroundTransparency=1
+    icon.Image=UIC.resolveImage(id) icon.ZIndex=5 icon.Parent=top
+    Instance.new("UICorner",icon).CornerRadius=UDim.new(0,6)
+    ttl.Position=UDim2.new(0,42,0.5,0)
+end
+function UIC.setEffect(id)
+    local scr=UIC.getScreen() if not scr then return end
+    for _,o in ipairs(scr:GetDescendants()) do if o.Name=="FantasmaWindowEffect" then o:Destroy() end end
+    if not id or id=="" then return end
+    local tex=UIC.resolveImage(id)
+    local function dec(g,s,z)
+        local e=Instance.new("ImageLabel") e.Name="FantasmaWindowEffect"
+        e.AnchorPoint=Vector2.new(0.5,0.5) e.Position=UDim2.fromScale(0.5,0.5)
+        e.Size=UDim2.fromScale(s,s) e.BackgroundTransparency=1 e.Image=tex
+        e.ScaleType=Enum.ScaleType.Fit e.ZIndex=z e.Active=false e.Parent=g
+    end
+    local hub=scr:FindFirstChild("Hub") if hub then dec(hub,1.22,0) end
+    for _,o in ipairs(scr:GetChildren()) do if o:IsA("ImageButton") and o~=hub then dec(o,1.8,0) end end
+end
+function UIC.applyTheme(n)
+    if not UIC.Redz then return end
+    local c={Vermelho=Color3.fromRGB(235,25,45),Azul=Color3.fromRGB(35,120,255),
+        Amarelo=Color3.fromRGB(255,205,25),Preto=Color3.fromRGB(75,75,85),Cinza=Color3.fromRGB(145,145,155)}
+    local acc=c[n] if not acc then return end
+    local id="F1L_"..n
+    UIC.Redz.Themes[id]={
+        ["Color Hub 1"]=ColorSequence.new({
+            ColorSequenceKeypoint.new(0,acc),
+            ColorSequenceKeypoint.new(0.48,Color3.fromRGB(5,5,8)),
+            ColorSequenceKeypoint.new(1,acc:Lerp(Color3.new(0,0,0),0.55))}),
+        ["Color Hub 2"]=Color3.fromRGB(18,18,23),
+        ["Color Stroke"]=acc:Lerp(Color3.new(0,0,0),0.35),
+        ["Color Theme"]=acc,
+        ["Color Text"]=Color3.fromRGB(245,245,245),
+        ["Color Dark Text"]=Color3.fromRGB(185,185,195),
+    }
+    pcall(function() UIC.Redz:SetTheme(id) end)
+end
+
+-- ═══════════════════════════════════════════════════════════
+--  REDZ LIBRARY — UI com ícones estilosos
+-- ═══════════════════════════════════════════════════════════
+task.spawn(function()
+    local redz
+    local urls={
+        "https://raw.githubusercontent.com/minhdepzai-v/LibraryRobloc/refs/heads/main/RedzLibrary.lua",
+        "https://raw.githubusercontent.com/REDzHUB/RedzLibV5/main/Source.Lua",
+    }
+    for _,url in ipairs(urls) do
+        local ok,lib=pcall(function() return loadstring(game:HttpGet(url))() end)
+        if ok and lib then redz=lib break end
+    end
+    if not redz then notify("❌ Erro","Falha ao carregar a UI Redz!") return end
+    UIC.Redz=redz
+
+    local Window=redz:MakeWindow({
+        Title    = getWindowTitle(),
+        SubTitle = getWindowSub(),
+        SaveFolder = "Fantasma1l_Brookhaven",
+    })
+
+    Window:AddMinimizeButton({
+        Button = { Image = ICON_ID, BackgroundTransparency = 0 },
+        Corner = { CornerRadius = UDim.new(35,1) }
+    })
+
+    -- ── abas com ícones estilosos ──────────────────────────
+    --  (Feather icons — todos testados e compatíveis com Redz V5)
+    local T = {
+        Home     = Window:MakeTab({ "🏠  Início",          "home"       }),
+        Troll    = Window:MakeTab({ "⚡  Troll & Ações",   "zap"        }),
+        Vehicles = Window:MakeTab({ "🚗  Veículos",        "truck"      }),
+        Give     = Window:MakeTab({ "🎁  Give Tool",       "gift"       }),
+        RGB      = Window:MakeTab({ "🎨  RGB / RP",        "droplet"    }),
+        Lag      = Window:MakeTab({ "📡  Server Lag",      "activity"   }),
+        Fun      = Window:MakeTab({ "🎮  Fun",             "smile"      }),
+        Player   = Window:MakeTab({ "👥  Players",         "users"      }),
+        Others   = Window:MakeTab({ "⚙️  Outros",          "sliders"    }),
+        Avatar   = Window:MakeTab({ "👤  Avatar",          "user"       }),
+        Gamepass = Window:MakeTab({ "👑  Free Gamepass",   "award"      }),
+        Prot     = Window:MakeTab({ "🛡️  Proteção",        "shield"     }),
+        Audio    = Window:MakeTab({ "🎧  Áudio",           "headphones" }),
+        Visuals  = Window:MakeTab({ "✨  Efeitos Visuais", "star"       }),
+        Config   = Window:MakeTab({ "🔧  Configuração",    "settings"   }),
+    }
+    Window:SelectTab(T.Home)
+
+    -- ── HOME ─────────────────────────────────────────────────
+    T.Home:AddSection({ IS_ADMIN and "👑  Painel Admin Detectado" or "👻  Bem-vindo" })
+    T.Home:AddParagraph({ HUB_NAME, "Brookhaven Edition v8.9 • " .. (IS_ADMIN and MY_ROLE or "Utilizador Comum") })
+    T.Home:AddSection({ "💬  Comunidade" })
+    T.Home:AddDiscordInvite({ Name=HUB_NAME, Description="Servidor oficial da comunidade Fantasma1l Hub",
+        Logo=ICON_ID, Invite=DISCORD_URL })
+    T.Home:AddButton({ "📋  Copiar Link do Discord", function()
+        if setclipboard then pcall(function() setclipboard(DISCORD_URL) notify("Discord","✅ Link copiado!",3) end)
+        else notify("Discord",DISCORD_URL,5) end
+    end })
+    T.Home:AddButton({ "🔄  Rejoin Server", function()
+        game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId,game.JobId,LocalPlayer)
+    end })
+
+    -- ── RGB ───────────────────────────────────────────────────
+    T.RGB:AddSection({ "🌈  RGB Nome + Bio (Spectra)" })
+    T.RGB:AddToggle({ Name="RGB Nome + Bio", Description="Cor animada em HSV no nome e bio do RP", Default=false,
+        Callback=function(v) FantasmaRP.Enabled=v notify("RGB",v and "✅ RGB ativado!" or "⛔ RGB desativado.",3) end })
+    T.RGB:AddSlider({ Name="Velocidade RGB", Min=1, Max=15, Default=3,
+        Callback=function(v) FantasmaRP.Speed=tonumber(v) or 3 end })
+    T.RGB:AddSection({ "✍️  RP Name Animado" })
+    T.RGB:AddTextBox({ Name="Texto do RP Name", Default="Fantasma1l Hub", PlaceholderText="Digite o nome...",
+        Callback=function(v) FantasmaRP.NameText=tostring(v or "") end })
+    T.RGB:AddSlider({ Name="Velocidade RP Name", Min=1, Max=60, Default=29,
+        Callback=function(v) FantasmaRP.NameSpeed=tonumber(v) or 29 end })
+    T.RGB:AddToggle({ Name="RP Name  ON / OFF", Default=false, Callback=function(v)
+        FantasmaRP.NameEnabled=v
+        if FantasmaRP.NameText=="" then FantasmaRP.NameText="Fantasma1l Hub" end
+        if not v then setRPText("RolePlayName",FantasmaRP.NameText) end
+    end })
+    T.RGB:AddSection({ "📝  RP Bio Animada" })
+    T.RGB:AddTextBox({ Name="Texto da RP Bio", Default="Fantasma1l Hub | discord.gg/bXuvVw76B", PlaceholderText="Digite a bio...",
+        Callback=function(v) FantasmaRP.BioText=tostring(v or "") end })
+    T.RGB:AddSlider({ Name="Velocidade RP Bio", Min=1, Max=60, Default=29,
+        Callback=function(v) FantasmaRP.BioSpeed=tonumber(v) or 29 end })
+    T.RGB:AddToggle({ Name="RP Bio  ON / OFF", Default=false, Callback=function(v)
+        FantasmaRP.BioEnabled=v
+        if FantasmaRP.BioText=="" then FantasmaRP.BioText="Fantasma1l Hub | discord.gg/bXuvVw76B" end
+        if not v then setRPText("RolePlayBio",FantasmaRP.BioText) end
+    end })
+
+    -- ── SERVER LAG ────────────────────────────────────────────
+    T.Lag:AddSection({ "📡  Lag do Servidor" })
+    T.Lag:AddToggle({ Name="Lag (Duplicar Phone)", Default=false, Callback=function(v)
+        isLaggingServer=v
+        if v then notify("Lag","⚡ Iniciando lag com Phone...") startServerLag()
+        else notify("Lag","⛔ Lag desativado.") end
+    end })
+
+    -- ── TROLL ─────────────────────────────────────────────────
+    T.Troll:AddSection({ "🎯  Selecionar Alvo" })
+    local selName=nil
+    getgenv().Target=getgenv().Target or nil
+    local function listPlayers()
+        local n={}
+        for _,pl in ipairs(Players:GetPlayers()) do if pl~=LocalPlayer then table.insert(n,pl.Name) end end
+        if #n==0 then table.insert(n,"Ninguem") end
+        return n
+    end
+    local dd=T.Troll:AddDropdown({ Name="Selecionar Jogador", Options=listPlayers(), Default="",
+        Callback=function(v) selName=v getgenv().Target=v end })
+    T.Troll:AddButton({ "🔄  Atualizar Lista", function() dd:Set(listPlayers()) end })
+    local specConn
+    T.Troll:AddToggle({ Name="👁️  View Player (Spectar)", Default=false, Callback=function(v)
+        if specConn then specConn:Disconnect() specConn=nil end
+        if v and selName then
+            specConn=RunService.Heartbeat:Connect(function()
+                local tp=Players:FindFirstChild(selName)
+                if tp and tp.Character then
+                    local hum=tp.Character:FindFirstChildOfClass("Humanoid")
+                    if hum then workspace.CurrentCamera.CameraSubject=hum end
+                end
+            end)
+        else
+            local ch=LocalPlayer.Character
+            local hum=ch and ch:FindFirstChildOfClass("Humanoid")
+            if hum then workspace.CurrentCamera.CameraSubject=hum end
+        end
+    end })
+
+    T.Troll:AddSection({ "⚔️  Método de Ataque" })
+    local methodKill="Prop"
+    T.Troll:AddDropdown({ Name="Método", Options={"Prop","Couch","Bus","Fling"}, Default="Prop",
+        Callback=function(v) methodKill=v end })
+
+    local function execMethod(tp,method)
+        if not tp or tp==LocalPlayer then return end
+        applyNetworkBypass()
+        local tc=tp.Character
+        local tr=tc and tc:FindFirstChild("HumanoidRootPart")
+        local th=tc and tc:FindFirstChildOfClass("Humanoid")
+        if not tr or not th then return end
+        if method=="Prop" then executePropMakerKill(tp)
+        elseif method=="Bus" then doBusDriverKill(tp)
+        elseif method=="Fling" then executeFlingBall(tp)
+        elseif method=="Couch" then
+            local mc=LocalPlayer.Character
+            local mr=getHRP()
+            local mh=mc and mc:FindFirstChildOfClass("Humanoid")
+            local bp=LocalPlayer:FindFirstChild("Backpack")
+            if not mr or not mh or not bp then return end
+            local safeCF=mr.CFrame
+            local re=ReplicatedStorage:FindFirstChild("RE")
+            local ct=re and re:FindFirstChild("1Clea1rTool1s")
+            local tr2=re and (re:FindFirstChild("1Too1l") or re:FindFirstChild("1Tool"))
+            pcall(function()
+                workspace.FallenPartsDestroyHeight=-math.huge
+                if ct then ct:FireServer("ClearAllTools") end
+            end)
+            task.wait(0.2)
+            pcall(function() if tr2 then tr2:InvokeServer("PickingTools","Couch") end end)
+            task.wait(0.35)
+            local item=bp:FindFirstChild("Couch") or mc:FindFirstChild("Couch") or getCouch()
+            if not item then notify("Couch","❌ Couch não encontrado.",3) return end
+            item.Parent=mc task.wait(0.1)
+            pcall(function() game:GetService("VirtualInputManager"):SendKeyEvent(true,Enum.KeyCode.F,false,game) end)
+            task.wait(0.1)
+            mh:SetStateEnabled(Enum.HumanoidStateType.Seated,false) mh.PlatformStand=false
+            local align=Instance.new("BodyPosition") align.Name="F1LCouchBring"
+            align.MaxForce=Vector3.new(math.huge,math.huge,math.huge) align.D=10 align.P=30000
+            align.Position=mr.Position align.Parent=tr
+            local as,ang,seated=tick(),0,false
+            notify("Couch","⏳ Encaixando o alvo...",3)
+            while tick()-as < 5 do
+                if not tr.Parent or th.Health<=0 or not item.Parent then break end
+                applyNetworkBypass()
+                if th.Sit or isTargetSeatedOn(item,th) then seated=true break end
+                local pp=tr.Position+tr.AssemblyLinearVelocity/1.5 ang+=50
+                pcall(function()
+                    mr.CFrame=CFrame.new(pp+Vector3.new(0,2,0))*CFrame.Angles(math.rad(ang),0,0)
+                    align.Position=mr.Position+Vector3.new(2,0,0)
+                end)
+                task.wait()
+            end
+            align:Destroy() mh:SetStateEnabled(Enum.HumanoidStateType.Seated,true) mh.PlatformStand=false
+            if not seated then
+                pcall(function() if ct then ct:FireServer("ClearAllTools") end end)
+                restoreLocalCharacter(safeCF) notify("Couch","❌ Alvo não sentou; cancelado.",4) return
+            end
+            for _,p in ipairs(mc:GetDescendants()) do
+                if p:IsA("BasePart") then p.AssemblyLinearVelocity=Vector3.zero p.AssemblyAngularVelocity=Vector3.zero end
+            end
+            task.wait(0.1)
+            mr.CFrame=CFrame.new(145.51,-350.09,21.58) task.wait(0.3)
+            if item.Parent then item.Parent=bp end task.wait(0.01)
+            pcall(function() if tr2 then tr2:InvokeServer("PickingTools","Couch") end end) task.wait(0.2)
+            for _=1,5 do restoreLocalCharacter(safeCF) task.wait(0.04) end
+            if th.Health<=0 or not tr.Parent then notify("Couch","✅ Morte confirmada.",3)
+            else notify("Couch","⏳ Aguardando confirmação do servidor.",4) end
+        end
+    end
+
+    T.Troll:AddSection({ "💀  Ações de Kill" })
+    T.Troll:AddButton({ "⚡  KILL  — Alvo Selecionado", function()
+        local n=getgenv().Target or selName
+        if not n or n=="Ninguem" then notify("Erro","❌ Selecione um jogador.") return end
+        local tp=Players:FindFirstChild(n)
+        if tp then
+            notify("Kill","⚔️ Executando em "..tp.Name.." ["..methodKill.."]")
+            task.spawn(function() execMethod(tp,methodKill) end)
+        else notify("Erro","❌ Jogador não encontrado.") end
+    end })
+    T.Troll:AddButton({ "💥  KILL ALL  — Todos no Servidor", function()
+        notify("Kill All","💥 Kill All com "..methodKill.."!")
+        task.spawn(function()
+            for _,pl in ipairs(Players:GetPlayers()) do
+                if pl~=LocalPlayer then
+                    if methodKill=="Couch" then
+                        pcall(execMethod,pl,"Couch") task.wait(0.2)
+                    else task.spawn(function() execMethod(pl,methodKill) end) task.wait(0.2) end
+                end
+            end
+            notify("Kill All","✅ Fila concluída.",3)
+        end)
+    end })
+    T.Troll:AddButton({ "🌀  KILL PROP ALL  — Props Simultâneos", function()
+        executeKillPropAll()
+    end })
+
+    T.Troll:AddSection({ "🚀  Fling por Força" })
+    T.Troll:AddSlider({ Name="Força do Fling", Min=50000, Max=1000000, Default=250000,
+        Callback=function(v) ExtraHub.FlingPower=math.floor(tonumber(v) or 250000) end })
+    T.Troll:AddButton({ "🚗  Fling Car", function()
+        ExtraHub.flingVehicleMethod("Car",findPlayer(getgenv().Target or selName),ExtraHub.FlingPower)
+    end })
+    T.Troll:AddButton({ "⚽  Fling Ball", function()
+        local t=findPlayer(getgenv().Target or selName)
+        if t then task.spawn(executeFlingBall,t,ExtraHub.FlingPower) end
+    end })
+    T.Troll:AddButton({ "🚤  Fling Boat", function()
+        ExtraHub.flingVehicleMethod("Boat",findPlayer(getgenv().Target or selName),ExtraHub.FlingPower)
+    end })
+    T.Troll:AddButton({ "🛋️  Fling Couch", function()
+        local t=findPlayer(getgenv().Target or selName)
+        if t then task.spawn(ExtraHub.flingCouchAt,t,ExtraHub.FlingPower) end
+    end })
+    T.Troll:AddSection({ "🔒  Anti Tool" })
+    T.Troll:AddToggle({ Name="Anti Tool — Alvo Selecionado", Default=false, Callback=function(v)
+        ExtraHub.setAntiTool(v,getgenv().Target or selName)
+    end })
+    T.Troll:AddToggle({ Name="Anti Tool All", Default=false, Callback=function(v) ExtraHub.setAntiToolAll(v) end })
+
+    -- ── PROTEÇÃO ──────────────────────────────────────────────
+    local PROT={antiSit=false,antiFling=false,antiLag=false,conns={}}
+    T.Prot:AddSection({ "⚡  Anti-Lag" })
+    T.Prot:AddToggle({ Name="Ativar Anti-Lag", Default=false, Callback=function(v)
+        PROT.antiLag=v
+        if v then
+            pcall(function()
+                settings().Rendering.QualityLevel=Enum.QualityLevel.Level01
+                Lighting.GlobalShadows=false Lighting.FogEnd=9e9
+                for _,o in ipairs(workspace:GetDescendants()) do
+                    if o:IsA("ParticleEmitter") or o:IsA("Trail") or o:IsA("Smoke")
+                        or o:IsA("Fire") or o:IsA("Sparkles") then o.Enabled=false end
+                end
+            end)
+            notify("Anti-Lag","✅ Otimizações ativadas!")
+        else
+            pcall(function() settings().Rendering.QualityLevel=Enum.QualityLevel.Automatic Lighting.GlobalShadows=true end)
+            notify("Anti-Lag","⛔ Desativado.")
+        end
+    end })
+    T.Prot:AddSection({ "🪑  Anti-Sit" })
+    T.Prot:AddToggle({ Name="Ativar Anti-Sit", Default=false, Callback=function(v)
+        PROT.antiSit=v if not v then return end
+        local c=RunService.Heartbeat:Connect(function()
+            local ch=LocalPlayer.Character
+            local hum=ch and ch:FindFirstChildOfClass("Humanoid")
+            if hum and hum.Sit then hum.Sit=false hum:ChangeState(Enum.HumanoidStateType.GettingUp) end
+        end)
+        table.insert(PROT.conns,c)
+    end })
+    T.Prot:AddSection({ "🌀  Anti-Fling" })
+    T.Prot:AddToggle({ Name="Ativar Anti-Fling", Default=false, Callback=function(v)
+        PROT.antiFling=v if not v then return end
+        local c=RunService.Heartbeat:Connect(function()
+            local hrp=getHRP() if not hrp then return end
+            local vel=hrp.AssemblyLinearVelocity
+            if vel.Magnitude>500 or vel.Y<-300 or vel.Y>500 then
+                hrp.AssemblyLinearVelocity=Vector3.zero hrp.AssemblyAngularVelocity=Vector3.zero
+            end
+        end)
+        table.insert(PROT.conns,c)
+    end })
+    T.Prot:AddButton({ "🔓  Desativar Toda a Proteção", function()
+        for _,c in ipairs(PROT.conns) do pcall(function() c:Disconnect() end) end
+        PROT.conns={} PROT.antiSit=false PROT.antiFling=false PROT.antiLag=false
+        notify("Proteção","✅ Toda a proteção desativada.")
+    end })
+
+    -- ── ÁUDIO ─────────────────────────────────────────────────
+    local cusAudioId,cusAudioName,selAudioName,renAudioName="","",AudioLibrary.names()[1],""
+    local function playBoombox(rawId,shared)
+        local id=tonumber(tostring(rawId or ""):match("%d+") or "")
+        if not id then notify("Áudio","❌ ID inválido.",3) return end
+        task.spawn(function()
+            if shared then ExtraHub.requestTool("Boombox") end
+            local ch=LocalPlayer.Character
+            local hum=ch and ch:FindFirstChildOfClass("Humanoid")
+            local bp=LocalPlayer:FindFirstChild("Backpack")
+            local bb=(ch and ch:FindFirstChild("Boombox")) or (bp and bp:FindFirstChild("Boombox"))
+            if bb and hum and bb.Parent~=ch then pcall(function() hum:EquipTool(bb) end) task.wait(0.35) end
+            local ok,err=pcall(function()
+                local re=ReplicatedStorage:FindFirstChild("RE")
+                local bx=re and re:FindFirstChild("1BoomBox")
+                if not bx then error("Remote 1BoomBox não encontrada.") end
+                bx:InvokeServer(id)
+            end)
+            notify("Áudio",ok and "✅ ID enviado ao Boombox." or "❌ "..tostring(err),4)
+        end)
+    end
+    T.Audio:AddSection({ "🎵  Boombox" })
+    T.Audio:AddTextBox({ Name="ID da Música", Default="", PlaceholderText="Ex: 1848354536",
+        Callback=function(v) cusAudioId=v end })
+    T.Audio:AddTextBox({ Name="Nome para Salvar", Default="", PlaceholderText="Ex: Minha música",
+        Callback=function(v) cusAudioName=v end })
+    T.Audio:AddButton({ "▶️  Tocar no Boombox",          function() playBoombox(cusAudioId,false) end })
+    T.Audio:AddButton({ "📢  Audio ALL (Boombox Gamepass)", function() playBoombox(cusAudioId,true)  end })
+    T.Audio:AddSection({ "📁  Biblioteca de Áudios" })
+    local audioDd=T.Audio:AddDropdown({ Name="Áudios Salvos", Options=AudioLibrary.names(), Default=selAudioName,
+        Callback=function(v) selAudioName=v end })
+    local function refreshAudios()
+        local n=AudioLibrary.names() selAudioName=n[1] pcall(function() audioDd:Set(n) end)
+    end
+    T.Audio:AddButton({ "💾  Salvar Áudio",         function() local ok,msg=AudioLibrary.add(cusAudioName,cusAudioId) notify("Áudio",msg,3) if ok then refreshAudios() end end })
+    T.Audio:AddButton({ "▶️  Tocar Áudio Salvo",    function() local id=AudioLibrary.Entries[selAudioName] if id then playBoombox(id,true) else notify("Áudio","❌ Selecione um áudio.",3) end end })
+    T.Audio:AddTextBox({ Name="Novo Nome do Áudio", Default="", PlaceholderText="Nome renomeado",
+        Callback=function(v) renAudioName=v end })
+    T.Audio:AddButton({ "✏️  Renomear Áudio",        function() if AudioLibrary.rename(selAudioName,renAudioName) then notify("Áudio","✅ Renomeado.",3) refreshAudios() else notify("Áudio","❌ Selecione e digite um nome.",3) end end })
+    T.Audio:AddButton({ "🗑️  Excluir Áudio",          function() if AudioLibrary.delete(selAudioName) then notify("Áudio","✅ Excluído.",3) refreshAudios() else notify("Áudio","❌ Nenhum áudio selecionado.",3) end end })
+    T.Audio:AddButton({ "🔄  Atualizar Pasta",        refreshAudios })
+
+    -- ── VEÍCULOS ──────────────────────────────────────────────
+    T.Vehicles:AddSection({ "🚗  Carros no Servidor" })
+    local selVeh=nil
+    local function vehNames()
+        local n={}
+        for _,v in ipairs(ExtraHub.getVehicles()) do table.insert(n,v.Name) end
+        if #n==0 then table.insert(n,"Nenhum veículo") end
+        return n
+    end
+    local vDd=T.Vehicles:AddDropdown({ Name="Selecionar Carro", Options=vehNames(), Default="",
+        Callback=function(v) selVeh=v end })
+    T.Vehicles:AddButton({ "🔄  Atualizar Lista", function() vDd:Set(vehNames()) end })
+    T.Vehicles:AddSection({ "🔧  Ações (Carro Selecionado)" })
+    local function runVA(a)
+        local v=ExtraHub.findVehicle(selVeh)
+        if not v then notify("Veículos","❌ Selecione um veículo.",3) return end
+        task.spawn(function() if ExtraHub.vehicleAction(v,a) then notify("Veículos","✅ "..a.." — "..v.Name,3) end end)
+    end
+    T.Vehicles:AddButton({ "📍  Bring Car",  function() runVA("Bring")  end })
+    T.Vehicles:AddButton({ "🗑️  Delete Car", function() runVA("Delete") end })
+    T.Vehicles:AddButton({ "🌀  Fling Car",  function() runVA("Fling")  end })
+    T.Vehicles:AddSection({ "💥  Ações em Massa (All)" })
+    T.Vehicles:AddButton({ "📍  Bring Car All",  function() task.spawn(ExtraHub.vehicleActionAll,"Bring")  end })
+    T.Vehicles:AddButton({ "🗑️  Delete Car All", function() task.spawn(ExtraHub.vehicleActionAll,"Delete") end })
+    T.Vehicles:AddButton({ "🌀  Fling Car All",  function() task.spawn(ExtraHub.vehicleActionAll,"Fling")  end })
+
+    -- ── GIVE TOOL ─────────────────────────────────────────────
+    T.Give:AddSection({ "🎁  Ferramentas do Brookhaven" })
+    local selTool="FloorCushion"
+    T.Give:AddDropdown({ Name="Ferramenta", Options=ExtraHub.ToolNames, Default=selTool,
+        Callback=function(v) selTool=v end })
+    T.Give:AddButton({ "📦  Give Tool", function()
+        if ExtraHub.requestTool(selTool) then notify("Give Tool","✅ Solicitado: "..selTool,3)
+        else notify("Give Tool","❌ Remote não encontrada.",3) end
+    end })
+    T.Give:AddButton({ "🎁  Give All Tools", function() ExtraHub.giveAllTools() end })
+
+    -- ── FUN ───────────────────────────────────────────────────
+    T.Fun:AddSection({ "🎮  Diversão" })
+    T.Fun:AddButton({ "📍  Teleportar ao Alvo", function()
+        local tp=Players:FindFirstChild(getgenv().Target or selName or "")
+        local tr=tp and tp.Character and tp.Character:FindFirstChild("HumanoidRootPart")
+        local mr=getHRP()
+        if tr and mr then mr.CFrame=tr.CFrame*CFrame.new(0,2,-4) end
+    end })
+    T.Fun:AddButton({ "⚽  Fling Ball no Alvo", function()
+        local tp=Players:FindFirstChild(getgenv().Target or selName or "")
+        if tp then task.spawn(executeFlingBall,tp) end
+    end })
+    T.Fun:AddButton({ "🪑  Sentar / Levantar", function()
+        local ch=LocalPlayer.Character
+        local hum=ch and ch:FindFirstChildOfClass("Humanoid")
+        if hum then hum.Sit=not hum.Sit if not hum.Sit then hum:ChangeState(Enum.HumanoidStateType.GettingUp) end end
+    end })
+    T.Fun:AddButton({ "🏠  Voltar ao Spawn", function()
+        local root=getHRP() if not root then return end
+        local near,dist=nil,math.huge
+        for _,o in ipairs(workspace:GetDescendants()) do
+            if o:IsA("SpawnLocation") then
+                local d=(o.Position-root.Position).Magnitude
+                if d<dist then near,dist=o,d end
+            end
+        end
+        if near then root.CFrame=near.CFrame+Vector3.new(0,5,0) end
+    end })
+
+    -- ── PLAYERS ───────────────────────────────────────────────
+    T.Player:AddSection({ "🎯  Alvo" })
+    local plExtDd=T.Player:AddDropdown({ Name="Jogador", Options=listPlayers(), Default="",
+        Callback=function(v) selName=v getgenv().Target=v end })
+    T.Player:AddButton({ "🔄  Atualizar", function() plExtDd:Set(listPlayers()) end })
+    T.Player:AddSection({ "👁️  ESP & Visual" })
+    T.Player:AddToggle({ Name="ESP Players", Default=false, Callback=function(v) ExtraHub.setESP(v) end })
+    T.Player:AddDropdown({ Name="Cor do ESP",
+        Options={"🟣 Roxo","🔴 Vermelho","🔵 Azul","🟢 Verde","⚪ Branco"}, Default="🟣 Roxo",
+        Callback=function(v)
+            local c={["🟣 Roxo"]=Color3.fromRGB(170,85,255),["🔴 Vermelho"]=Color3.fromRGB(255,40,40),
+                ["🔵 Azul"]=Color3.fromRGB(40,130,255),["🟢 Verde"]=Color3.fromRGB(40,255,100),["⚪ Branco"]=Color3.new(1,1,1)}
+            ExtraHub.ESPColor=c[v] or Color3.fromRGB(170,85,255)
+        end })
+    T.Player:AddToggle({ Name="ESP RGB", Default=false, Callback=function(v) ExtraHub.ESPRGB=v end })
+    T.Player:AddToggle({ Name="Head Sit", Default=false, Callback=function(v)
+        ExtraHub.HeadSit=v ExtraHub.HeadSitTarget=getgenv().Target or selName
+        if not v then local ch=LocalPlayer.Character local hum=ch and ch:FindFirstChildOfClass("Humanoid")
+            if hum then hum.Sit=false end end
+    end })
+    local specConn2
+    T.Player:AddToggle({ Name="View (Spectar)", Default=false, Callback=function(v)
+        if specConn2 then specConn2:Disconnect() specConn2=nil end
+        if v then
+            specConn2=RunService.Heartbeat:Connect(function()
+                local tp=Players:FindFirstChild(getgenv().Target or selName or "")
+                local hum=tp and tp.Character and tp.Character:FindFirstChildOfClass("Humanoid")
+                if hum then workspace.CurrentCamera.CameraSubject=hum end
+            end)
+        else
+            local ch=LocalPlayer.Character local hum=ch and ch:FindFirstChildOfClass("Humanoid")
+            if hum then workspace.CurrentCamera.CameraSubject=hum end
+        end
+    end })
+    T.Player:AddSection({ "🏃  Movimento & Spin" })
+    T.Player:AddSlider({ Name="Velocidade do Spin", Min=1, Max=50, Default=10,
+        Callback=function(v) ExtraHub.SpinSpeed=tonumber(v) or 10 end })
+    T.Player:AddToggle({ Name="Spin", Default=false, Callback=function(v)
+        ExtraHub.Spin=v local root=getHRP() if not v and root then root.AssemblyAngularVelocity=Vector3.zero end
+    end })
+    T.Player:AddSlider({ Name="Speed", Min=16, Max=250, Default=16,
+        Callback=function(v) ExtraHub.Speed=tonumber(v) or 16 end })
+    T.Player:AddSlider({ Name="Jump Power", Min=50, Max=350, Default=50,
+        Callback=function(v) ExtraHub.JumpPower=tonumber(v) or 50 end })
+    T.Player:AddSlider({ Name="Gravity", Min=0, Max=196, Default=196,
+        Callback=function(v) workspace.Gravity=tonumber(v) or 196 end })
+    T.Player:AddToggle({ Name="Infinite Jump", Default=false, Callback=function(v) ExtraHub.InfiniteJump=v end })
+    T.Player:AddToggle({ Name="Noclip", Default=false, Callback=function(v) ExtraHub.setNoclip(v) end })
+
+    -- ── OUTROS ────────────────────────────────────────────────
+    T.Others:AddSection({ "⚙️  Cliente" })
+    T.Others:AddToggle({ Name="Fullbright", Default=false, Callback=function(v) ExtraHub.setFullbright(v) end })
+    T.Others:AddButton({ "🚀  FPS Boost", function()
+        pcall(function() settings().Rendering.QualityLevel=Enum.QualityLevel.Level01 end)
+        for _,o in ipairs(workspace:GetDescendants()) do
+            if o:IsA("ParticleEmitter") or o:IsA("Trail") or o:IsA("Smoke") or o:IsA("Fire") or o:IsA("Sparkles") then
+                o.Enabled=false
+            end
+        end
+        notify("FPS Boost","✅ Aplicado neste cliente.",3)
+    end })
+    T.Others:AddButton({ "☕  Anti AFK", function()
+        if ExtraHub.AntiAFK then notify("Anti AFK","✅ Já está ativo.",3) return end
+        ExtraHub.AntiAFK=true
+        local vu=game:GetService("VirtualUser")
+        LocalPlayer.Idled:Connect(function() vu:CaptureController() vu:ClickButton2(Vector2.new()) end)
+        notify("Anti AFK","✅ Ativado.",3)
+    end })
+    T.Others:AddButton({ "🔄  Rejoin Server", function()
+        game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId,game.JobId,LocalPlayer)
+    end })
+
+    -- ── AVATAR ────────────────────────────────────────────────
+    T.Avatar:AddSection({ "👤  Customização" })
+    T.Avatar:AddButton({ "👗  Copiar Avatar do Alvo (Local)", function()
+        ExtraHub.copyAvatar(getgenv().Target or selName)
+    end })
+    T.Avatar:AddToggle({ Name="Big Head", Default=false, Callback=function(v) ExtraHub.setBigHead(v) end })
+    T.Avatar:AddToggle({ Name="Rainbow Body", Default=false, Callback=function(v) ExtraHub.setRainbowAvatar(v) end })
+
+    -- ── FREE GAMEPASS ─────────────────────────────────────────
+    T.Gamepass:AddSection({ IS_ADMIN and "👑  Recursos Admin" or "🎮  Free Gamepass (Beta)" })
+    T.Gamepass:AddParagraph({ "⚠️  Aviso",
+        "Esta aba não desbloqueia gamepasses reais. O servidor pode recusar itens que exijam passe." })
+    T.Gamepass:AddButton({ "🎁  Solicitar Todas as Ferramentas", function() ExtraHub.giveAllTools() end })
+    T.Gamepass:AddDropdown({ Name="Veículo Premium",
+        Options={"Limo","SchoolBus","MonsterTruck"}, Default="Limo",
+        Callback=function(v) ExtraHub.PremiumVehicle=v end })
+    T.Gamepass:AddButton({ "🚗  Solicitar Veículo Premium", function()
+        task.spawn(ExtraHub.spawnVehicle,ExtraHub.PremiumVehicle or "Limo")
+    end })
+
+    -- ── EFEITOS VISUAIS ───────────────────────────────────────
+    T.Visuals:AddSection({ "✨  Efeitos na Janela" })
+    T.Visuals:AddDropdown({ Name="Efeito ao Redor",
+        Options={"Nenhum","Kamui Roxo","Efeito Azul"}, Default="Nenhum",
+        Callback=function(v)
+            local ids={["Kamui Roxo"]="110456504694881",["Efeito Azul"]="135653661483044"}
+            UIC.setEffect(ids[v])
+        end })
+    T.Visuals:AddButton({ "🌀  Efeito Kamui",        function() UIC.setEffect("110456504694881") end })
+    T.Visuals:AddButton({ "💙  Efeito Azul",          function() UIC.setEffect("135653661483044") end })
+    T.Visuals:AddButton({ "⛔  Remover Efeito",       function() UIC.setEffect("") end })
+    T.Visuals:AddSection({ "🖼️  Fundos" })
+    T.Visuals:AddButton({ "🌃  Fundo 1",              function() UIC.setBackground("123754864736277") end })
+    T.Visuals:AddButton({ "🌆  Fundo 2",              function() UIC.setBackground("121502907054918") end })
+    T.Visuals:AddButton({ "🪟  Janelas",              function() UIC.setBackground("81149055236435")  end })
+    T.Visuals:AddButton({ "⛔  Remover Fundo",        function() UIC.setBackground("") end })
+    task.delay(1.5, function() pcall(UIC.setTitleIcon,"81149055236435") end)
+
+    -- ── CONFIGURAÇÃO ─────────────────────────────────────────
+    T.Config:AddSection({ "🎨  Tema do Hub" })
+    T.Config:AddDropdown({ Name="Cor com Degradê de Preto",
+        Options={"Vermelho","Azul","Amarelo","Preto","Cinza"}, Default="Preto",
+        Callback=function(v) UIC.applyTheme(v) end })
+    T.Config:AddSection({ "🖼️  Fundo da Janela" })
+    local function bgId(n)
+        local ids={["Fundo 1"]="123754864736277",["Fundo 2"]="121502907054918",["Janelas"]="81149055236435"}
+        return ids[n]
+    end
+    T.Config:AddDropdown({ Name="Imagem de Fundo",
+        Options={"Nenhum","Fundo 1","Fundo 2","Janelas"}, Default="Nenhum",
+        Callback=function(v) UIC.setBackground(bgId(v)) end })
+    T.Config:AddSlider({ Name="Transparência do Fundo", Min=0, Max=95, Default=35,
+        Callback=function(v) UIC.setBgTransp((tonumber(v) or 35)/100) end })
+    T.Config:AddButton({ "⛔  Remover Fundo", function() UIC.setBackground("") end })
+    T.Config:AddButton({ "🔖  Ícone no Título", function() UIC.setTitleIcon("81149055236435") end })
+
+    notify(HUB_NAME, IS_ADMIN and "✦ Painel BH carregado — " .. MY_ROLE or "✦ Brookhaven Edition v8.9 carregado!", 4)
+end) -- fim Redz task.spawn
