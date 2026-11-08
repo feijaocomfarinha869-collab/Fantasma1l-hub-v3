@@ -80,8 +80,6 @@ local SUK_TEX_SKULLS   = "14741593918"
 local SUK_MESH_HORNS   = "14741511478"
 local SUK_TEX_HORNS    = "14741553001"
 local SUK_SOUND_ACTIVATE = "rbxassetid://99240762321565"
-local SUK_SOUND_VOICE1   = "rbxassetid://95333691624896"
-local SUK_SOUND_VOICE2   = "rbxassetid://75049811351223"
 local SUK_SOUND_CUT      = "rbxassetid://115176509741532"
 local SUK_SKYBOX         = "95851846624912"
 local WINGS_ID         = "123746248186771"
@@ -6156,6 +6154,27 @@ local function buildMalevolentShrine(parent)
     return built
 end
 
+-- domo esférico (bola), em vez da Sky tradicional em caixa/hexaedro
+local function buildSkyDome(parent, center, radius, imageId)
+    local ball = Instance.new("Part")
+    ball.Shape = Enum.PartType.Ball
+    ball.Anchored, ball.CanCollide, ball.CanQuery, ball.CanTouch, ball.CastShadow = true, false, false, false, false
+    ball.Size = Vector3.new(radius * 2, radius * 2, radius * 2)
+    ball.CFrame = CFrame.new(center)
+    ball.Color = Color3.new(1, 1, 1)
+    ball.Material = Enum.Material.SmoothPlastic
+    ball.Parent = parent
+    local mesh = Instance.new("SpecialMesh")
+    mesh.MeshType = Enum.MeshType.Sphere
+    mesh.Scale = Vector3.new(-1, 1, 1)   -- inverte a normal pra ficar visível por dentro
+    mesh.Parent = ball
+    local dec = Instance.new("Decal")
+    dec.Face = Enum.NormalId.Front
+    dec.Texture = resolveImage(imageId)
+    dec.Parent = ball
+    return ball
+end
+
 local function runSukunaDomain(senderName)
     local sp = Players:FindFirstChild(senderName)
     local sc = sp and sp.Character
@@ -6274,12 +6293,7 @@ local function runSukunaDomain(senderName)
         b.CanCollide = true
     end
 
-    sky = Instance.new("Sky")
-    sky.Name = "SukunaSky"
-    local face = resolveImage(SUK_SKYBOX)
-    sky.SkyboxBk, sky.SkyboxDn, sky.SkyboxFt = face, face, face
-    sky.SkyboxLf, sky.SkyboxRt, sky.SkyboxUp = face, face, face
-    sky.Parent = Lighting
+    sky = buildSkyDome(folder, C, 1900, SUK_SKYBOX)
 
     pcall(function() Lighting.Ambient = Color3.fromRGB(90, 0, 0) end)
     pcall(function() Lighting.OutdoorAmbient = Color3.fromRGB(70, 0, 0) end)
@@ -6306,7 +6320,7 @@ local function runSukunaDomain(senderName)
     -- ===== 3) o santuário sobe primeiro, antes de qualquer corte =====
     local shrine = buildMalevolentShrine(folder)
     if shrine and shrine.PrimaryPart then
-        local tcf = CFrame.new(C) * CFrame.new(0, 3, -40)
+        local tcf = CFrame.new(C) * CFrame.new(0, 13, -40)
         local scf = tcf * CFrame.new(0, -45, 0)
         shrine:PivotTo(scf)
         for i = 1, 50 do
@@ -6339,7 +6353,7 @@ local function runSukunaDomain(senderName)
         local a1 = Instance.new("Attachment") a1.Parent = holder a1.WorldPosition = b
         local beam = Instance.new("Beam")
         beam.Attachment0, beam.Attachment1 = a0, a1
-        beam.Width0, beam.Width1 = 0.35, 0.35
+        beam.Width0, beam.Width1 = 0.55, 0.55
         beam.FaceCamera, beam.Segments = true, 1
         beam.Color = ColorSequence.new(Color3.new(1, 1, 1))
         beam.LightEmission, beam.LightInfluence = 1, 0
