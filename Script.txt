@@ -26,8 +26,8 @@ local WHITELIST = {
     ["darkADM_ofc"]  = { Role = "SUB DONO" },
     
     -- ADMS (9 VAGAS)
+    ["PREENCHA_AQUI_ADM_1"]       = { Role = "ADM" },
     ["Fantasma1l40"]       = { Role = "ADM" },
-    ["PREENCHA_AQUI_ADM_2"]       = { Role = "ADM" },
     ["PREENCHA_AQUI_ADM_3"]       = { Role = "ADM" },
     ["PREENCHA_AQUI_ADM_4"]       = { Role = "ADM" },
     ["PREENCHA_AQUI_ADM_5"]       = { Role = "ADM" },
@@ -79,8 +79,6 @@ local SUK_MESH_SKULLS  = "14741511460"
 local SUK_TEX_SKULLS   = "14741593918"
 local SUK_MESH_HORNS   = "14741511478"
 local SUK_TEX_HORNS    = "14741553001"
-local SUK_SOUND_ACTIVATE = "rbxassetid://99240762321565"
-local SUK_SOUND_CUT      = "rbxassetid://115176509741532"
 local SUK_SKYBOX         = "95851846624912"
 local WINGS_ID         = "123746248186771"
 local HALO1_ID         = "75992910653222"
@@ -6157,22 +6155,212 @@ end
 -- domo esférico (bola), em vez da Sky tradicional em caixa/hexaedro
 local function buildSkyDome(parent, center, radius, imageId)
     local ball = Instance.new("Part")
-    ball.Shape = Enum.PartType.Ball
+    -- sem Shape = Ball: a forma nativa de bola competia com o SpecialMesh e escondia
+    -- o decal por dentro (você via de fora, mas nada de dentro). Deixando o Shape padrão,
+    -- só o SpecialMesh desenha a esfera, e a textura aparece certinho por dentro.
     ball.Anchored, ball.CanCollide, ball.CanQuery, ball.CanTouch, ball.CastShadow = true, false, false, false, false
     ball.Size = Vector3.new(radius * 2, radius * 2, radius * 2)
     ball.CFrame = CFrame.new(center)
     ball.Color = Color3.new(1, 1, 1)
     ball.Material = Enum.Material.SmoothPlastic
+    ball.Transparency = 0
     ball.Parent = parent
     local mesh = Instance.new("SpecialMesh")
     mesh.MeshType = Enum.MeshType.Sphere
     mesh.Scale = Vector3.new(-1, 1, 1)   -- inverte a normal pra ficar visível por dentro
     mesh.Parent = ball
-    local dec = Instance.new("Decal")
-    dec.Face = Enum.NormalId.Front
-    dec.Texture = resolveImage(imageId)
-    dec.Parent = ball
+    local tex = "rbxassetid://" .. tostring(imageId):gsub("%D", "")
+    for _, face in ipairs({ Enum.NormalId.Front, Enum.NormalId.Back, Enum.NormalId.Left,
+        Enum.NormalId.Right, Enum.NormalId.Top, Enum.NormalId.Bottom }) do
+        local dec = Instance.new("Decal")
+        dec.Face = face
+        dec.Texture = tex
+        dec.Parent = ball
+    end
     return ball
+
+end-- ================== SUKUNA CUTS ==================
+SukunaCuts = {}
+do
+    local TS = game:GetService("TweenService")
+    local Debris = game:GetService("Debris")
+    local rand = math.random
+    local function rr(a, b) return a + (b - a) * rand() end
+    local LOW = CLEAVE_LOW
+    local NSK = NumberSequenceKeypoint.new
+    local REVEAL, HOLD, FADE = 0.09, 0.14, 0.35
+    local SLOW_MUL = 2.2
+
+    local PRESETS = {
+        red = {
+            layers = {
+                { w = 7.0, c = Color3.fromRGB(255, 255, 255), emis = 0, tr = 0.93, slow = true, hi = true },
+                { w = 3.6, c = Color3.fromRGB(255, 30, 30),   emis = 1, tr = 0.6,  slow = true },
+                { w = 2.3, c = Color3.fromRGB(255, 225, 225), emis = 1, tr = 0.1 },
+                { w = 1.8, c = Color3.fromRGB(235, 0, 12),    emis = 1, tr = 0 },
+                { w = 1.1, c = Color3.fromRGB(110, 0, 8),     emis = 0.2, tr = 0, hi = true },
+                { w = 0.5, c = Color3.fromRGB(255, 110, 90),  emis = 1, tr = 0 },
+            },
+            spark = ColorSequence.new(Color3.new(1, 1, 1), Color3.fromRGB(255, 30, 30)),
+            shard = ColorSequence.new(Color3.fromRGB(255, 70, 50), Color3.fromRGB(90, 0, 0)),
+            light = Color3.fromRGB(255, 20, 20),
+            scarCore = Color3.fromRGB(235, 0, 12), scarEdge = Color3.fromRGB(255, 220, 220),
+            scarMat = Enum.Material.Neon,
+        },
+        black = {
+            layers = {
+                { w = 5.0, c = Color3.new(1, 1, 1),           emis = 1, tr = 0.85, slow = true, hi = true },
+                { w = 2.8, c = Color3.new(1, 1, 1),           emis = 1, tr = 0 },
+                { w = 2.0, c = Color3.new(0, 0, 0),           emis = 0, tr = 0 },
+                { w = 1.5, c = Color3.fromRGB(20, 0, 28),     emis = 0, tr = 0, hi = true },
+                { w = 1.05, c = Color3.new(1, 1, 1),          emis = 1, tr = 0.45 },
+                { w = 0.75, c = Color3.new(0, 0, 0),          emis = 0, tr = 0 },
+            },
+            spark = ColorSequence.new(Color3.new(1, 1, 1), Color3.fromRGB(120, 120, 140)),
+            shard = ColorSequence.new(Color3.new(1, 1, 1), Color3.new(0, 0, 0)),
+            light = Color3.fromRGB(230, 230, 255),
+            scarCore = Color3.new(0, 0, 0), scarEdge = Color3.new(1, 1, 1),
+            scarMat = Enum.Material.SmoothPlastic,
+        },
+    }
+
+    local function makePath(a, b, segs, jitter)
+        local dir = b - a
+        local len = dir.Magnitude
+        local fwd = dir.Unit
+        local up = (math.abs(fwd.Y) > 0.9) and Vector3.xAxis or Vector3.yAxis
+        local right = fwd:Cross(up).Unit
+        local up2 = right:Cross(fwd).Unit
+        local step = len / segs
+        local pts, lat = { a }, Vector3.zero
+        for i = 1, segs - 1 do
+            lat = lat * 0.5 + (right * (rand() - 0.5) + up2 * (rand() - 0.5)) * 2 * jitter * step
+            pts[#pts + 1] = a + fwd * (step * i) + lat
+        end
+        pts[#pts + 1] = b
+        return pts
+    end
+
+    local function burstAt(parent, pos, preset, sparkN, shardN)
+        local p = Instance.new("Part")
+        p.Anchored, p.CanCollide, p.CanQuery, p.CanTouch, p.CastShadow = true, false, false, false, false
+        p.Transparency = 1
+        p.Size = Vector3.new(0.2, 0.2, 0.2)
+        p.Position = pos
+        p.Parent = parent
+        local e = Instance.new("ParticleEmitter")
+        e.Rate = 0
+        e.Lifetime = NumberRange.new(0.25, 0.65)
+        e.Speed = NumberRange.new(8, 28)
+        e.SpreadAngle = Vector2.new(180, 180)
+        e.Size = NumberSequence.new({ NSK(0, 0.5), NSK(1, 0) })
+        e.Transparency = NumberSequence.new({ NSK(0, 0), NSK(1, 1) })
+        e.Color = preset.spark
+        e.LightEmission, e.LightInfluence = 1, 0
+        e.Acceleration = Vector3.new(0, -14, 0)
+        e.Drag = 2
+        e.Parent = p
+        e:Emit(sparkN)
+        local pl = Instance.new("PointLight")
+        pl.Color, pl.Range, pl.Brightness = preset.light, 20, 5
+        pl.Parent = p
+        TS:Create(pl, TweenInfo.new(0.35), { Brightness = 0 }):Play()
+        Debris:AddItem(p, 1.5)
+    end
+
+    local function addStroke(holder, pts, w, preset, startFrac)
+        local n = #pts - 1
+        local atts, wm = {}, {}
+        for i = 1, #pts do
+            local at = Instance.new("Attachment")
+            at.Parent = holder
+            at.WorldPosition = pts[1]
+            atts[i] = at
+            wm[i] = (i == 1 or i == #pts) and 1 or rr(0.75, 1.3)
+        end
+        local beams = {}
+        for li, L in ipairs(preset.layers) do
+            if not (LOW and L.hi) then
+                local function wd(k)
+                    local t = (k - 1) / n
+                    return L.w * w * wm[k] * (math.max(math.sin(math.pi * t), 0) ^ 0.55)
+                end
+                for i = 1, n do
+                    local b = Instance.new("Beam")
+                    b.Attachment0, b.Attachment1 = atts[i], atts[i + 1]
+                    b.FaceCamera, b.Segments = true, 1
+                    b.Color = ColorSequence.new(L.c)
+                    b.LightEmission, b.LightInfluence = L.emis, 0
+                    b.Transparency = NumberSequence.new(L.tr)
+                    b.ZOffset = li * 0.02
+                    b.Width0, b.Width1 = 0, 0
+                    b.Parent = holder
+                    beams[#beams + 1] = { b = b, w0 = wd(i), w1 = wd(i + 1), slow = L.slow }
+                end
+            end
+        end
+        return { pts = pts, atts = atts, beams = beams, n = n, start = startFrac }
+    end
+
+    function SukunaCuts.cut(parent, a, b, kind, w)
+        local preset = PRESETS[kind] or PRESETS.red
+        w = w or 1
+        local len = (b - a).Magnitude
+        if len < 3 then return end
+        local n = math.clamp(math.floor(len / 6), 5, LOW and 7 or 11)
+        local main = makePath(a, b, n, 0.32)
+        local holder = Instance.new("Part")
+        holder.Name = "SukunaCut"
+        holder.Anchored, holder.CanCollide, holder.CanQuery, holder.CanTouch, holder.CastShadow = true, false, false, false, false
+        holder.Transparency = 1
+        holder.Size = Vector3.new(0.2, 0.2, 0.2)
+        holder.CFrame = CFrame.new(a)
+        holder.Parent = parent
+        Debris:AddItem(holder, 3)
+        local strokes = { addStroke(holder, main, w, preset, 0) }
+        task.delay(REVEAL, function()
+            if holder.Parent then
+                pcall(function() burstAt(holder.Parent, main[math.floor(#main/2)], preset, LOW and 4 or 8, 0) end)
+            end
+        end)
+        task.spawn(function()
+            local t0 = os.clock()
+            local total = REVEAL + HOLD + FADE * SLOW_MUL
+            while holder.Parent do
+                local t = os.clock() - t0
+                if t > total then break end
+                pcall(function()
+                    local tf = t - REVEAL - HOLD
+                    local sc, scS = 1, 1
+                    if tf > 0 then
+                        sc = math.max(1 - tf / FADE, 0) ^ 2
+                        scS = math.max(1 - tf / (FADE * SLOW_MUL), 0) ^ 2
+                    else
+                        sc = 1 + (rand() - 0.5) * 0.16
+                        scS = sc
+                    end
+                    for _, s in ipairs(strokes) do
+                        local p = math.clamp((t / REVEAL - s.start) / math.max(1 - s.start, 0.01), 0, 1)
+                        p = 1 - (1 - p) ^ 2
+                        local head = p * s.n
+                        local hi = math.floor(head)
+                        local p0 = s.pts[hi + 1]
+                        local p1 = s.pts[math.min(hi + 2, #s.pts)]
+                        local headPos = p0:Lerp(p1, head - hi)
+                        for k, at in ipairs(s.atts) do
+                            at.WorldPosition = ((k - 1) <= head) and s.pts[k] or headPos
+                        end
+                        for _, bm in ipairs(s.beams) do
+                            local f = bm.slow and scS or sc
+                            bm.b.Width0, bm.b.Width1 = bm.w0 * f, bm.w1 * f
+                        end
+                    end
+                end)
+                RunService.Heartbeat:Wait()
+            end
+            pcall(function() holder:Destroy() end)
+        end)
+    end
 end
 
 local function runSukunaDomain(senderName)
@@ -6247,7 +6435,7 @@ local function runSukunaDomain(senderName)
     if iAmCaster then sHum.WalkSpeed = 0 end
     pcall(function()
         local snd = Instance.new("Sound", sh)
-        snd.SoundId, snd.Volume = SUK_SOUND_ACTIVATE, 5
+        snd.SoundId, snd.Volume = SUK_AUDIO, 5
         snd:Play()
         Debris:AddItem(snd, 20)
     end)
@@ -6272,7 +6460,7 @@ local function runSukunaDomain(senderName)
     local saved, hiddenAtm, hiddenSky = {}, {}, {}
     local cc, atm, sky
     local returnCF = myHrp.CFrame
-    local C = Vector3.new(((tonumber(sp.UserId) or 0) % 40) * 800, 9500, 500)
+    local C = Vector3.new(((tonumber(sp.UserId) or 0) % 40) * 800, 9503, 500)   -- topo do chão fica em Y 9505
     local spawnSpot = CFrame.lookAt(C + Vector3.new(0, 8, 40), C + Vector3.new(0, 4, 0))
 
     for _, k in ipairs({ "Ambient", "OutdoorAmbient", "Brightness", "ClockTime", "FogColor", "FogStart", "FogEnd", "ExposureCompensation" }) do
@@ -6292,17 +6480,57 @@ local function runSukunaDomain(senderName)
         local b = mkp(folder, Vector3.new(500, 500, 4), CFrame.new(C + off), Color3.new(1, 1, 1), nil, 1)
         b.CanCollide = true
     end
+    -- ===== ESFERA VERMELHA (domo) =====
+    local DOME_R = 700
+    sky = Instance.new("Part")
+    sky.Name = "SukunaSkySphere"
+    sky.Anchored = true
+    sky.CanCollide = false
+    sky.CanQuery = false
+    sky.CanTouch = false
+    sky.CastShadow = false
+    sky.Size = Vector3.new(DOME_R * 2, DOME_R * 2, DOME_R * 2)
+    sky.CFrame = CFrame.new(C)
+    sky.Material = Enum.Material.Neon
+    sky.Color = Color3.fromRGB(170, 0, 0)
+    sky.Transparency = 0
+    sky.Parent = folder
 
-    sky = buildSkyDome(folder, C, 1900, SUK_SKYBOX)
+    local mesh = Instance.new("SpecialMesh")
+    mesh.MeshType = Enum.MeshType.Sphere
+    mesh.Scale = Vector3.new(-1, 1, 1)   -- inverte a esfera para aparecer por dentro
+    mesh.Parent = sky
+
+    -- fumaça vermelha em volta (reforço visual)
+    for i = 1, 10 do
+        local ang = (i / 10) * math.pi * 2
+        local pos = C + Vector3.new(math.cos(ang) * 420, 260 + math.random(-30, 60), math.sin(ang) * 420)
+        local sp = mkp(folder, Vector3.new(4, 4, 4), CFrame.new(pos), Color3.new(1, 1, 1), nil, 1)
+        local e = Instance.new("ParticleEmitter")
+        e.Texture = "rbxasset://textures/particles/smoke_main.dds"
+        e.Rate = 2
+        e.Lifetime = NumberRange.new(10, 16)
+        e.Speed = NumberRange.new(3, 9)
+        e.SpreadAngle = Vector2.new(180, 180)
+        e.Rotation = NumberRange.new(0, 360)
+        e.RotSpeed = NumberRange.new(-8, 8)
+        e.Drag = 0.4
+        e.LightEmission, e.LightInfluence = 0.1, 0
+        e.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 160), NumberSequenceKeypoint.new(1, 360) })
+        e.Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.2, 0.45),
+            NumberSequenceKeypoint.new(0.8, 0.6), NumberSequenceKeypoint.new(1, 1) })
+        e.Color = ColorSequence.new(Color3.fromRGB(150, 0, 0), Color3.fromRGB(70, 0, 0))
+        e.Parent = sp
+    end
 
     pcall(function() Lighting.Ambient = Color3.fromRGB(90, 0, 0) end)
     pcall(function() Lighting.OutdoorAmbient = Color3.fromRGB(70, 0, 0) end)
     pcall(function() Lighting.Brightness = 1.1 end)
     pcall(function() Lighting.ClockTime = 0 end)
-    pcall(function() Lighting.FogColor = Color3.fromRGB(60, 0, 0) end)
-    pcall(function() Lighting.FogStart = 80 end)
-    pcall(function() Lighting.FogEnd = 600 end)
-
+    pcall(function() Lighting.FogColor = Color3.fromRGB(120, 0, 0) end)
+    pcall(function() Lighting.FogStart = 500 end)
+    pcall(function() Lighting.FogEnd = 5000 end)   -- bem maior que o raio: não esconde a esfera
     cc = Instance.new("ColorCorrectionEffect")
     cc.Name = "SukunaCC"
     cc.TintColor = Color3.fromRGB(255, 110, 110)
@@ -6311,7 +6539,7 @@ local function runSukunaDomain(senderName)
     atm = Instance.new("Atmosphere")
     atm.Name = "SukunaAtmosphere"
     atm.Color, atm.Decay = Color3.fromRGB(150, 0, 0), Color3.fromRGB(60, 0, 0)
-    atm.Density, atm.Haze = 0.3, 1.3
+    atm.Density, atm.Haze = 0.12, 0.4
     atm.Parent = Lighting
 
     myHrp.AssemblyLinearVelocity = Vector3.zero
@@ -6320,7 +6548,10 @@ local function runSukunaDomain(senderName)
     -- ===== 3) o santuário sobe primeiro, antes de qualquer corte =====
     local shrine = buildMalevolentShrine(folder)
     if shrine and shrine.PrimaryPart then
-        local tcf = CFrame.new(C) * CFrame.new(0, 13, -40)
+        local floorTop = C.Y + 2   -- topo do chão do domínio
+        local bcf, bs = shrine:GetBoundingBox()
+        local bo = shrine:GetPivot().Position.Y - (bcf.Position.Y - bs.Y / 2)
+        local tcf = CFrame.new(C.X, floorTop + bo + 0, C.Z - 40)
         local scf = tcf * CFrame.new(0, -45, 0)
         shrine:PivotTo(scf)
         for i = 1, 50 do
@@ -6351,15 +6582,48 @@ local function runSukunaDomain(senderName)
         local holder = mkp(folder, Vector3.new(0.2, 0.2, 0.2), CFrame.new(a), Color3.new(1, 1, 1), nil, 1)
         local a0 = Instance.new("Attachment") a0.Parent = holder a0.WorldPosition = a
         local a1 = Instance.new("Attachment") a1.Parent = holder a1.WorldPosition = b
-        local beam = Instance.new("Beam")
-        beam.Attachment0, beam.Attachment1 = a0, a1
-        beam.Width0, beam.Width1 = 0.55, 0.55
-        beam.FaceCamera, beam.Segments = true, 1
-        beam.Color = ColorSequence.new(Color3.new(1, 1, 1))
-        beam.LightEmission, beam.LightInfluence = 1, 0
-        beam.Parent = holder
-        tw(beam, 0.25, { Width0 = 0, Width1 = 0 })
-        Debris:AddItem(holder, 0.35)
+
+        -- brilho largo e suave por trás
+        local glow = Instance.new("Beam")
+        glow.Attachment0, glow.Attachment1 = a0, a1
+        glow.Width0, glow.Width1 = 1.6, 1.6
+        glow.FaceCamera, glow.Segments = true, 1
+        glow.Color = ColorSequence.new(Color3.fromRGB(235, 235, 245))
+        glow.Transparency = NumberSequence.new(0.55)
+        glow.LightEmission, glow.LightInfluence = 1, 0
+        glow.Parent = holder
+
+        -- núcleo fino e brilhante por cima
+        local core = Instance.new("Beam")
+        core.Attachment0, core.Attachment1 = a0, a1
+        core.Width0, core.Width1 = 0.6, 0.6
+        core.FaceCamera, core.Segments = true, 1
+        core.Color = ColorSequence.new(Color3.new(1, 1, 1))
+        core.LightEmission, core.LightInfluence = 1, 0
+        core.Parent = holder
+
+        tw(glow, 0.3, { Width0 = 0, Width1 = 0 })
+        tw(core, 0.3, { Width0 = 0, Width1 = 0 })
+
+        -- clarão + faíscas brancas na ponta do corte
+        local flashPart = mkp(folder, Vector3.new(0.2, 0.2, 0.2), CFrame.new(b), Color3.new(1, 1, 1), nil, 1)
+        local pl = Instance.new("PointLight")
+        pl.Color, pl.Range, pl.Brightness = Color3.new(1, 1, 1), 10, 3
+        pl.Parent = flashPart
+        task.delay(0.08, function() if pl.Parent then pl.Brightness = 0 end end)
+        local e = Instance.new("ParticleEmitter")
+        e.Rate = 0
+        e.Lifetime = NumberRange.new(0.15, 0.3)
+        e.Speed = NumberRange.new(6, 18)
+        e.SpreadAngle = Vector2.new(50, 50)
+        e.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.5), NumberSequenceKeypoint.new(1, 0) })
+        e.Color = ColorSequence.new(Color3.new(1, 1, 1))
+        e.LightEmission, e.LightInfluence = 1, 0
+        e.Parent = flashPart
+        e:Emit(8)
+
+        Debris:AddItem(holder, 0.4)
+        Debris:AddItem(flashPart, 0.5)
     end
 
     local st = os.clock()
