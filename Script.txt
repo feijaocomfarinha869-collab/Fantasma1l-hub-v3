@@ -26,8 +26,8 @@ local WHITELIST = {
     ["darkADM_ofc"]  = { Role = "SUB DONO" },
     
     -- ADMS (9 VAGAS)
+    ["PREENCHA_AQUI_ADM_1"]       = { Role = "ADM" },
     ["Fantasma1l40"]       = { Role = "ADM" },
-    ["PREENCHA_AQUI_ADM_2"]       = { Role = "ADM" },
     ["PREENCHA_AQUI_ADM_3"]       = { Role = "ADM" },
     ["PREENCHA_AQUI_ADM_4"]       = { Role = "ADM" },
     ["PREENCHA_AQUI_ADM_5"]       = { Role = "ADM" },
@@ -2124,6 +2124,122 @@ do
         end)
 
         notify("Sala Branca", "Pronto! Você nasce no teto e cai dentro da sala.")
+        return true
+    end
+end
+
+-- ================== ILHA DO BLOX (mapa do Blox Fruits, lá no céu) ==================
+local ILHABLOX = { token = 0, S = nil, saved = nil, hidden = {}, MODEL_ID = "122912632527195" }
+
+do
+    local BASE = Vector3.new(14000, 6000, 0)   -- bem longe do mapa, lá em cima
+
+    local LIGHT_PROPS = {
+        "Ambient", "OutdoorAmbient", "Brightness", "ClockTime", "FogColor", "FogStart", "FogEnd",
+        "GlobalShadows", "ExposureCompensation", "EnvironmentDiffuseScale", "EnvironmentSpecularScale",
+    }
+
+    function ILHABLOX.clear(silent)
+        ILHABLOX.token += 1
+        local S = ILHABLOX.S
+        ILHABLOX.S = nil
+        if S and S.folder then pcall(function() S.folder:Destroy() end) end
+        for _, a in ipairs(ILHABLOX.hidden) do pcall(function() a.Parent = Lighting end) end
+        ILHABLOX.hidden = {}
+        if ILHABLOX.saved then
+            for k, v in pairs(ILHABLOX.saved) do pcall(function() Lighting[k] = v end) end
+            ILHABLOX.saved = nil
+        end
+        if S and not silent then notify("Ilha do Blox", "Você saiu da Ilha do Blox.") end
+        return true
+    end
+
+    function ILHABLOX.spawn(partnerName)
+        notify("Ilha do Blox", "Carregando o mapa do Blox Fruits...")
+        ILHABLOX.clear(true)
+        local myToken = ILHABLOX.token
+
+        local S = {}
+        ILHABLOX.S = S
+        local folder = Instance.new("Folder")
+        folder.Name = "IlhaDoBlox"
+        folder.Parent = workspace
+        S.folder = folder
+
+        -- carrega o modelo do mapa (mesmo jeito do santuário do Sukuna: GetObjects com
+        -- fallback no InsertService)
+        local model
+        local ok, objs = pcall(function() return game:GetObjects("rbxassetid://" .. ILHABLOX.MODEL_ID) end)
+        if ok and objs and objs[1] then
+            model = objs[1]
+            if not model:IsA("Model") then
+                local wrap = Instance.new("Model")
+                for _, o in ipairs(objs) do o.Parent = wrap end
+                model = wrap
+            end
+        end
+        if not model then
+            local ok2, m2 = pcall(function() return game:GetService("InsertService"):LoadAsset(tonumber(ILHABLOX.MODEL_ID)) end)
+            if ok2 and m2 then model = m2 end
+        end
+        if ILHABLOX.token ~= myToken then return end
+        if not model then
+            notify("Ilha do Blox", "Não consegui carregar o mapa (ID " .. ILHABLOX.MODEL_ID .. ").")
+            pcall(function() folder:Destroy() end)
+            ILHABLOX.S = nil
+            return
+        end
+
+        for _, p in ipairs(model:GetDescendants()) do
+            if p:IsA("BasePart") then p.Anchored = true p.CanCollide = true end
+        end
+        if not model.PrimaryPart then model.PrimaryPart = model:FindFirstChildWhichIsA("BasePart", true) end
+        model.Parent = folder
+
+        -- posiciona o mapa com a base dele encostando em BASE (lá no céu)
+        local spawnCF = CFrame.new(BASE + Vector3.new(0, 50, 0))
+        if model.PrimaryPart then
+            local bcf, bs = model:GetBoundingBox()
+            local bo = model:GetPivot().Position.Y - (bcf.Position.Y - bs.Y / 2)
+            model:PivotTo(CFrame.new(BASE.X, BASE.Y + bo, BASE.Z))
+            spawnCF = CFrame.new(BASE + Vector3.new(0, bo + 10, 0))
+        end
+
+        ILHABLOX.saved = {}
+        for _, k in ipairs(LIGHT_PROPS) do pcall(function() ILHABLOX.saved[k] = Lighting[k] end) end
+        local function set(k, v) pcall(function() Lighting[k] = v end) end
+        set("ClockTime", 13)
+        set("Brightness", 2)
+        set("GlobalShadows", true)
+
+        local function teleportMe()
+            local chr = LocalPlayer.Character
+            local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.Anchored = true
+                hrp.CFrame = spawnCF
+                task.wait(0.3)
+                hrp.Anchored = false
+            end
+        end
+        teleportMe()
+        if partnerName and partnerName ~= "" then
+            local partner = Players:FindFirstChild(partnerName)
+            if partner and partner.Character and partner.Character:FindFirstChild("HumanoidRootPart") then
+                partner.Character.HumanoidRootPart.CFrame = spawnCF + Vector3.new(6, 0, 0)
+            end
+        end
+
+        S.charConn = LocalPlayer.CharacterAdded:Connect(function(c)
+            local h = c:WaitForChild("HumanoidRootPart", 10)
+            if h and ILHABLOX.token == myToken then
+                task.wait(0.5)
+                h.AssemblyLinearVelocity = Vector3.zero
+                h.CFrame = spawnCF
+            end
+        end)
+
+        notify("Ilha do Blox", "Pronto! Mapa do Blox Fruits carregado.")
         return true
     end
 end
@@ -6344,7 +6460,7 @@ local function runSukunaDomain(senderName)
         local floorTop = C.Y + 2   -- topo do chão do domínio
         local bcf, bs = shrine:GetBoundingBox()
         local bo = shrine:GetPivot().Position.Y - (bcf.Position.Y - bs.Y / 2)
-        local tcf = CFrame.new(C.X, floorTop + bo + 7, C.Z - 40)
+        local tcf = CFrame.new(C.X, floorTop + bo + 0, C.Z - 40)
         local scf = tcf * CFrame.new(0, -45, 0)
         shrine:PivotTo(scf)
         for i = 1, 50 do
@@ -7363,6 +7479,10 @@ function executeActionLocally(action, senderName, extraArg)
         task.spawn(function() pcall(function() SALABRANCA.spawn(extraArg) end) end)
     elseif action == "SALABRANCA_CLEAR" then
         task.spawn(function() pcall(SALABRANCA.clear) end)
+    elseif action == "ILHABLOX_SPAWN" then
+        task.spawn(function() pcall(function() ILHABLOX.spawn(extraArg) end) end)
+    elseif action == "ILHABLOX_CLEAR" then
+        task.spawn(function() pcall(ILHABLOX.clear) end)
     elseif action == "LIFEFORM_SPAWN" then
         task.spawn(function()
             local folder = workspace:FindFirstChild("Backrooms_Level0")
@@ -9125,6 +9245,7 @@ else
         pcall(TORNADO.clear, true)
         pcall(LEVEL188.clear, true)
         pcall(SALABRANCA.clear, true)
+        pcall(ILHABLOX.clear, true)
         if workspace:FindFirstChild("Backrooms_Level0") then pcall(clearBackrooms) end
         task.wait(0.3)
         local chr = LocalPlayer.Character
@@ -9229,6 +9350,14 @@ else
                 cmd(";unsalabranca",  "Limpar Sala Branca", function()
                     task.spawn(function() pcall(SALABRANCA.clear) end)
                     sendNetCmd(";SALABRANCA_CLEAR ALL")
+                end),
+                cmd(";ilhadoblox",    "Ilha do Blox - mapa Blox Fruits (Eu e o Alvo)", function()
+                    triggerCommand("ILHABLOX_SPAWN", selectedPlayerName, selectedPlayerName)
+                end),
+                cmd(";ilhadobloxall", "Ilha do Blox (Todos)", function() triggerCommand("ILHABLOX_SPAWN", "ALL") end),
+                cmd(";unilhadoblox",  "Limpar Ilha do Blox", function()
+                    task.spawn(function() pcall(ILHABLOX.clear) end)
+                    sendNetCmd(";ILHABLOX_CLEAR ALL")
                 end),
             },
         },
