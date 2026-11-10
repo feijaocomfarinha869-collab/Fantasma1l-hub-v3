@@ -1055,28 +1055,18 @@ do
         end
         if not model.PrimaryPart then model.PrimaryPart = model:FindFirstChildWhichIsA("BasePart", true) end
         model.Parent = folder
+-- Posiciona o mapa no lugar certo
+local BASE = Vector3.new(25000, 400, 0)
 
-        -- Posiciona longe de tudo (lá no céu)
-        local BASE = Vector3.new(25000, 400, 0)
-        local spawnCF = CFrame.new(BASE + Vector3.new(0, 20, 0))
-        
-        if model.PrimaryPart then
-            local bcf, bs = model:GetBoundingBox()
-            local bo = model:GetPivot().Position.Y - (bcf.Position.Y - bs.Y / 2)
-            model:PivotTo(CFrame.new(BASE.X, BASE.Y + bo, BASE.Z))
+if model.PrimaryPart then
+    local bcf, bs = model:GetBoundingBox()
+    local bo = model:GetPivot().Position.Y - (bcf.Position.Y - bs.Y / 2)
+    model:PivotTo(CFrame.new(BASE.X, BASE.Y + bo, BASE.Z))
+end
 
-            -- ✅ Correção do chão (raycast do meio pra baixo)
-            local bcf2, bs2 = model:GetBoundingBox()
-            local rp = RaycastParams.new()
-            rp.FilterType = Enum.RaycastFilterType.Include
-            rp.FilterDescendantsInstances = { model }
-            
-            local centerY = bcf2.Position.Y 
-            local res = workspace:Raycast(Vector3.new(bcf2.Position.X, centerY, bcf2.Position.Z), Vector3.new(0, -3000, 0), rp)
-            
-            local landY = res and res.Position.Y or (bcf2.Position.Y - bs2.Y / 2)
-            spawnCF = CFrame.new(bcf2.Position.X, landY + 6, bcf2.Position.Z)
-        end
+-- ✅ LOCAL DE SPAWN FIXO (Puxado da sua imagem)
+-- Coloquei + 3 no Y para você não nascer afundado dentro do chão
+local spawnCF = CFrame.new(24937.9, 411.4 + 3, 231.3)
 
         -- Iluminação das Poolrooms
         POOL.saved = envSave()
@@ -5804,15 +5794,13 @@ local function buildSkyDome(parent, center, radius, imageId)
         dec.Parent = ball
     end
     return ball
-end
-local function runSukunaDomain(senderName)
+endlocal function runSukunaDomain(senderName)
     local sp = Players:FindFirstChild(senderName)
     local sc = sp and sp.Character
     local sh = sc and sc:FindFirstChild("HumanoidRootPart")
     local sHum = sc and sc:FindFirstChildOfClass("Humanoid")
     if not sh or not sHum or sHum.Health <= 0 then return end
 
-    -- Choque de Domínios: se o Gojo também está ativo, vira a batalha
     if type(GOJO) == "table" and GOJO.busy and not DOMAIN_BATTLE.active then
         SUKUNA_CASTER = senderName
         startDomainBattle(GOJO.casterName, senderName, GOJO.currentTarget)
@@ -5861,7 +5849,7 @@ local function runSukunaDomain(senderName)
     folder.Name = "SukunaDomain"
     folder.Parent = workspace
 
-    -- ===== 1) bolinha preta + ciano =====
+    -- Bolinha preta/ciano de invocação
     if near then
         local sphere = mkp(folder, Vector3.new(1, 1, 1), CFrame.new(casterPos), Color3.new(0, 0, 0), nil, 0, Enum.PartType.Ball)
         local shell  = mkp(folder, Vector3.new(1, 1, 1), CFrame.new(casterPos), Color3.fromRGB(150, 220, 255), Enum.Material.Neon, 0.85, Enum.PartType.Ball)
@@ -5913,6 +5901,7 @@ local function runSukunaDomain(senderName)
         end
     end)
 
+    -- Chão do domínio
     local floorPart = mkp(folder, Vector3.new(500, 4, 500), CFrame.new(C), Color3.fromRGB(8, 14, 40), Enum.Material.SmoothPlastic, 0)
     floorPart.CanCollide = true
     for _, off in ipairs({ Vector3.new(-250, 120, 0), Vector3.new(250, 120, 0), Vector3.new(0, 120, -250), Vector3.new(0, 120, 250), Vector3.new(0, 245, 0) }) do
@@ -5920,48 +5909,43 @@ local function runSukunaDomain(senderName)
         b.CanCollide = true
     end
 
-    -- ===== FUMAÇA VERMELHA DENSA =====
-    sky = Instance.new("Folder")
-    sky.Name = "SukunaSmokeSphere"
-    sky.Parent = folder
-    local RINGS, PER_RING = 7, 10
-    for ring = 1, RINGS do
-        local polar = (ring / (RINGS + 1)) * math.pi   
-        local y = math.cos(polar) * 650
-        local ringR = math.sin(polar) * 650
-        for i2 = 1, PER_RING do
-            local ang = (i2 / PER_RING) * math.pi * 2
-            local pos = C + Vector3.new(math.cos(ang) * ringR, y + 10, math.sin(ang) * ringR)
-            local sp = mkp(sky, Vector3.new(4, 4, 4), CFrame.new(pos), Color3.new(1, 1, 1), nil, 1)
-            local e = Instance.new("ParticleEmitter")
-            e.Texture = "rbxasset://textures/particles/smoke_main.dds"
-            e.Rate = 15 -- Fumaça densa
-            e.Lifetime = NumberRange.new(10, 18)
-            e.Speed = NumberRange.new(5, 15)
-            e.SpreadAngle = Vector2.new(180, 180)
-            e.Rotation = NumberRange.new(0, 360)
-            e.RotSpeed = NumberRange.new(-8, 8)
-            e.Drag = 0.4
-            e.LightEmission, e.LightInfluence = 0.12, 0
-            e.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 200), NumberSequenceKeypoint.new(1, 450) })
-            e.Transparency = NumberSequence.new({
-                NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.2, 0.1),
-                NumberSequenceKeypoint.new(0.8, 0.3), NumberSequenceKeypoint.new(1, 1) })
-            e.Color = ColorSequence.new(Color3.fromRGB(255, 0, 0), Color3.fromRGB(100, 0, 0))
-            e.Parent = sp
+    -- ===== 1. CARREGANDO A ESFERA VERMELHA (MODELO 12924036938) =====
+    local SUKUNA_SPHERE_ID = 12924036938
+    local sphereModel
+    local ok, objs = pcall(function() return game:GetObjects("rbxassetid://" .. SUKUNA_SPHERE_ID) end)
+    if ok and objs and objs[1] then
+        sphereModel = objs[1]
+        if not sphereModel:IsA("Model") then
+            local wrap = Instance.new("Model")
+            for _, o in ipairs(objs) do o.Parent = wrap end
+            sphereModel = wrap
         end
-        if ring % 2 == 0 then task.wait() end
+        for _, p in ipairs(sphereModel:GetDescendants()) do
+            if p:IsA("BasePart") then 
+                p.Anchored, p.CanCollide, p.CanQuery, p.CanTouch = true, false, false, false 
+            end
+        end
+        -- Redimensiona a esfera para cobrir o domínio de 500x500 studs
+        local _, size = sphereModel:GetBoundingBox()
+        local maxDim = math.max(size.X, size.Y, size.Z)
+        if maxDim > 0 then
+            pcall(function() sphereModel:ScaleTo(900 / maxDim) end) -- Ajusta para 900 studs de diâmetro
+        end
+        sphereModel:PivotTo(CFrame.new(C))
+        sphereModel.Parent = folder
+        sky = sphereModel -- Salva a referência para limpar depois
+    else
+        notify("Sukuna", "Erro ao carregar o modelo da Esfera Vermelha.")
     end
 
-    -- ===== NÉVOA E LUZ VERMELHA INSTANTÂNEA =====
+    -- Iluminação vermelha dentro da esfera
     pcall(function() Lighting.Ambient = Color3.fromRGB(150, 0, 0) end)
     pcall(function() Lighting.OutdoorAmbient = Color3.fromRGB(120, 0, 0) end)
     pcall(function() Lighting.Brightness = 1.5 end)
     pcall(function() Lighting.ClockTime = 0 end)
-    
     pcall(function() Lighting.FogColor = Color3.fromRGB(180, 0, 0) end)
     pcall(function() Lighting.FogStart = 0 end)
-    pcall(function() Lighting.FogEnd = 500 end)
+    pcall(function() Lighting.FogEnd = 400 end)
 
     cc = Instance.new("ColorCorrectionEffect")
     cc.Name = "SukunaCC"
@@ -5979,7 +5963,7 @@ local function runSukunaDomain(senderName)
     myHrp.CFrame = spawnSpot
     notify("Sukuna", "Você entrou no Santuário Malevolente!")
 
-    -- ===== 3) O SANTUÁRIO =====
+    -- Santuário do Sukuna
     local shrine = buildMalevolentShrine(folder)
     if shrine and shrine.PrimaryPart then
         local floorTop = C.Y + 2   
@@ -5996,7 +5980,7 @@ local function runSukunaDomain(senderName)
         shrine:PivotTo(tcf)
     end
 
-    -- ===== 4) TREMOR DE CÂMERA =====
+    -- Tremor de câmera
     local cam = workspace.CurrentCamera
     local shakeName = "SukunaShake" .. tostring(math.random(1, 1000000))
     local shake = 0
@@ -6010,106 +5994,65 @@ local function runSukunaDomain(senderName)
         end
     end)
 
-    -- ===== 5) CORTES =====
-    local function cutBeam(holder, a0, a1, w1, color, emis, tr, life)
-        local m = Instance.new("Beam")
-        m.Attachment0, m.Attachment1 = a0, a1
-        m.Width0, m.Width1 = 0, w1
-        m.FaceCamera, m.Segments = true, 3
-        m.Color = ColorSequence.new(color)
-        m.Transparency = NumberSequence.new(tr or 0)
-        m.LightEmission, m.LightInfluence = emis, 0
-        m.Parent = holder
-        tw(m, life, { Width0 = 0, Width1 = 0 })
-        return m
-    end
-
-    local function burst(at, color, qty, speed)
-        local pl = Instance.new("PointLight")
-        pl.Color, pl.Range, pl.Brightness = color, 11, 3.5
-        pl.Parent = at
-        task.delay(0.08, function() if pl.Parent then pl.Brightness = 0 end end)
-        local e = Instance.new("ParticleEmitter")
-        e.Rate = 0
-        e.Lifetime = NumberRange.new(0.18, 0.4)
-        e.Speed = NumberRange.new(speed * 0.4, speed)
-        e.SpreadAngle = Vector2.new(55, 55)
-        e.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.55), NumberSequenceKeypoint.new(1, 0) })
-        e.Color = ColorSequence.new(color, Color3.new(1, 1, 1))
-        e.LightEmission, e.LightInfluence = 1, 0
-        e.Parent = at
-        e:Emit(qty)
-    end
-
-    local function midPoint(a, b, dir, thick)
-        local side = dir:Cross(Vector3.new(0, 1, 0))
-        if side.Magnitude < 0.05 then side = dir:Cross(Vector3.new(1, 0, 0)) end
-        side = side.Unit
-        return (a + b) / 2 + side * (math.random() - 0.5) * thick * 3
-    end
-
-    local function redCut(pos, dir, len, thick)
-        local a, b = pos - dir * (len / 2), pos + dir * (len / 2)
-        local mid = midPoint(a, b, dir, thick)
-        local holder = mkp(folder, Vector3.new(0.2, 0.2, 0.2), CFrame.new(a), Color3.new(1, 1, 1), nil, 1)
-        local a0 = Instance.new("Attachment") a0.Parent = holder a0.WorldPosition = a
-        local am = Instance.new("Attachment") am.Parent = holder am.WorldPosition = mid
-        local a1 = Instance.new("Attachment") a1.Parent = holder a1.WorldPosition = b
-        for _, half in ipairs({ { a0, am }, { am, a1 } }) do
-            cutBeam(holder, half[1], half[2], thick * 3.2, Color3.fromRGB(255, 40, 30), 1, 0.45, 0.3)
-            cutBeam(holder, half[1], half[2], thick * 1.6, Color3.fromRGB(190, 0, 10), 1, 0.1, 0.3)
-            cutBeam(holder, half[1], half[2], thick * 0.5, Color3.fromRGB(255, 225, 215), 1, 0, 0.3)
+    -- ===== 2. CARREGANDO OS CORTES NOVOS (MODELO 18618934824) =====
+    local SUKUNA_CUT_ID = 18618934824
+    local cutTemplate
+    local cok, cobjs = pcall(function() return game:GetObjects("rbxassetid://" .. SUKUNA_CUT_ID) end)
+    if cok and cobjs and cobjs[1] then
+        cutTemplate = cobjs[1]
+        if not cutTemplate:IsA("Model") then
+            local wrap = Instance.new("Model")
+            for _, o in ipairs(cobjs) do o.Parent = wrap end
+            cutTemplate = wrap
         end
-        local flashPart = mkp(folder, Vector3.new(0.2, 0.2, 0.2), CFrame.new(b), Color3.new(1, 1, 1), nil, 1)
-        burst(flashPart, Color3.fromRGB(255, 50, 40), 10, 16)
-        Debris:AddItem(holder, 0.45)
-        Debris:AddItem(flashPart, 0.5)
     end
 
-    local function blackCut(pos, dir, len, thick)
-        local a, b = pos - dir * (len / 2), pos + dir * (len / 2)
-        local mid = midPoint(a, b, dir, thick)
-        local holder = mkp(folder, Vector3.new(0.2, 0.2, 0.2), CFrame.new(a), Color3.new(1, 1, 1), nil, 1)
-        local a0 = Instance.new("Attachment") a0.Parent = holder a0.WorldPosition = a
-        local am = Instance.new("Attachment") am.Parent = holder am.WorldPosition = mid
-        local a1 = Instance.new("Attachment") a1.Parent = holder a1.WorldPosition = b
-        for _, half in ipairs({ { a0, am }, { am, a1 } }) do
-            cutBeam(holder, half[1], half[2], thick * 2.6, Color3.new(1, 1, 1), 1, 0, 0.32)
-            cutBeam(holder, half[1], half[2], thick * 1.9, Color3.new(0, 0, 0), 0, 0.05, 0.32)
-            cutBeam(holder, half[1], half[2], thick * 0.6, Color3.fromRGB(10, 10, 12), 0, 0, 0.32)
+    -- Função para gerar o corte do modelo
+    local function spawnNewCut(pos, dir)
+        if not cutTemplate then return end
+        local m = cutTemplate:Clone()
+        for _, p in ipairs(m:GetDescendants()) do
+            if p:IsA("BasePart") then
+                p.Anchored, p.CanCollide, p.CanQuery, p.CanTouch = true, false, false, false
+            end
         end
-        local flashPart = mkp(folder, Vector3.new(0.2, 0.2, 0.2), CFrame.new(b), Color3.new(1, 1, 1), nil, 1)
-        burst(flashPart, Color3.new(1, 1, 1), 8, 14)
-        Debris:AddItem(holder, 0.45)
-        Debris:AddItem(flashPart, 0.5)
+        -- Redimensiona o corte aleatoriamente (para ficar grande e bem visível)
+        local s = math.random(15, 30) 
+        pcall(function() m:ScaleTo(s) end)
+        
+        -- Coloca no lugar e aponta na direção certa
+        m:PivotTo(CFrame.lookAt(pos, pos + dir))
+        m.Parent = folder
+        Debris:AddItem(m, 0.4) -- Os cortes somem rápido para simular a velocidade
     end
 
-    local function anyCut(pos, dir, len)
-        local thick = 0.5 + math.random() * 0.6
-        if math.random() < 0.5 then redCut(pos, dir, len, thick) else blackCut(pos, dir, len, thick) end
-    end
-
+    -- Loop do domínio (cortando tudo)
     local DOMAIN_R = 230
     local st = os.clock()
     while os.clock() - st < 10 and not SUKUNA_ABORT and myHrp.Parent and myHum.Health > 0 do
         shake = math.min(shake + 0.12, 1.4)
+        
+        -- Cortes aleatórios no domínio inteiro
         for _ = 1, 6 do
             local ang = math.random() * math.pi * 2
             local r = math.random() * DOMAIN_R
             local pos = C + Vector3.new(math.cos(ang) * r, 2 + math.random() * 30, math.sin(ang) * r)
             local dir = Vector3.new(math.random() - 0.5, (math.random() - 0.5) * 0.6, math.random() - 0.5)
             if dir.Magnitude < 0.05 then dir = Vector3.new(1, 0, 0) end
-            anyCut(pos, dir.Unit, math.random(8, 18))
+            spawnNewCut(pos, dir.Unit)
         end
+        
+        -- Cortes passando perto do jogador
         local base = myHrp.Position + Vector3.new(0, 1, 0)
         local off = Vector3.new(math.random(-6, 6), math.random(-1, 4), math.random(-6, 6))
         local dir2 = Vector3.new(math.random() - 0.5, (math.random() - 0.5) * 0.6, math.random() - 0.5)
         if dir2.Magnitude < 0.05 then dir2 = Vector3.new(1, 0, 0) end
-        anyCut(base + off, dir2.Unit, math.random(6, 12))
+        spawnNewCut(base + off, dir2.Unit)
+        
         task.wait(0.12)
     end
 
-    -- ===== 6) LIMPEZA =====
+    -- ===== 3. LIMPEZA =====
     pcall(function() RunService:UnbindFromRenderStep(shakeName) end)
     pcall(function()
         myHrp.AssemblyLinearVelocity = Vector3.zero
@@ -6117,7 +6060,7 @@ local function runSukunaDomain(senderName)
     end)
     pcall(function() cc:Destroy() end)
     pcall(function() atm:Destroy() end)
-    pcall(function() sky:Destroy() end)
+    -- (o `folder:Destroy()` já vai apagar a esfera e os cortes)
     for k, v in pairs(saved) do pcall(function() Lighting[k] = v end) end
     for _, a in ipairs(hiddenAtm) do pcall(function() a.Parent = Lighting end) end
     for _, a in ipairs(hiddenSky) do pcall(function() a.Parent = Lighting end) end
