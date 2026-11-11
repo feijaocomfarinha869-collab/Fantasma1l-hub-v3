@@ -1,4 +1,4 @@
---[[
+
     ==========================================================
     FANTASMA1L HUB - COMPLETO UNIFICADO v51
     (+ LOCUST COM REDE | POOLROOMS | PREFIXO ; | TORNADO EF5
@@ -65,7 +65,7 @@ local AK47_MODEL_ID    = 255662618
 local YORU_MODEL_ID    = 79128297434634
 local CUSTOM_ANIM_ID   = "rbxassetid://15489784732"
 local SKYLINE_MODEL_ID = 96341548276150
-local AURA_MODEL_ID    = "117220057454497"
+local AURA_ANIM_ID     = "rbxassetid://106708015414624"
 local SUK_SHRINE       = "18726352770"
 local SUK_CUTS         = "17225837968"
 local SUK_AUDIO        = "rbxassetid://6590147536"
@@ -1172,25 +1172,6 @@ local spawnCF = CFrame.new(24937.9, 411.4 + 3, 231.3)
         return true
     end
 end
-
--- ================== SERVIÇOS E VARIÁVEIS PADRÃO ==================
-local Players = game:GetService("Players")
-local Lighting = game:GetService("Lighting")
-local TweenService = game:GetService("TweenService")
-local StarterGui = game:GetService("StarterGui")
-local LocalPlayer = Players.LocalPlayer
-
--- Função de notificação (para não dar erro se o executor não tiver uma)
-local function notify(title, text)
-    pcall(function()
-        StarterGui:SetCore("SendNotification", {
-            Title = title,
-            Text = text,
-            Duration = 5
-        })
-    end)
-    print("[NOTIFICAÇÃO] " .. title .. ": " .. text)
-end
 -- ================== SERVIÇOS E VARIÁVEIS PADRÃO ==================
 local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
@@ -1437,11 +1418,6 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
-
--- ================== EXECUTAR O SPAWN ==================
--- Se quiser chamar um amigo para ir junto, coloque o nome dele entre as aspas. Ex: LEVEL188.spawn("NomeDoAmigo")
-LEVEL188.spawn("") 
-
 -- ================== SALA BRANCA (dimensão própria, lá no céu) ==================
 local SALABRANCA = { token = 0, S = nil, saved = nil, hidden = {} }
 
@@ -1573,12 +1549,12 @@ do
         return true
     end
 end
--- ================== ILHA DO BLOX (mapa do Blox Fruits + águas infinitas) ==================
+
+-- ================== ILHA DO BLOX (mapa do Blox Fruits + águas) ==================
 local ILHABLOX = {
     token = 0, S = nil, saved = nil, hidden = {},
-    MODEL_ID = "89625645114556",       -- ilha (mapa do Blox Fruits)
-    WATER_ID = "11387489894",          -- águas (modelo, plano infinito)
-    WATER_Y_OFFSET = 0,                -- ajuste fino da altura da água (studs)
+    MODEL_ID = "89625645114556",     -- ilha (mapa do Blox Fruits)
+    WATER_ID = "11387489894",        -- águas / mar em volta da ilha
 }
 
 do
@@ -1604,6 +1580,7 @@ do
         return true
     end
 
+    -- carrega um asset como Model (GetObjects + fallback InsertService)
     local function loadModel(id)
         local m
         local ok, objs = pcall(function() return game:GetObjects("rbxassetid://" .. tostring(id)) end)
@@ -1650,7 +1627,7 @@ do
         if not model.PrimaryPart then model.PrimaryPart = model:FindFirstChildWhichIsA("BasePart", true) end
         model.Parent = folder
 
-        -- posiciona a ilha
+        -- posiciona a ilha (base encostando em BASE)
         local spawnCF = CFrame.new(BASE + Vector3.new(0, 50, 0))
         if model.PrimaryPart then
             local bcf, bs = model:GetBoundingBox()
@@ -1667,7 +1644,7 @@ do
             spawnCF = CFrame.new(bcf2.Position.X, landY + 6, bcf2.Position.Z)
         end
 
-        -- ===== ÁGUAS (modelo infinito): só alinha a altura =====
+        -- ===== carrega as ÁGUAS em volta da ilha =====
         if ILHABLOX.WATER_ID and ILHABLOX.WATER_ID ~= "" then
             local waterModel = loadModel(ILHABLOX.WATER_ID)
             if ILHABLOX.token ~= myToken then return end
@@ -1675,7 +1652,7 @@ do
                 for _, p in ipairs(waterModel:GetDescendants()) do
                     if p:IsA("BasePart") then
                         p.Anchored = true
-                        p.CanCollide = true      -- você anda por cima da água
+                        p.CanCollide = true
                         p.CanQuery = true
                         p.CanTouch = true
                     end
@@ -1685,24 +1662,27 @@ do
                 end
                 waterModel.Parent = folder
 
-                -- água é infinita: X/Z não importa, basta o Y certo
-                local ibcf = model:GetBoundingBox()
-                local wbcf, wbs = waterModel:GetBoundingBox()
-                local wbo = waterModel:GetPivot().Position.Y - (wbcf.Position.Y - wbs.Y / 2)
-                local waterY = BASE.Y + wbo + (ILHABLOX.WATER_Y_OFFSET or 0)
-                waterModel:PivotTo(CFrame.new(ibcf.Position.X, waterY, ibcf.Position.Z))
+                if waterModel.PrimaryPart and model.PrimaryPart then
+                    -- centraliza as águas no X/Z da ilha, com a base alinhada ao mesmo
+                    -- nível vertical (BASE.Y) — assim o mar fica em volta da terra
+                    local ibcf = model:GetBoundingBox()
+                    local wbcf, wbs = waterModel:GetBoundingBox()
+                    local wbo = waterModel:GetPivot().Position.Y - (wbcf.Position.Y - wbs.Y / 2)
+                    waterModel:PivotTo(CFrame.new(ibcf.Position.X, BASE.Y + wbo, ibcf.Position.Z))
+                end
             else
                 notify("Ilha do Blox", "Aviso: não carregou as águas (ID " .. ILHABLOX.WATER_ID .. "). A ilha continua.")
             end
         end
 
-        -- ===== iluminação (céu de praia, combina com mar) =====
+        -- ===== iluminação =====
         ILHABLOX.saved = {}
         for _, k in ipairs(LIGHT_PROPS) do pcall(function() ILHABLOX.saved[k] = Lighting[k] end) end
         local function set(k, v) pcall(function() Lighting[k] = v end) end
         set("ClockTime", 13)
         set("Brightness", 2)
         set("GlobalShadows", true)
+        -- deixa o céu/fog bonitos pra combinar com o mar
         set("FogColor", Color3.fromRGB(180, 215, 235))
         set("FogStart", 200)
         set("FogEnd", 5000)
@@ -5793,6 +5773,7 @@ local function buildSkyDome(parent, center, radius, imageId)
     end
     return ball
 end
+
 -- ===== CONFIG DE DANO (coloque no topo do script) =====
 HUB_ACEITAR_DANO = true        -- false = você não toma dano de domínio dos outros
 SUKUNA_DANO_PERCENT = 0.5      -- 0.5 = 50% da vida máxima do alvo; 1 = mata
@@ -8817,494 +8798,6 @@ else
                 cmd(";unilhadoblox",  "Limpar Ilha do Blox", function()
                     task.spawn(function() pcall(ILHABLOX.clear) end)
                     sendNetCmd(";ILHABLOX_CLEAR ALL")
-                end),
-            },
-        },
-        {
-            name = "Players Effect", icon = "monitor",
-            section = "Efeitos Especiais e Jumpscares", sectionIcon = "sparkles",
-            items = {
-                exec("jumps1", "JUMPSCARE_1"),
-                exec("jumps2", "JUMPSCARE_2"),
-                exec("jumps3", "JUMPSCARE_3"),
-                cmd(";fly",      "Fly com Asas e Dois Halos", function() toggleFlyWithWings() end),
-                cmd(";aura",     "Ativar/Desativar Aura (animação)", function() toggleAura() end),
-                cmd(";flash",    "Flash (ligar/desligar)", function() toggleFX("FLASH") end),
-                cmd(";goldaura", "Aura Dourada (ligar/desligar)", function() toggleFX("AURA") end),
-                cmd(";brainrot",      "Roube um Brainrot (Eu e Alvo)", function()
-                    task.spawn(function() pcall(roubeUmBrainrot, "ON") end)
-                    if selectedPlayerName ~= LocalPlayer.Name then
-                        sendNetCmd(";BRAINROT_SPAWN " .. selectedPlayerName)
-                    end
-                    notify("ADM", "BRAINROT → " .. selectedPlayerName)
-                end),
-                cmd(";brainrotall",   "Roube um Brainrot (Todos)", function() triggerCommand("BRAINROT_SPAWN", "ALL") end),
-                cmd(";unbrainrot",    "Roube um Brainrot (Limpar)", function()
-                    task.spawn(function() pcall(roubeUmBrainrot, "OFF") end)
-                    sendNetCmd(";BRAINROT_CLEAR ALL")
-                end),
-                cmd(";tornado",       "Tornado EF5 (Eu)", function()
-                    task.spawn(function() pcall(TORNADO.spawn, LocalPlayer.Name) end)
-                end),
-                cmd(";tornadoall",    "Tornado EF5 (Todos)", function() triggerCommand("TORNADO_SPAWN", "ALL") end),
-                cmd(";untornado",     "Tornado (Limpar)", function()
-                    task.spawn(function() pcall(TORNADO.clear) end)
-                    sendNetCmd(";TORNADO_CLEAR ALL")
-                end),
-                cmd(";gojo",      "Modo Satoru Gojo", function() giveGojo() end),
-                cmd(";sukuna",    "Expansão de Domínio [Sukuna]", function() triggerCommand("SUKUNA_DOMAIN", "ALL") end),
-                cmd(";gojodominio", "Expansão de Domínio [Gojo] no jogador MAIS PRÓXIMO", function()
-                    GOJO.cast("NEAREST")
-                end),
-                cmd(";gojodominiosel", "Expansão de Domínio [Gojo] no alvo selecionado (pode ser você)", function()
-                    GOJO.cast(selectedPlayerName)
-                end),
-                cmd(";gojocancel", "Cancelar a Expansão de Domínio", function()
-                    GOJO.cancelAll()
-                end),
-                cmd(";ak47",      "Pegar AK-47", function() giveAK47() end),
-                cmd(";yoru",      "Equipar Yoru", function() giveYoru() end),
-                cmd(";gonerplayer", "Goner Player (roupa + Machado Goner)", function() FantasmaGoner.activate() end),
-                cmd(";gonerlearn", "Modo manual: ensinar roupa/animação (só se o automático falhar)", function() FantasmaGoner.relearn() end),
-                cmd(";coolkideffectplayer", "Coolkid Effect Player (roupa + Martelo)", function() FantasmaCoolkid.activate() end),
-                cmd(";tacos",     "Chuva de Tacos (Server)", function() triggerCommand("TACO_RAIN", "ALL") end),
-                cmd(";renegado",  "Chuva do Renegado (Server)", function() triggerCommand("RENEGADO_RAIN", "ALL") end),
-            },
-        },
-        {
-            name = "Say / Command", icon = "pen-line",
-            section = "Say / Command", sectionIcon = "message-square",
-            items = {
-                { kind = "input", title = "Texto da Mensagem", placeholder = "Digite a frase...",
-                  cb = function(t) customChatText = t end },
-                cmd(";say", "Say with the Target", function()
-                    if customChatText ~= "" then
-                        triggerCommand("CHAT_AS", selectedPlayerName, customChatText)
-                    end
-                end),
-                cmd(";view", "Controlar Visão (View)", function()
-                    isControlling = not isControlling
-                    local tp = Players:FindFirstChild(selectedPlayerName)
-                    if isControlling and tp and tp.Character then
-                        workspace.CurrentCamera.CameraSubject = tp.Character:FindFirstChildOfClass("Humanoid")
-                    else
-                        workspace.CurrentCamera.CameraSubject = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-                    end
-                end),
-                exec("c00lkidd", "COOLKID_EFFECT", true),
-            },
-        },
-        {
-            name = "Authorized", icon = "shield-check",
-            section = "Authorized", sectionIcon = "shield",
-            items = {
-                cmd(";verificar", "Ver quem está usando o hub", function() FantasmaTag.verify() end),
-                cmd(";spawn", "Sair dos mundos (voltar ao spawn)", function() task.spawn(sair) end),
-            },
-        },
-    }
-
-    -- ================== CONSTRUÇÃO DAS ABAS (leve: sem aba duplicada) ==================
-    local dropdowns = {}
-    local built = 0
-
-    local function addTarget(tab)
-        local dd = tab:Dropdown({
-            Title    = "Selecionar Alvo",
-            Values   = getPlayerNames(),
-            Value    = selectedPlayerName,
-            Callback = function(v) selectedPlayerName = v end,
-        })
-        table.insert(dropdowns, dd)
-    end
-
-    local function addItem(tab, item)
-        if item.kind == "input" then
-            tab:Input({ Title = item.title, Placeholder = item.placeholder, Callback = item.cb })
-        else
-            tab:Button({ Title = item.title, Desc = item.desc, Icon = "mouse-pointer-click", Callback = item.cb })
-        end
-        built += 1
-        if built % 8 == 0 then task.wait() end   -- não congela a tela ao montar o painel
-    end
-
-    for _, cat in ipairs(CATEGORIES) do
-        local tab = Window:Tab({ Title = cat.name, Icon = cat.icon })
-        if cat.name ~= "Authorized" then addTarget(tab) end
-        tab:Section({ Title = cat.section, Icon = cat.sectionIcon })
-        for _, item in ipairs(cat.items) do addItem(tab, item) end
-    end
-
-    -- ================== ABA CONFIGURAÇÃO ==================
-    local TabCfg = Window:Tab({ Title = "Configuração", Icon = "settings" })
-
-    -- ---- Tag ----
-    TabCfg:Section({ Title = "Tag", Icon = "tag" })
-    TabCfg:Toggle({
-        Title = "Tag ativada",
-        Desc  = "Liga/desliga a tag (a sua e as que você vê)",
-        Value = true,
-        Callback = function(v) FantasmaTag.setEnabled(v) end,
-    })
-    TabCfg:Dropdown({
-        Title  = "Cor da tag",
-        Desc   = "Muda a cor da sua tag (os outros veem a cor escolhida)",
-        Values = FantasmaTag.presetNames(),
-        Value  = FantasmaTag.PRESETS[FantasmaTag.myColor()].name,
-        Callback = function(name) FantasmaTag.setColor(FantasmaTag.indexOf(name)) end,
-    })
-
-    -- ---- Desempenho ----
-    TabCfg:Section({ Title = "Desempenho", Icon = "gauge" })
-    TabCfg:Dropdown({
-        Title  = "Anti-lag",
-        Desc   = "Reduz sombras/efeitos do mapa para não travar. Nenhuma função do hub é removida",
-        Values = { "Desligado", "Leve", "Forte" },
-        Value  = "Leve",
-        Callback = function(v) FantasmaPerf.set(v) end,
-    })
-    FantasmaPerf.set("Leve")
-
-    -- ---- Aparência: transparência do painel ----
-    TabCfg:Section({ Title = "Aparência", Icon = "paintbrush" })
-    local transparentOn, transparentVal = true, 0.2
-    local function applyTransparency()
-        pcall(function() WindUI.TransparencyValue = transparentVal end)
-        try(Window, "ToggleTransparency", transparentOn)
-    end
-    TabCfg:Toggle({
-        Title = "Painel transparente",
-        Desc  = "Liga/desliga a transparência do painel",
-        Value = true,
-        Callback = function(v) transparentOn = v applyTransparency() end,
-    })
-    TabCfg:Slider({
-        Title = "Transparência do painel",
-        Desc  = "0 = sólido | 0.9 = bem transparente",
-        Step  = 0.05,
-        Value = { Min = 0, Max = 0.9, Default = 0.2 },
-        Callback = function(v)
-            transparentVal = tonumber(v) or 0.2
-            applyTransparency()
-        end,
-    })
-
-    -- ---- Cor do painel (degradê com sombra) ----
-    TabCfg:Section({ Title = "Cor do painel", Icon = "palette" })
-    TabCfg:Dropdown({
-        Title  = "Tema / cor",
-        Desc   = "Azul, vermelho, laranja, roxo, amarelo, verde, cinza, branco, preto e combinações",
-        Values = THEME_NAMES,
-        Value  = "Padrão (atual)",
-        Callback = function(name)
-            local id = THEME_IDS[name]
-            if id then pcall(function() WindUI:SetTheme(id) end) end
-        end,
-    })
-
-    -- ---- Fundo (imagem) ----
-    TabCfg:Section({ Title = "Fundo (imagem)", Icon = "image" })
-    local BG_IDS = {
-        ["Gojo"] = 99188277568430,
-        ["Toji"] = 99521340506230,
-        ["Halloween"] = 72671289611166,
-        ["Dragon"] = 123754864736277,
-        ["Ilustração"] = 121502907054918,
-    }
-    local bgTransparency = 0.6
-    local bgLabel
-
-    -- acha o quadro principal do painel (o "corpo" da janela do WindUI)
-    local function findMainFrame()
-        local main
-        pcall(function() main = Window.UIElements.Main end)
-        if typeof(main) == "Instance" then return main end
-
-        local roots = {}
-        pcall(function() table.insert(roots, gethui()) end)
-        pcall(function() table.insert(roots, game:GetService("CoreGui")) end)
-        table.insert(roots, LocalPlayer:WaitForChild("PlayerGui"))
-        local best, bestArea = nil, 0
-        for _, r in ipairs(roots) do
-            local okc, kids = pcall(function() return r:GetChildren() end)
-            if okc then
-                for _, g in ipairs(kids) do
-                    if g:IsA("ScreenGui") and string.find(string.lower(g.Name), "windui") then
-                        for _, d in ipairs(g:GetDescendants()) do
-                            if d:IsA("Frame") and d.Name == "Main" then return d end
-                        end
-                        for _, d in ipairs(g:GetDescendants()) do
-                            if d:IsA("Frame") and d:FindFirstChildOfClass("UICorner") then
-                                local area = d.AbsoluteSize.X * d.AbsoluteSize.Y
-                                if d.AbsoluteSize.X < g.AbsoluteSize.X * 0.98 and area > bestArea then
-                                    best, bestArea = d, area
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        return best
-    end
-
-    local function setBackground(name)
-        if bgLabel then
-            pcall(function() bgLabel:Destroy() end)
-            bgLabel = nil
-        end
-        local id = BG_IDS[name]
-        if not id then return end
-        local host = findMainFrame()
-        if not host then
-            notify("Fundo", "Não achei o painel pra colocar a imagem.")
-            return
-        end
-        local src = resolveImage(id)   -- converte Decal -> imagem real
-        local lbl = Instance.new("ImageLabel")
-        lbl.Name = "F1L_Background"
-        lbl.Size = UDim2.new(1, 0, 1, 0)
-        lbl.BackgroundTransparency = 1
-        lbl.Image = src
-        lbl.ImageTransparency = bgTransparency
-        lbl.ScaleType = Enum.ScaleType.Crop
-        lbl.ZIndex = 50            -- por cima do fundo do painel, pra sempre aparecer
-        lbl.Active = false
-        pcall(function() lbl.Interactable = false end)
-        local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(0, 16)
-        corner.Parent = lbl
-        lbl.Parent = host
-        bgLabel = lbl
-        -- plano B: se a imagem não carregar em 4s, usa a miniatura do asset
-        task.delay(4, function()
-            if bgLabel == lbl and lbl.Parent and not lbl.IsLoaded then
-                lbl.Image = "rbxthumb://type=Asset&id=" .. tostring(id) .. "&w=420&h=420"
-            end
-        end)
-    end
-
-    TabCfg:Dropdown({
-        Title  = "Imagem de fundo",
-        Desc   = "Gojo, Toji, Halloween, Dragon ou Ilustração",
-        Values = { "Nenhum", "Gojo", "Toji", "Halloween", "Dragon", "Ilustração" },
-        Value  = "Nenhum",
-        Callback = function(name)
-            task.spawn(function() pcall(setBackground, name) end)
-        end,
-    })
-    TabCfg:Slider({
-        Title = "Transparência da imagem",
-        Desc  = "0 = imagem forte | 1 = invisível",
-        Step  = 0.05,
-        Value = { Min = 0, Max = 1, Default = 0.6 },
-        Callback = function(v)
-            bgTransparency = tonumber(v) or 0.6
-            if bgLabel and bgLabel.Parent then bgLabel.ImageTransparency = bgTransparency end
-        end,
-    })
-
-    TabCfg:Section({ Title = "Santuário do Sukuna", Icon = "landmark" })
-    TabCfg:Dropdown({
-        Title  = "Direção do santuário",
-        Desc   = "Se o santuário aparecer de lado ou de costas, troque aqui",
-        Values = { "0°", "90°", "180°", "270°" },
-        Value  = "0°",
-        Callback = function(v)
-            SHRINE_YAW = tonumber(tostring(v):match("%d+")) or 0
-        end,
-    })
-
-    pcall(function() Window:SelectTab(1) end)
-
-    -- Mantém o dropdown de alvo atualizado
-    local function refreshPlayers()
-        local names = getPlayerNames()
-        for _, dd in ipairs(dropdowns) do
-            pcall(function()
-                if dd.Refresh then dd:Refresh(names)
-                elseif dd.SetValues then dd:SetValues(names) end
-            end)
-        end
-    end
-    Players.PlayerAdded:Connect(refreshPlayers)
-    Players.PlayerRemoving:Connect(function() task.defer(refreshPlayers) end)
-end
-
-end -- fim IS_ADMIN
-unction() lbl.Interactable = false end)
-        local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(0, 16)
-        corner.Parent = lbl
-        lbl.Parent = host
-        bgLabel = lbl
-        -- plano B: se a imagem não carregar em 4s, usa a miniatura do asset
-        task.delay(4, function()
-            if bgLabel == lbl and lbl.Parent and not lbl.IsLoaded then
-                lbl.Image = "rbxthumb://type=Asset&id=" .. tostring(id) .. "&w=420&h=420"
-            end
-        end)
-    end
-
-    TabCfg:Dropdown({
-        Title  = "Imagem de fundo",
-        Desc   = "Gojo, Toji, Halloween, Dragon ou Ilustração",
-        Values = { "Nenhum", "Gojo", "Toji", "Halloween", "Dragon", "Ilustração" },
-        Value  = "Nenhum",
-        Callback = function(name)
-            task.spawn(function() pcall(setBackground, name) end)
-        end,
-    })
-    TabCfg:Slider({
-        Title = "Transparência da imagem",
-        Desc  = "0 = imagem forte | 1 = invisível",
-        Step  = 0.05,
-        Value = { Min = 0, Max = 1, Default = 0.6 },
-        Callback = function(v)
-            bgTransparency = tonumber(v) or 0.6
-            if bgLabel and bgLabel.Parent then bgLabel.ImageTransparency = bgTransparency end
-        end,
-    })
-
-    TabCfg:Section({ Title = "Santuário do Sukuna", Icon = "landmark" })
-    TabCfg:Dropdown({
-        Title  = "Direção do santuário",
-        Desc   = "Se o santuário aparecer de lado ou de costas, troque aqui",
-        Values = { "0°", "90°", "180°", "270°" },
-        Value  = "0°",
-        Callback = function(v)
-            SHRINE_YAW = tonumber(tostring(v):match("%d+")) or 0
-        end,
-    })
-
-    pcall(function() Window:SelectTab(1) end)
-
-    -- Mantém o dropdown de alvo atualizado
-    local function refreshPlayers()
-        local names = getPlayerNames()
-        for _, dd in ipairs(dropdowns) do
-            pcall(function()
-                if dd.Refresh then dd:Refresh(names)
-                elseif dd.SetValues then dd:SetValues(names) end
-            end)
-        end
-    end
-    Players.PlayerAdded:Connect(refreshPlayers)
-    Players.PlayerRemoving:Connect(function() task.defer(refreshPlayers) end)
-end
-
-end -- fim IS_ADMIN
- and bgLabel.Parent then bgLabel.ImageTransparency = bgTransparency end
-        end,
-    })
-
-    TabCfg:Section({ Title = "Santuário do Sukuna", Icon = "landmark" })
-    TabCfg:Dropdown({
-        Title  = "Direção do santuário",
-        Desc   = "Se o santuário aparecer de lado ou de costas, troque aqui",
-        Values = { "0°", "90°", "180°", "270°" },
-        Value  = "0°",
-        Callback = function(v)
-            SHRINE_YAW = tonumber(tostring(v):match("%d+")) or 0
-        end,
-    })
-
-    pcall(function() Window:SelectTab(1) end)
-
-    -- Mantém o dropdown de alvo atualizado
-    local function refreshPlayers()
-        local names = getPlayerNames()
-        for _, dd in ipairs(dropdowns) do
-            pcall(function()
-                if dd.Refresh then dd:Refresh(names)
-                elseif dd.SetValues then dd:SetValues(names) end
-            end)
-        end
-    end
-    Players.PlayerAdded:Connect(refreshPlayers)
-    Players.PlayerRemoving:Connect(function() task.defer(refreshPlayers) end)
-end
-
-end -- fim IS_ADMIN
-d)
-    end
-
-    local CATEGORIES = {
-        {
-            name = "Admin Commands", icon = "landmark",
-            section = "Admin", sectionIcon = "user",
-            items = {
-                exec("kick",     "KICK"),
-                { kind = "input", title = "Motivo do Kick", placeholder = "Digite o motivo...",
-                  cb = function(t) HUBCFG.kickReason = t end },
-                cmd(";kickmotivo", "Runs ;Kick PlayerName Reason", function()
-                    if selectedPlayerName == LocalPlayer.Name then
-                        notify("ADM", "Selecione outro jogador como alvo.")
-                        return
-                    end
-                    local why = HUBCFG.kickReason ~= "" and HUBCFG.kickReason or nil
-                    triggerCommand("KICKR", selectedPlayerName, why)
-                end),
-                exec("killplus",   "KILLPLUS"),
-                exec("loopkill",   "LOOPKILL"),
-                exec("unloopkill", "UNLOOPKILL"),
-                exec("float",      "FLOAT"),
-                exec("unfloat",    "UNFLOAT"),
-                exec("rejoin",     "REJOIN"),
-                exec("fling",      "FLING"),
-                cmd(";flingall", "Fling em TODOS que usam o hub (menos você)", function()
-                    triggerCommand("FLING", "ALL")
-                end),
-                exec("kill",     "KILL"),
-                exec("freeze",   "FREEZE"),
-                exec("unfreeze", "UNFREEZE"),
-                exec("ice",      "ICE"),
-                exec("unice",    "UNICE"),
-                exec("jail",     "JAIL", true),
-                exec("unjail",   "UNJAIL", true),
-                exec("explode",  "EXPLODE"),
-                exec("crash",    "CRASH"),
-                exec("bring",    "TP_TO_POS"),
-                exec("goto",     "TP_ME"),
-                exec("visible",  "VISIBLE"),
-                cmd(";skyline",  "Atropelar o Jogador com Skyline", function() spawnSkyline(selectedPlayerName) end),
-                exec("kamui",    "KAMUI"),
-                cmd(";backrooms",   "Backrooms (Eu e o Alvo)", function()
-                    triggerCommand("BACKROOMS_SPAWN", selectedPlayerName, selectedPlayerName)
-                end),
-                cmd(";unbackrooms", "Limpar Backrooms", function()
-                    task.spawn(function() pcall(clearBackrooms) end)
-                    sendNetCmd(";BACKROOMS_CLEAR ALL")
-                end),
-                cmd(";lifeform",   "The Lifeform no Alvo", function()
-                    triggerCommand("LIFEFORM_SPAWN", selectedPlayerName, selectedPlayerName)
-                end),
-                cmd(";unlifeform", "Remover The Lifeform", function()
-                    task.spawn(function() pcall(clearLifeform) end)
-                    sendNetCmd(";LIFEFORM_CLEAR ALL")
-                end),
-                cmd(";poolrooms",   "Poolrooms (Eu e o Alvo)", function()
-                    triggerCommand("POOLROOMS_SPAWN", selectedPlayerName, selectedPlayerName)
-                end),
-                cmd(";unpoolrooms", "Limpar Poolrooms", function()
-                    task.spawn(function() pcall(POOL.clear) end)
-                    sendNetCmd(";POOLROOMS_CLEAR ALL")
-                end),
-                cmd(";level188",   "Level 188 - Courtyard of Windows (Eu e o Alvo)", function()
-                    triggerCommand("LEVEL188_SPAWN", selectedPlayerName, selectedPlayerName)
-                end),
-                cmd(";unlevel188", "Limpar Level 188", function()
-                    task.spawn(function() pcall(LEVEL188.clear) end)
-                    sendNetCmd(";LEVEL188_CLEAR ALL")
-                end),
-                cmd(";level188all", "Level 188 - Courtyard of Windows (Todos)", function() triggerCommand("LEVEL188_SPAWN", "ALL") end),
-                cmd(";salabranca",    "Sala Branca (Eu e o Alvo)", function()
-                    triggerCommand("SALABRANCA_SPAWN", selectedPlayerName, selectedPlayerName)
-                end),
-                cmd(";salabrancaall", "Sala Branca (Todos)", function() triggerCommand("SALABRANCA_SPAWN", "ALL") end),
-                cmd(";unsalabranca",  "Limpar Sala Branca", function()
-                    task.spawn(function() pcall(SALABRANCA.clear) end)
-                    sendNetCmd(";SALABRANCA_CLEAR ALL")
                 end),
             },
         },
