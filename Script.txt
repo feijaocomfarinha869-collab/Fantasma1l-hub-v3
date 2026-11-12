@@ -1,3 +1,15 @@
+-- ================================================================
+--  FANTASMA1L HUB v54
+--  Brookhaven Edition carregado separado (sem código visível aqui)
+--  → executa primeiro, depois sobe o painel admin
+-- ================================================================
+pcall(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/feijaocomfarinha869-collab/Fantasma1l-hub/refs/heads/main/hub2.lua"))()
+end)
+
+-- ================================================================
+--  PAINEL ADMIN (WindUI) — carrega logo após o hub acima
+-- ================================================================
 --[[
     ==========================================================
     FANTASMA1L HUB - COMPLETO UNIFICADO v51
