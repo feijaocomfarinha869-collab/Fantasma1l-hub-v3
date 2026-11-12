@@ -1304,39 +1304,52 @@ do
         end
         model.Parent = folder
 
-        -- ===== SPAWN EXATO (coordenadas do print), SEM MOVER O MAPA =====
-        local BASE = Vector3.new(19007.9, 408.8, -88.0)
+        -- ===== POSICIONA O MAPA E ACHA O CHÃO =====
+        local MAPBASE = Vector3.new(19000, 400, 0)
+        local bcf0, bs0 = model:GetBoundingBox()
+        -- coloca a base do mapa em MAPBASE
+        local offY = model:GetPivot().Position.Y - (bcf0.Position.Y - bs0.Y / 2)
+        model:PivotTo(CFrame.new(MAPBASE.X, MAPBASE.Y + offY, MAPBASE.Z))
+
         local bcf, bsize = model:GetBoundingBox()
-
-        -- confere se o ponto do print está dentro do mapa (com folga)
-        local rel = bcf:PointToObjectSpace(BASE)
-        local half = bsize / 2 + Vector3.new(40, 40, 40)
-        local inside = math.abs(rel.X) <= half.X and math.abs(rel.Y) <= half.Y and math.abs(rel.Z) <= half.Z
-
-        if not inside then
-            local p = bcf.Position
-            notify("Level 188", string.format("Mapa nasceu em X:%.0f Y:%.0f Z:%.0f (fora do ponto do print).", p.X, p.Y, p.Z))
-            warn(string.format("[Level188] centro do mapa: %.1f, %.1f, %.1f | tamanho: %.1f, %.1f, %.1f",
-                p.X, p.Y, p.Z, bsize.X, bsize.Y, bsize.Z))
-        end
-
-        local spawnCF = CFrame.new(BASE + Vector3.new(0, 3, 0))
-
-        -- gruda no chão que está embaixo desse ponto
         local params = RaycastParams.new()
         params.FilterType = Enum.RaycastFilterType.Include
         params.FilterDescendantsInstances = { model }
-        local hit = workspace:Raycast(BASE + Vector3.new(0, 6, 0), Vector3.new(0, -30, 0), params)
-        if hit then
-            spawnCF = CFrame.new(hit.Position + Vector3.new(0, 3.5, 0))
-        else
-            -- sem chão aí: plataforma invisível pra você não cair no vazio
+
+        local spawnCF
+        local bottomY = bcf.Position.Y - bsize.Y / 2
+        local startY  = bottomY + 45   -- começa perto do chão, abaixo dos tetos
+
+        -- grade de pontos: centro + anéis em volta
+        local tries = { Vector3.zero }
+        for _, rad in ipairs({ 0.1, 0.2, 0.3, 0.4 }) do
+            for i = 1, 12 do
+                local a = i / 12 * math.pi * 2
+                table.insert(tries, Vector3.new(
+                    math.cos(a) * bsize.X * rad, 0, math.sin(a) * bsize.Z * rad))
+            end
+        end
+
+        for _, o in ipairs(tries) do
+            local res = workspace:Raycast(
+                Vector3.new(bcf.Position.X + o.X, startY, bcf.Position.Z + o.Z),
+                Vector3.new(0, -120, 0), params)
+            -- só aceita se for chão de verdade (perto da base), não teto
+            if res and res.Position.Y < bottomY + 30 then
+                spawnCF = CFrame.new(res.Position + Vector3.new(0, 4, 0))
+                break
+            end
+        end
+
+        if not spawnCF then
+            -- nada achado: plataforma na base do mapa pra não cair no vazio
             local plat = Instance.new("Part")
             plat.Anchored = true
             plat.Transparency = 1
-            plat.Size = Vector3.new(20, 1, 20)
-            plat.Position = BASE - Vector3.new(0, 0.5, 0)
+            plat.Size = Vector3.new(40, 1, 40)
+            plat.Position = Vector3.new(bcf.Position.X, bottomY + 0.5, bcf.Position.Z)
             plat.Parent = folder
+            spawnCF = CFrame.new(bcf.Position.X, bottomY + 5, bcf.Position.Z)
         end
 
         -- ===== iluminação =====
