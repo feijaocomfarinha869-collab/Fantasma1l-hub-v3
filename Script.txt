@@ -2192,28 +2192,9 @@ local BRAIN = { token = 0, S = nil, saved = nil, hidden = {}, count = 0, cache =
 do
     local Debris = game:GetService("Debris")
 
-    local GY, W, L           = 3000, 320, 460
-    local FEET               = GY + 0.4
-    local WALL_T, WALL_H     = 8, 34
-    local GATE, CARPET_W     = 34, 26
-    local BASE_W, BASE_D     = 62, 64
-    local BASE_X             = 100
-    local BASE_Z             = { 150, 50, -50, -150 }
-    local WALK_SPEED         = 11
-    local START_MONEY        = 2e12
+    local START_MONEY = 2e12
 
-    local C_GRASS  = Color3.fromRGB(58, 196, 72)
-    local C_CARPET = Color3.fromRGB(226, 62, 62)
-    local C_DIRT   = Color3.fromRGB(118, 78, 48)
-    local C_STONE  = Color3.fromRGB(112, 116, 122)
-    local C_GRAY   = Color3.fromRGB(125, 132, 142)
-    local C_FLOOR  = Color3.fromRGB(70, 76, 84)
-    local C_NAVY   = Color3.fromRGB(36, 46, 60)
-    local C_BROWN  = Color3.fromRGB(118, 80, 48)
-    local C_TAN    = Color3.fromRGB(222, 152, 96)
-    local C_WHITE  = Color3.fromRGB(245, 245, 245)
-    local C_WOOD   = Color3.fromRGB(150, 100, 60)
-    local C_GLASS  = Color3.fromRGB(150, 205, 235)
+    local C_GRASS = Color3.fromRGB(58, 196, 72)
 
     local BRAINROTS = {
         { name = "Noobini Pizzanini", rarity = "Common", rc = Color3.fromRGB(90, 230, 90), inc = 1, price = 25, w = 55,
@@ -2223,7 +2204,6 @@ do
         { name = "Strawberry Elephant", rarity = "Secret", rc = Color3.fromRGB(255, 70, 200), inc = 7.5e8, price = 7.5e11, w = 15,
           asset = 248295212434663, sound = 89155583651513, yaw = 0, col = Color3.fromRGB(255, 120, 150), col2 = Color3.fromRGB(255, 190, 205) },
     }
-    local NPC_NAMES = { "ttpitd", "Kaio_9", "Mimi", "Rafa2k", "Lunna", "Dudu", "Zeca" }
     local LIGHT_PROPS = {
         "Ambient", "OutdoorAmbient", "Brightness", "ClockTime", "FogStart", "FogEnd", "FogColor",
         "GlobalShadows", "ExposureCompensation", "ColorShift_Top", "ColorShift_Bottom",
@@ -2243,334 +2223,6 @@ do
         return tostring(math.floor(n))
     end
 
-    local function pickDef(maxTier)
-        local pool, total = {}, 0
-        for i, d in ipairs(BRAINROTS) do
-            if not maxTier or i <= maxTier then
-                table.insert(pool, d)
-                total += d.w
-            end
-        end
-        local r = math.random() * total
-        for _, d in ipairs(pool) do
-            r -= d.w
-            if r <= 0 then return d end
-        end
-        return pool[1]
-    end
-
-    local function mk(parent, size, cf, color, mat, collide)
-        local p = Instance.new("Part")
-        p.Anchored = true
-        p.Size = size
-        p.CFrame = cf
-        p.Color = color
-        p.Material = mat or Enum.Material.SmoothPlastic
-        p.CanCollide = collide ~= false
-        p.TopSurface = Enum.SurfaceType.Smooth
-        p.BottomSurface = Enum.SurfaceType.Smooth
-        p.Parent = parent
-        BRAIN.count += 1
-        if BRAIN.count % 60 == 0 then task.wait() end
-        return p
-    end
-
-    local function textSurface(part, face, lines, color)
-        local sg = Instance.new("SurfaceGui")
-        sg.Face = face
-        sg.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
-        sg.PixelsPerStud = 24
-        sg.Parent = part
-        local n = #lines
-        for i, t in ipairs(lines) do
-            local lb = Instance.new("TextLabel")
-            lb.BackgroundTransparency = 1
-            lb.Size = UDim2.new(1, 0, 1 / n, 0)
-            lb.Position = UDim2.new(0, 0, (i - 1) / n, 0)
-            lb.Text = t
-            lb.TextScaled = true
-            lb.Font = Enum.Font.GothamBold
-            lb.TextColor3 = color
-            lb.Parent = sg
-        end
-    end
-
-    local function billboardText(parent, adornee, offset, lines, size)
-        local bb = Instance.new("BillboardGui")
-        bb.Size = size or UDim2.new(0, 190, 0, 60)
-        bb.StudsOffset = offset
-        bb.AlwaysOnTop = false
-        bb.MaxDistance = 220
-        bb.Adornee = adornee
-        bb.Parent = parent
-        local n = #lines
-        for i, ln in ipairs(lines) do
-            local lb = Instance.new("TextLabel")
-            lb.BackgroundTransparency = 1
-            lb.Size = UDim2.new(1, 0, 1 / n, 0)
-            lb.Position = UDim2.new(0, 0, (i - 1) / n, 0)
-            lb.Text = ln[1]
-            lb.TextColor3 = ln[2]
-            lb.TextStrokeTransparency = 0
-            lb.Font = Enum.Font.GothamBold
-            lb.TextScaled = true
-            lb.Parent = bb
-        end
-    end
-
-    local function buildTerrain(f)
-        local ground = mk(f, Vector3.new(W, 4, L), CFrame.new(0, GY - 2, 0), C_GRASS, Enum.Material.Plastic)
-        ground.TopSurface = Enum.SurfaceType.Studs
-        ground.Name = "Ground"
-        local carpet = mk(f, Vector3.new(CARPET_W, 0.4, L), CFrame.new(0, GY + 0.2, 0), C_CARPET, Enum.Material.Plastic)
-        carpet.TopSurface = Enum.SurfaceType.Studs
-        carpet.Name = "RedCarpet"
-
-        local function wallBox(sx, sz, cx, cz)
-            mk(f, Vector3.new(sx, 8, sz), CFrame.new(cx, GY + 4, cz), C_STONE, Enum.Material.Slate)
-            mk(f, Vector3.new(sx, WALL_H - 8, sz), CFrame.new(cx, GY + 8 + (WALL_H - 8) / 2, cz), C_DIRT, Enum.Material.Ground)
-        end
-
-        local EW = L + WALL_T * 2
-        wallBox(WALL_T, EW, -(W / 2 + WALL_T / 2), 0)
-        wallBox(WALL_T, EW, (W / 2 + WALL_T / 2), 0)
-
-        local seg = (W - GATE) / 2
-        for _, zs in ipairs({ -1, 1 }) do
-            local cz = zs * (L / 2 + WALL_T / 2)
-            wallBox(seg, WALL_T, -(GATE / 2 + seg / 2), cz)
-            wallBox(seg, WALL_T, (GATE / 2 + seg / 2), cz)
-            mk(f, Vector3.new(GATE, WALL_H - 16, WALL_T), CFrame.new(0, GY + 16 + (WALL_H - 16) / 2, cz), C_STONE, Enum.Material.Slate)
-            for _, sx in ipairs({ -1, 1 }) do
-                mk(f, Vector3.new(3, 16, WALL_T + 2), CFrame.new(sx * (GATE / 2 + 1.5), GY + 8, cz), Color3.fromRGB(78, 82, 88), Enum.Material.Slate)
-            end
-            local tz = zs * (L / 2 + WALL_T + 8)
-            local dark = Color3.fromRGB(14, 14, 16)
-            mk(f, Vector3.new(GATE, 1, 16), CFrame.new(0, GY - 0.5, tz), dark, Enum.Material.SmoothPlastic)
-            mk(f, Vector3.new(GATE + 6, 2, 16), CFrame.new(0, GY + 16, tz), dark, Enum.Material.SmoothPlastic)
-            for _, sx in ipairs({ -1, 1 }) do
-                mk(f, Vector3.new(2, 16, 16), CFrame.new(sx * (GATE / 2 + 1), GY + 8, tz), dark, Enum.Material.SmoothPlastic)
-            end
-            mk(f, Vector3.new(GATE + 6, 18, 2), CFrame.new(0, GY + 8, zs * (L / 2 + WALL_T + 16)), Color3.fromRGB(4, 4, 5), Enum.Material.SmoothPlastic)
-        end
-
-        local capT = WALL_T + 20
-        local capY = GY + WALL_H + 1
-        for _, xs in ipairs({ -1, 1 }) do
-            local cap = mk(f, Vector3.new(capT, 2, EW + 40), CFrame.new(xs * (W / 2 + capT / 2), capY, 0), C_GRASS, Enum.Material.Plastic)
-            cap.TopSurface = Enum.SurfaceType.Studs
-        end
-        for _, zs in ipairs({ -1, 1 }) do
-            local cap = mk(f, Vector3.new(W, 2, capT), CFrame.new(0, capY, zs * (L / 2 + capT / 2)), C_GRASS, Enum.Material.Plastic)
-            cap.TopSurface = Enum.SurfaceType.Studs
-        end
-
-        local bz = -L / 2 + 1.2
-        for _, sx in ipairs({ -1, 1 }) do
-            local bx = sx * (GATE / 2 + 16)
-            mk(f, Vector3.new(26, 18, 1), CFrame.new(bx, GY + 12, bz - 0.3), C_STONE, Enum.Material.Slate, false)
-            local board = mk(f, Vector3.new(24, 16, 1), CFrame.new(bx, GY + 12, bz), Color3.fromRGB(26, 31, 36), Enum.Material.SmoothPlastic, false)
-            if sx < 0 then
-                textSurface(board, Enum.NormalId.Back, { "TOP BRAINROTS", "1. Bandito Bobrito", "2. Trippi Troppi", "3. Tric Trac Baraboom", "4. Gangster Footera" }, Color3.fromRGB(235, 235, 235))
-            else
-                textSurface(board, Enum.NormalId.Back, { "COMO JOGAR", "Segure E no brainrot", "para COMPRAR.", "Nas bases dos outros:", "segure E para ROUBAR!" }, Color3.fromRGB(235, 235, 235))
-            end
-        end
-
-        local pink = Color3.fromRGB(255, 120, 200)
-        local az = -L / 2 + 70
-        for _, sx in ipairs({ -1, 1 }) do
-            mk(f, Vector3.new(3, 20, 3), CFrame.new(sx * (CARPET_W / 2 + 2), GY + 10, az), pink, Enum.Material.SmoothPlastic, false)
-        end
-        mk(f, Vector3.new(CARPET_W + 7, 3, 3), CFrame.new(0, GY + 21, az), pink, Enum.Material.SmoothPlastic, false)
-
-        local function stall(x, z, yaw)
-            local F = CFrame.new(x, GY, z) * CFrame.Angles(0, yaw, 0)
-            local function P(size, lx, ly, lz, color, mat)
-                return mk(f, size, F * CFrame.new(lx, ly, lz), color, mat, false)
-            end
-            P(Vector3.new(22, 1, 14), 0, 0.5, 0, Color3.fromRGB(170, 172, 176), Enum.Material.Concrete)
-            P(Vector3.new(14, 3, 4), 0, 2.5, 0, C_WOOD, Enum.Material.Wood)
-            for _, sx in ipairs({ -1, 1 }) do
-                for _, sz in ipairs({ -1, 1 }) do
-                    P(Vector3.new(0.6, 9, 0.6), sx * 8, 5.5, sz * 5, C_WOOD, Enum.Material.Wood)
-                end
-            end
-            for i = 0, 7 do
-                local c = (i % 2 == 0) and Color3.fromRGB(220, 50, 50) or C_WHITE
-                P(Vector3.new(2.2, 0.6, 14), -8.8 + i * 2.5, 10.2, 0, c, Enum.Material.SmoothPlastic)
-            end
-        end
-        stall(-(CARPET_W / 2 + 28), -60, math.pi / 2)
-        stall((CARPET_W / 2 + 28), 20, -math.pi / 2)
-
-        local sx0, sz0 = -(CARPET_W / 2 + 22), L / 2 - 120
-        local center = Vector3.new(sx0, GY + 9, sz0)
-        for i = 0, 15 do
-            local a = i * math.pi * 2 / 16
-            mk(f, Vector3.new(2, 2, 2), CFrame.new(center + Vector3.new(0, math.sin(a) * 6.5, math.cos(a) * 6.5)), Color3.fromRGB(255, 90, 190), Enum.Material.Neon, false)
-        end
-        local post = mk(f, Vector3.new(1.4, 9, 1.4), CFrame.new(sx0, GY + 4.5, sz0), C_STONE, Enum.Material.Slate, false)
-        billboardText(post, post, Vector3.new(0, 14, 0), {
-            { "Candy Spin", Color3.fromRGB(255, 130, 220) },
-            { "Free Spin in 2h 56m 20s", Color3.fromRGB(255, 255, 255) },
-            { "Robux Shop", Color3.fromRGB(200, 120, 255) },
-        }, UDim2.new(0, 230, 0, 70))
-    end
-
-    local function studs(p)
-        p.TopSurface = Enum.SurfaceType.Studs
-        p.FrontSurface = Enum.SurfaceType.Studs
-        p.BackSurface = Enum.SurfaceType.Studs
-        p.LeftSurface = Enum.SurfaceType.Studs
-        p.RightSurface = Enum.SurfaceType.Studs
-        return p
-    end
-
-    local function buildBase(f, cx, cz, side, label, mine)
-        local ang = (side < 0) and math.pi / 2 or -math.pi / 2
-        local F = CFrame.new(cx, GY, cz) * CFrame.Angles(0, ang, 0)
-        local function P(size, lx, ly, lz, color, mat, collide)
-            return mk(f, size, F * CFrame.new(lx, ly, lz), color, mat, collide)
-        end
-        local halfW, halfD, H = BASE_W / 2, BASE_D / 2, 18
-        local PL, SM = Enum.Material.Plastic, Enum.Material.SmoothPlastic
-
-        studs(P(Vector3.new(BASE_W + 4, 1, BASE_D + 4), 0, 0.5, 0, C_GRAY, PL))
-        P(Vector3.new(BASE_W - 6, 0.4, BASE_D - 6), 0, 1.2, 0, C_FLOOR, SM)
-
-        for _, sx in ipairs({ -1, 1 }) do
-            for _, sz in ipairs({ -1, 1 }) do
-                studs(P(Vector3.new(5, H, 5), sx * (halfW - 2.5), 1 + H / 2, sz * (halfD - 2.5), C_GRAY, PL))
-            end
-        end
-        studs(P(Vector3.new(BASE_W + 4, 2, BASE_D + 4), 0, 1 + H + 1, 0, C_GRAY, PL))
-
-        P(Vector3.new(BASE_W - 10, H, 2), 0, 1 + H / 2, -halfD + 1, C_NAVY, SM)
-        local wy, ww, wh, th = 1 + 9.5, 34, 11, 1.2
-        P(Vector3.new(ww - th * 2, wh - th * 2, 0.3), 0, wy, -halfD + 2.2, C_BROWN, Enum.Material.Wood, false)
-        P(Vector3.new(ww, th, 1.4), 0, wy + wh / 2 - th / 2, -halfD + 2.6, C_WHITE, SM, false)
-        P(Vector3.new(ww, th, 1.4), 0, wy - wh / 2 + th / 2, -halfD + 2.6, C_WHITE, SM, false)
-        for _, sx in ipairs({ -1, 1 }) do
-            P(Vector3.new(th, wh, 1.4), sx * (ww / 2 - th / 2), wy, -halfD + 2.6, C_WHITE, SM, false)
-        end
-
-        local sideLen = BASE_D - 10
-        for _, sx in ipairs({ -1, 1 }) do
-            local x = sx * (halfW - 1)
-            studs(P(Vector3.new(2, 3, sideLen), x, 1 + 1.5, 0, C_GRAY, PL))
-            studs(P(Vector3.new(2, 3, sideLen), x, 1 + H - 1.5, 0, C_GRAY, PL))
-            local glass = P(Vector3.new(0.4, H - 6, sideLen - 2.4), x, 1 + 3 + (H - 6) / 2, 0, C_GLASS, Enum.Material.Glass, false)
-            glass.Transparency = 0.75
-            P(Vector3.new(1.4, 1.2, sideLen), x, 1 + 3 + 0.6, 0, C_WHITE, SM, false)
-            P(Vector3.new(1.4, 1.2, sideLen), x, 1 + H - 3 - 0.6, 0, C_WHITE, SM, false)
-            for _, sz in ipairs({ -1, 1 }) do
-                P(Vector3.new(1.4, H - 6, 1.2), x, 1 + 3 + (H - 6) / 2, sz * (sideLen / 2 - 0.6), C_WHITE, SM, false)
-            end
-        end
-
-        local gate = 16
-        local segW = (BASE_W - 10 - gate) / 2
-        for _, sx in ipairs({ -1, 1 }) do
-            studs(P(Vector3.new(segW, 3, 2), sx * (gate / 2 + segW / 2), 1 + 1.5, halfD - 1, C_GRAY, PL))
-        end
-
-        local c1 = P(Vector3.new(12, 0.3, BASE_D + 2), 0, 1.55, 1, C_CARPET, PL)
-        c1.TopSurface = Enum.SurfaceType.Studs
-        local c2 = P(Vector3.new(12, 0.4, 9), 0, 0.4, halfD + 6.5, C_CARPET, PL)
-        c2.TopSurface = Enum.SurfaceType.Studs
-
-        local cz0 = halfD + 15
-        P(Vector3.new(16, 0.2, 16), 0, 0.1, cz0, C_WHITE, SM, false)
-        local pad = P(Vector3.new(14, 0.2, 14), 0, 0.3, cz0, Color3.fromRGB(40, 220, 70), SM, false)
-        textSurface(pad, Enum.NormalId.Top, { "COLLECT", "ZONE" }, C_WHITE)
-
-        local slots = {}
-        local look = F:VectorToWorldSpace(Vector3.new(0, 0, 1))
-        for _, lz in ipairs({ 18, 6, -6, -18 }) do
-            for _, sx in ipairs({ -1, 1 }) do
-                P(Vector3.new(8, 0.3, 8), sx * 12, 1.55, lz, Color3.fromRGB(46, 214, 76), SM, false)
-                P(Vector3.new(8, 0.3, 8), sx * 23, 1.55, lz, Color3.fromRGB(122, 128, 136), SM, false)
-                table.insert(slots, { pos = (F * CFrame.new(sx * 12, 1.7, lz)).Position, look = look, model = nil })
-            end
-        end
-
-        for _, lx in ipairs({ -12, 12 }) do
-            for _, lz in ipairs({ -16, 0, 16 }) do
-                P(Vector3.new(5, 0.8, 2.6), lx, 1 + H - 0.4, lz, Color3.fromRGB(40, 44, 50), SM, false)
-                P(Vector3.new(4.2, 0.2, 2), lx, 1 + H - 0.9, lz, C_WHITE, Enum.Material.Neon, false)
-            end
-        end
-
-        P(Vector3.new(0.3, 6, 0.3), 0, 1 + H - 3, -halfD + 8, Color3.fromRGB(40, 44, 50), SM, false)
-        local orb = P(Vector3.new(3, 3, 3), 0, 1 + H - 6.5, -halfD + 8, Color3.fromRGB(255, 214, 64), Enum.Material.Neon, false)
-        orb.Shape = Enum.PartType.Ball
-        local pl = Instance.new("PointLight")
-        pl.Color = Color3.fromRGB(255, 214, 64)
-        pl.Range = 18
-        pl.Brightness = 1.5
-        pl.Parent = orb
-
-        local mp = P(Vector3.new(0.2, 0.2, 0.2), 0, 8, -halfD + 12, C_WHITE, SM, false)
-        mp.Transparency = 1
-        billboardText(mp, mp, Vector3.new(0, 0, 0), { { "MULTI: 1", C_WHITE } }, UDim2.new(0, 160, 0, 36))
-
-        local sy = 1 + H - 3
-        local sign = P(Vector3.new(44, 7, 1.2), 0, sy, halfD + 1.4, C_TAN, PL, false)
-        textSurface(sign, Enum.NormalId.Back, { "Base de " .. label }, Color3.fromRGB(255, 244, 228))
-        local border = Color3.fromRGB(160, 66, 48)
-        studs(P(Vector3.new(45.6, 1.2, 1.8), 0, sy + 4.1, halfD + 1.4, border, PL, false))
-        studs(P(Vector3.new(45.6, 1.2, 1.8), 0, sy - 4.1, halfD + 1.4, border, PL, false))
-        for _, sx in ipairs({ -1, 1 }) do
-            studs(P(Vector3.new(1.2, 9.4, 1.8), sx * 22.8, sy, halfD + 1.4, border, PL, false))
-        end
-
-        local result = { slots = slots, label = label }
-
-        if mine then
-            local bb = Instance.new("BillboardGui")
-            bb.Size = UDim2.new(0, 360, 0, 150)
-            bb.StudsOffset = Vector3.new(0, 11, 0)
-            bb.AlwaysOnTop = true
-            bb.MaxDistance = 500
-            bb.Adornee = sign
-            bb.Parent = sign
-            local function t(text, y, h)
-                local l = Instance.new("TextLabel")
-                l.BackgroundTransparency = 1
-                l.Size = UDim2.new(1, 0, h, 0)
-                l.Position = UDim2.new(0, 0, y, 0)
-                l.Text = text
-                l.TextScaled = true
-                l.Font = Enum.Font.GothamBlack
-                l.TextColor3 = C_WHITE
-                l.TextStrokeTransparency = 0
-                l.Parent = bb
-            end
-            t("SUA BASE", 0, 0.62)
-            t("▼", 0.6, 0.4)
-
-            local gui = Instance.new("BillboardGui")
-            gui.Size = UDim2.new(0, 220, 0, 50)
-            gui.StudsOffset = Vector3.new(0, 5, 0)
-            gui.MaxDistance = 200
-            gui.Adornee = pad
-            gui.Parent = pad
-            local lbl = Instance.new("TextLabel")
-            lbl.BackgroundTransparency = 1
-            lbl.Size = UDim2.new(1, 0, 1, 0)
-            lbl.Text = "$0"
-            lbl.TextScaled = true
-            lbl.Font = Enum.Font.GothamBlack
-            lbl.TextColor3 = Color3.fromRGB(255, 225, 80)
-            lbl.TextStrokeTransparency = 0
-            lbl.Parent = gui
-            result.collectLabel = lbl
-            result.collectPos = pad.Position
-        end
-        return result
-    end
-
     local function playSound(id)
         if not id then return end
         pcall(function()
@@ -2583,7 +2235,6 @@ do
         end)
     end
 
-    -- >>> PATCH v37 - PASSO 1: substituído loadTemplate <<<
     local function fetchObjects(id)
         local lastErr = "desconhecido"
         for _ = 1, 2 do
@@ -2750,10 +2401,6 @@ do
         if S.hudInc then S.hudInc.Text = "  +$" .. fmt(S.income) .. "/s" end
     end
 
-    local function updateCollect(S)
-        if S.collectLabel then S.collectLabel.Text = "$" .. fmt(S.pending) end
-    end
-
     local function freeSlot(slots)
         for _, s in ipairs(slots) do
             if not s.model then return s end
@@ -2780,41 +2427,6 @@ do
             S.income -= def.inc
             setMoney(S)
             model:Destroy()
-        end)
-    end
-
-    local function putNpc(S, base, def, slot)
-        local model = makeBrainrot(def, S.folder)
-        slot.model = model
-        slot.def = def
-        placeModel(model, slot, def)
-        setPriceText(model, "Base de " .. base.label)
-        setPrompt(model, "Roubar", 1.4, function()
-            if slot.model ~= model then return end
-            local mine = freeSlot(S.mySlots)
-            if not mine then notify("Brainrot", "Sua base está cheia!") return end
-            slot.model, slot.def = nil, nil
-            claimMine(S, model, def, mine)
-            notify("Brainrot", "Você roubou " .. def.name .. " de " .. base.label .. "!")
-        end)
-    end
-
-    local function addWalker(S, z, forced)
-        local def = forced or pickDef()
-        local model = makeBrainrot(def, S.folder)
-        local w = { model = model, def = def, x = math.random(-8, 8), z = z, t = math.random() * 10, gone = false }
-        table.insert(S.walkers, w)
-        setPrompt(model, "Comprar", 0.4, function()
-            if w.gone then return end
-            if S.money < def.price then
-                notify("Brainrot", "Dinheiro insuficiente ($" .. fmt(def.price) .. ")")
-                return
-            end
-            local slot = freeSlot(S.mySlots)
-            if not slot then notify("Brainrot", "Sua base está cheia!") return end
-            S.money -= def.price
-            w.gone = true
-            claimMine(S, model, def, slot)
         end)
     end
 
@@ -2867,113 +2479,244 @@ do
         if sv then
             for k, v in pairs(sv) do pcall(function() Lighting[k] = v end) end
         end
+        -- limpa o cache do pack (pra recarregar na próxima vez)
+        for k in pairs(BRAIN.cache) do
+            if tostring(k):find("^pack_") then BRAIN.cache[k] = nil end
+        end
         if S and not silent then notify("Brainrot", "Mundo removido.") end
         return true
     end
 
+    -- ===== CONFIG DO NOVO BRAINROT =====
+    BRAIN.CFG = {
+        MAP_ID   = "101491434169003",
+        PACK_ID  = "72466520546640",
+        MAP_BASE = Vector3.new(33000, 500, 0),  -- onde o mapa nasce (longe dos outros)
+        SPEED    = 12,                          -- velocidade na esteira
+        GAP      = 1.2,                         -- pausa entre um brainrot e o próximo
+    }
+
     function BRAIN.spawn()
-        notify("Brainrot", "Gerando o mundo...")
+        notify("Brainrot", "Carregando o mapa...")
         BRAIN.clear(true)
         pcall(POOL.clear, true)
         if workspace:FindFirstChild("Backrooms_Level0") then pcall(clearBackrooms) end
-        BRAIN.count = 0
         local myToken = BRAIN.token
+        local CFG = BRAIN.CFG
 
-        local S = { money = START_MONEY, pending = 0, income = 0, walkers = {}, mySlots = {}, npcBases = {} }
+        local S = { money = START_MONEY, income = 0, pending = 0, walkers = {}, mySlots = {} }
         BRAIN.S = S
         local f = Instance.new("Folder")
         f.Name = "RoubeUmBrainrot_World"
         f.Parent = workspace
         S.folder = f
 
-        BRAIN.saved = {}
-        for _, k in ipairs(LIGHT_PROPS) do pcall(function() BRAIN.saved[k] = Lighting[k] end) end
-        local function set(k, v) pcall(function() Lighting[k] = v end) end
-        set("ClockTime", 14)
-        set("Brightness", 2.4)
-        set("Ambient", Color3.fromRGB(150, 150, 150))
-        set("OutdoorAmbient", Color3.fromRGB(160, 160, 160))
-        set("FogStart", 0)
-        set("FogEnd", 100000)
-        set("GlobalShadows", true)
-        set("ExposureCompensation", 0)
-        pcall(function()
-            for _, c in ipairs(Lighting:GetChildren()) do
-                if c:IsA("Atmosphere") or c:IsA("Sky") then
-                    table.insert(BRAIN.hidden, c)
-                    c.Parent = nil
-                end
-            end
-        end)
-        pcall(function()
-            local sky = Instance.new("Sky")
-            sky.Name = "BR_Sky"
-            sky.Parent = Lighting
-            local cc = Instance.new("ColorCorrectionEffect")
-            cc.Name = "BR_CC"
-            cc.Saturation = 0.12
-            cc.Contrast = 0.04
-            cc.Parent = Lighting
-        end)
-
-        buildTerrain(f)
+        -- ===== carrega o MAPA =====
+        local mobjs, merr = fetchObjects(CFG.MAP_ID)
         if BRAIN.token ~= myToken then return end
-
-        local safety = mk(f, Vector3.new(W + 600, 4, L + 600), CFrame.new(0, GY - 70, 0), C_GRASS, Enum.Material.Plastic)
-        safety.Transparency = 1
-        safety.Name = "SafetyNet"
-
-        for _, d in ipairs(BRAINROTS) do pcall(loadTemplate, d) end
-        if BRAIN.token ~= myToken then return end
-
-        local ni, idx = 0, 0
-        for _, side in ipairs({ -1, 1 }) do
-            for _, bz in ipairs(BASE_Z) do
-                idx += 1
-                local label
-                if idx == 1 then
-                    label = LocalPlayer.DisplayName
-                else
-                    ni += 1
-                    label = NPC_NAMES[ni] or ("Player" .. ni)
-                end
-                local base = buildBase(f, side * BASE_X, bz, side, label, idx == 1)
-                if idx == 1 then
-                    S.mySlots = base.slots
-                    S.collectLabel = base.collectLabel
-                    S.collectPos = base.collectPos
-                else
-                    table.insert(S.npcBases, base)
-                end
-                if BRAIN.token ~= myToken then return end
+        if not mobjs then
+            notify("Brainrot", "Não consegui carregar o mapa (" .. tostring(merr):sub(1, 60) .. ")")
+            BRAIN.clear(true)
+            return
+        end
+        local map = Instance.new("Model")
+        map.Name = "BrainrotMap"
+        for _, o in ipairs(mobjs) do o.Parent = map end
+        local hasPart = false
+        for _, d in ipairs(map:GetDescendants()) do
+            if d:IsA("LuaSourceContainer") or d:IsA("ProximityPrompt") then
+                pcall(function() d:Destroy() end)
+            elseif d:IsA("BasePart") then
+                d.Anchored, d.CanCollide, d.CanQuery = true, true, true
+                hasPart = true
             end
         end
+        if not hasPart then
+            notify("Brainrot", "O mapa carregou sem nenhuma peça.")
+            BRAIN.clear(true)
+            return
+        end
+        map.Parent = f
+
+        -- encosta a base do mapa em MAP_BASE
+        local bcf0, bs0 = map:GetBoundingBox()
+        local bottomCenter = Vector3.new(bcf0.Position.X, bcf0.Position.Y - bs0.Y / 2, bcf0.Position.Z)
+        map:PivotTo(map:GetPivot() + (CFG.MAP_BASE - bottomCenter))
+
+        local bcf, bs = map:GetBoundingBox()
+        local bottomY = bcf.Position.Y - bs.Y / 2
+
+        local rp = RaycastParams.new()
+        rp.FilterType = Enum.RaycastFilterType.Include
+        rp.FilterDescendantsInstances = { map }
+        local function groundAt(x, z)
+            local r = workspace:Raycast(Vector3.new(x, bottomY + 45, z), Vector3.new(0, -120, 0), rp)
+            return r and r.Position.Y or nil
+        end
+
+        -- ===== acha a ESTEIRA (maior peça com nome de esteira/tapete) =====
+        local best, bestLen
+        for _, d in ipairs(map:GetDescendants()) do
+            if d:IsA("BasePart") then
+                local n = string.lower(d.Name)
+                if n:find("esteira") or n:find("conveyor") or n:find("belt") or n:find("carpet") or n:find("tapete") then
+                    local len = math.max(d.Size.X, d.Size.Z)
+                    if not bestLen or len > bestLen then best, bestLen = d, len end
+                end
+            end
+        end
+
+        local A, B
+        if best then
+            local ax = (best.Size.X >= best.Size.Z) and best.CFrame.RightVector or best.CFrame.LookVector
+            ax = Vector3.new(ax.X, 0, ax.Z).Unit
+            local c = Vector3.new(best.Position.X, best.Position.Y + best.Size.Y / 2, best.Position.Z)
+            A, B = c - ax * bestLen / 2, c + ax * bestLen / 2
+        else
+            local ax = (bs.X >= bs.Z) and Vector3.xAxis or Vector3.zAxis
+            local len = math.max(bs.X, bs.Z) * 0.8
+            local cx, cz = bcf.Position.X, bcf.Position.Z
+            local y = groundAt(cx, cz) or (bottomY + 3)
+            local c = Vector3.new(cx, y, cz)
+            A, B = c - ax * len / 2, c + ax * len / 2
+            notify("Brainrot", "Não achei a esteira pelo nome, usei uma linha no meio do mapa.")
+            warn("[Brainrot] Nenhuma peça com nome esteira/conveyor/belt/carpet/tapete. Renomeie ou ajuste A/B.")
+        end
+        local pathLen = (B - A).Magnitude
+        local dir = (B - A).Unit
+        local side = Vector3.new(-dir.Z, 0, dir.X)
+
+        -- ===== ponto de spawn + slots da sua base (do lado da esteira) =====
+        local sBase = A + side * 16
+        local sy = groundAt(sBase.X, sBase.Z) or A.Y
+        local spawnCF = CFrame.lookAt(Vector3.new(sBase.X, sy + 4, sBase.Z), Vector3.new(A.X, sy + 4, A.Z) + dir * 10)
+
+        for i = 0, 7 do
+            local p = sBase + dir * ((i % 4) * 9) + side * (6 + math.floor(i / 4) * 9)
+            local gy = groundAt(p.X, p.Z) or sy
+            table.insert(S.mySlots, { pos = Vector3.new(p.X, gy + 0.2, p.Z), look = -side, model = nil })
+        end
+
+        -- ===== carrega o PACK de brainrots =====
+        local RARS = {
+            { "Common",    Color3.fromRGB(90, 230, 90) },
+            { "Rare",      Color3.fromRGB(70, 150, 255) },
+            { "Epic",      Color3.fromRGB(180, 90, 255) },
+            { "Legendary", Color3.fromRGB(255, 160, 40) },
+            { "Secret",    Color3.fromRGB(255, 70, 200) },
+        }
+        local defs = {}
+        local pobjs = fetchObjects(CFG.PACK_ID)
+        if pobjs then
+            local root = pobjs[1]
+            if #pobjs > 1 then
+                root = Instance.new("Model")
+                for _, o in ipairs(pobjs) do o.Parent = root end
+            end
+            -- desce até achar o nível onde estão os brainrots (2 ou mais modelos)
+            local function findItems(r)
+                local cur = r
+                for _ = 1, 5 do
+                    local cands = {}
+                    for _, k in ipairs(cur:GetChildren()) do
+                        if k:IsA("Model") or k:IsA("Tool") or k:IsA("Accessory") then
+                            table.insert(cands, k)
+                        elseif k:IsA("Folder") then
+                            for _, g in ipairs(k:GetChildren()) do
+                                if g:IsA("Model") or g:IsA("Tool") or g:IsA("Accessory") then
+                                    table.insert(cands, g)
+                                end
+                            end
+                        end
+                    end
+                    if #cands >= 2 then return cands end
+                    if #cands == 1 then cur = cands[1] else break end
+                end
+                return { r }
+            end
+            local items = findItems(root)
+
+            for _, it in ipairs(items) do
+                local ok = it:IsA("BasePart") or it:FindFirstChildWhichIsA("BasePart", true)
+                if ok then
+                    local m = it
+                    if not it:IsA("Model") then
+                        m = Instance.new("Model")
+                        it.Parent = m
+                    end
+                    m.Name = it.Name
+                    for _, d in ipairs(m:GetDescendants()) do
+                        if d:IsA("LuaSourceContainer") or d:IsA("Humanoid") or d:IsA("ProximityPrompt") then
+                            pcall(function() d:Destroy() end)
+                        end
+                    end
+                    local i = #defs + 1
+                    local r = RARS[math.min(i, #RARS)]
+                    local price = 25 * (4 ^ (i - 1))
+                    local def = {
+                        name = it.Name, rarity = r[1], rc = r[2],
+                        price = price, inc = math.max(1, price / 10), w = 1,
+                        asset = "pack_" .. i, yaw = 0,
+                        col = Color3.fromRGB(240, 225, 70), col2 = Color3.fromRGB(70, 160, 255),
+                    }
+                    BRAIN.cache[def.asset] = m   -- loadTemplate usa esse cache
+                    table.insert(defs, def)
+                end
+            end
+        end
+        if #defs == 0 then
+            notify("Brainrot", "Pack não carregou. Usando os brainrots antigos.")
+            defs = BRAINROTS
+        else
+            notify("Brainrot", #defs .. " brainrots no pack.")
+        end
+        if BRAIN.token ~= myToken then return end
+
+        -- ===== iluminação =====
+        BRAIN.saved = {}
+        for _, k in ipairs(LIGHT_PROPS) do pcall(function() BRAIN.saved[k] = Lighting[k] end) end
+        pcall(function() Lighting.ClockTime = 14 Lighting.Brightness = 2.4 end)
 
         makeHud(S)
 
-        for _, base in ipairs(S.npcBases) do
-            for i = 1, math.random(2, 3) do
-                local slot = freeSlot(base.slots)
-                if slot then putNpc(S, base, pickDef(2), slot) end
-            end
+        -- ===== esteira: UM brainrot por vez, na ordem do pack =====
+        local idx, current, waitT = 0, nil, 0.5
+        local function placeWalker(w)
+            local bob = math.abs(math.sin(w.t * 8)) * 0.4
+            local p = A:Lerp(B, w.p) + Vector3.new(0, bob, 0)
+            w.model:PivotTo(CFrame.lookAt(p, p + dir) * CFrame.Angles(0, math.rad(w.def.yaw or 0), 0))
+        end
+        local function nextWalker()
+            idx = idx % #defs + 1
+            local def = defs[idx]
+            local model = makeBrainrot(def, f)
+            local w = { model = model, def = def, p = 0, t = 0, gone = false }
+            current = w
+            placeWalker(w)
+            setPrompt(model, "Comprar", 0.4, function()
+                if w.gone then return end
+                if S.money < def.price then
+                    notify("Brainrot", "Dinheiro insuficiente ($" .. fmt(def.price) .. ")")
+                    return
+                end
+                local slot = freeSlot(S.mySlots)
+                if not slot then notify("Brainrot", "Sua base está cheia!") return end
+                S.money -= def.price
+                w.gone = true
+                waitT = CFG.GAP
+                claimMine(S, model, def, slot)
+            end)
         end
 
-        addWalker(S, L / 2 - 150, BRAINROTS[1])
-        addWalker(S, L / 2 - 105, BRAINROTS[2])
-        addWalker(S, L / 2 - 60, BRAINROTS[3])
-        for i = 0, 2 do
-            addWalker(S, -L / 2 + 30 + i * 70)
-        end
-
-        local startPos = Vector3.new(0, GY + 4, L / 2 - 20)
-        local startCF = CFrame.lookAt(startPos, Vector3.new(0, GY + 4, 0))
+        -- ===== teleporte =====
         local function teleportMe()
             local chr = LocalPlayer.Character
             local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
             if hrp then
                 hrp.Anchored = true
-                hrp.CFrame = startCF
-                task.wait(0.3)
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                hrp.CFrame = spawnCF
+                task.wait(0.5)
                 hrp.Anchored = false
             end
         end
@@ -2983,71 +2726,45 @@ do
             if h and BRAIN.token == myToken then
                 task.wait(0.5)
                 h.AssemblyLinearVelocity = Vector3.zero
-                h.CFrame = startCF
+                h.CFrame = spawnCF
             end
         end)
 
         S.conn = RunService.Heartbeat:Connect(function(dt)
             local pc = LocalPlayer.Character
             local ph = pc and pc:FindFirstChild("HumanoidRootPart")
-            if ph then
-                if ph.Position.Y < GY - 40 and ph.Position.Y > GY - 400 then
-                    ph.AssemblyLinearVelocity = Vector3.zero
-                    ph.CFrame = startCF
-                end
-                if S.collectPos and S.pending > 0 then
-                    local d = ph.Position - S.collectPos
-                    if math.abs(d.X) < 8 and math.abs(d.Z) < 8 and math.abs(d.Y) < 8 then
-                        S.money += S.pending
-                        notify("Brainrot", "Coletou $" .. fmt(S.pending))
-                        S.pending = 0
-                        updateCollect(S)
-                        setMoney(S)
-                    end
-                end
+            if ph and ph.Position.Y < bottomY - 60 and ph.Position.Y > bottomY - 600 then
+                ph.AssemblyLinearVelocity = Vector3.zero
+                ph.CFrame = spawnCF
             end
-            for i = #S.walkers, 1, -1 do
-                local w = S.walkers[i]
-                if w.gone then
-                    table.remove(S.walkers, i)
+
+            if current and not current.gone then
+                current.p += CFG.SPEED * dt / pathLen
+                current.t += dt
+                if current.p >= 1 then
+                    pcall(function() current.model:Destroy() end)
+                    current = nil
+                    waitT = CFG.GAP
                 else
-                    w.z += WALK_SPEED * dt
-                    w.t += dt
-                    if w.z > L / 2 - 10 then
-                        w.gone = true
-                        w.model:Destroy()
-                        table.remove(S.walkers, i)
-                    else
-                        local bob = math.abs(math.sin(w.t * 8)) * 0.4
-                        local p = Vector3.new(w.x, FEET + bob, w.z)
-                        w.model:PivotTo(CFrame.lookAt(p, p + Vector3.new(0, 0, 1)) * CFrame.Angles(0, math.rad(w.def.yaw or 0), 0))
-                    end
+                    placeWalker(current)
                 end
+            else
+                current = nil
+                waitT -= dt
+                if waitT <= 0 then nextWalker() end
             end
         end)
 
+        -- renda por segundo cai direto no dinheiro
         task.spawn(function()
-            local t2, t3 = 0, 0
             while BRAIN.token == myToken do
                 task.wait(1)
-                t2 += 1
-                t3 += 1
-                S.pending += S.income
-                updateCollect(S)
-                if t2 >= 4 then
-                    t2 = 0
-                    if #S.walkers < 10 then addWalker(S, -L / 2 + 14) end
-                end
-                if t3 >= 20 then
-                    t3 = 0
-                    local base = S.npcBases[math.random(#S.npcBases)]
-                    local slot = base and freeSlot(base.slots)
-                    if slot then putNpc(S, base, pickDef(2), slot) end
-                end
+                S.money += S.income
+                setMoney(S)
             end
         end)
 
-        notify("Brainrot", "Pronto! Segure E nos brainrots. Fique na ZONA DE COLETA pra pegar o dinheiro.")
+        notify("Brainrot", "Pronto! Segure E no brainrot da esteira para comprar.")
         return true
     end
 end
