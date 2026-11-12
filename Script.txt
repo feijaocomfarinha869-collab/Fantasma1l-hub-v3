@@ -1304,66 +1304,39 @@ do
         end
         model.Parent = folder
 
-        -- ===== POSICIONA O MAPA num lugar conhecido (centro da caixa em BASE, base tocando BASE.Y) =====
-        local BASE = Vector3.new(19000, 400, 0)
-        do
-            local cf0, size0 = model:GetBoundingBox()
-            local target = Vector3.new(BASE.X, BASE.Y + size0.Y / 2, BASE.Z)
-            model:PivotTo(model:GetPivot() + (target - cf0.Position))
-        end
+        -- ===== SPAWN EXATO (coordenadas do print), SEM MOVER O MAPA =====
+        local BASE = Vector3.new(19007.9, 408.8, -88.0)
         local bcf, bsize = model:GetBoundingBox()
 
-        -- ===== ACHA ONDE NASCER =====
-        local spawnCF
+        -- confere se o ponto do print está dentro do mapa (com folga)
+        local rel = bcf:PointToObjectSpace(BASE)
+        local half = bsize / 2 + Vector3.new(40, 40, 40)
+        local inside = math.abs(rel.X) <= half.X and math.abs(rel.Y) <= half.Y and math.abs(rel.Z) <= half.Z
 
-        -- 1) SpawnLocation do próprio modelo
-        for _, d in ipairs(model:GetDescendants()) do
-            if d:IsA("SpawnLocation") then
-                spawnCF = CFrame.new(d.Position + Vector3.new(0, d.Size.Y / 2 + 4, 0))
-                break
-            end
+        if not inside then
+            local p = bcf.Position
+            notify("Level 188", string.format("Mapa nasceu em X:%.0f Y:%.0f Z:%.0f (fora do ponto do print).", p.X, p.Y, p.Z))
+            warn(string.format("[Level188] centro do mapa: %.1f, %.1f, %.1f | tamanho: %.1f, %.1f, %.1f",
+                p.X, p.Y, p.Z, bsize.X, bsize.Y, bsize.Z))
         end
 
-        -- 2) raycast de cima pra baixo: centro e depois anéis ao redor
-        if not spawnCF then
-            local params = RaycastParams.new()
-            params.FilterType = Enum.RaycastFilterType.Include
-            params.FilterDescendantsInstances = { model }
+        local spawnCF = CFrame.new(BASE + Vector3.new(0, 3, 0))
 
-            local topY = bcf.Position.Y + bsize.Y / 2 + 5
-            local len = bsize.Y + 15
-            local function try(x, z)
-                local res = workspace:Raycast(Vector3.new(x, topY, z), Vector3.new(0, -len, 0), params)
-                if res and res.Normal.Y > 0.6 then return res.Position end
-            end
-
-            local cx, cz = bcf.Position.X, bcf.Position.Z
-            local hit = try(cx, cz)
-            if not hit then
-                local maxR = math.min(bsize.X, bsize.Z) / 2
-                local r = 8
-                while not hit and r <= maxR do
-                    for i = 0, 11 do
-                        local a = i / 12 * math.pi * 2
-                        hit = try(cx + math.cos(a) * r, cz + math.sin(a) * r)
-                        if hit then break end
-                    end
-                    r += 8
-                end
-            end
-            if hit then spawnCF = CFrame.new(hit + Vector3.new(0, 4, 0)) end
-        end
-
-        -- 3) nada achado: plataforma invisível no meio do mapa
-        if not spawnCF then
+        -- gruda no chão que está embaixo desse ponto
+        local params = RaycastParams.new()
+        params.FilterType = Enum.RaycastFilterType.Include
+        params.FilterDescendantsInstances = { model }
+        local hit = workspace:Raycast(BASE + Vector3.new(0, 6, 0), Vector3.new(0, -30, 0), params)
+        if hit then
+            spawnCF = CFrame.new(hit.Position + Vector3.new(0, 3.5, 0))
+        else
+            -- sem chão aí: plataforma invisível pra você não cair no vazio
             local plat = Instance.new("Part")
             plat.Anchored = true
             plat.Transparency = 1
-            plat.Size = Vector3.new(40, 1, 40)
-            plat.Position = bcf.Position
+            plat.Size = Vector3.new(20, 1, 20)
+            plat.Position = BASE - Vector3.new(0, 0.5, 0)
             plat.Parent = folder
-            spawnCF = CFrame.new(bcf.Position + Vector3.new(0, 4, 0))
-            notify("Level 188", "Não achei chão no mapa, usei plataforma no centro.")
         end
 
         -- ===== iluminação =====
