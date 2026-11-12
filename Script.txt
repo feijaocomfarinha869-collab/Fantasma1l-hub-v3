@@ -1211,7 +1211,6 @@ local function notify(title, text)
     end)
     print("[NOTIFICAÇÃO] " .. title .. ": " .. text)
 end
-
 -- ================== LEVEL 188 "COURTYARD OF WINDOWS" ==================
 local LEVEL188 = {
     token = 0, S = nil, saved = nil, hidden = {},
@@ -1417,6 +1416,7 @@ do
         return true
     end
 end
+
 
 -- ================== SALA BRANCA (dimensão própria, lá no céu) ==================
 local SALABRANCA = { token = 0, S = nil, saved = nil, hidden = {} }
