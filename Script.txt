@@ -1211,6 +1211,7 @@ local function notify(title, text)
     end)
     print("[NOTIFICAÇÃO] " .. title .. ": " .. text)
 end
+
 -- ================== LEVEL 188 "COURTYARD OF WINDOWS" ==================
 local LEVEL188 = {
     token = 0, S = nil, saved = nil, hidden = {},
@@ -1228,7 +1229,7 @@ do
         local ok, objs = pcall(function() return game:GetObjects("rbxassetid://" .. tostring(id)) end)
         if ok and objs and objs[1] then
             m = objs[1]
-            if not m:IsA("Model") then
+            if #objs > 1 or not m:IsA("Model") then
                 local wrap = Instance.new("Model")
                 for _, o in ipairs(objs) do o.Parent = wrap end
                 m = wrap
@@ -1283,38 +1284,86 @@ do
             return
         end
 
+        local partCount = 0
         for _, p in ipairs(model:GetDescendants()) do
             if p:IsA("BasePart") then
                 p.Anchored = true
                 p.CanCollide = true
                 p.CanQuery = true
+                partCount += 1
             end
+        end
+        if partCount == 0 then
+            notify("Level 188", "O modelo carregou mas não tem nenhuma peça.")
+            pcall(function() folder:Destroy() end)
+            LEVEL188.S = nil
+            return
         end
         if not model.PrimaryPart then
             model.PrimaryPart = model:FindFirstChildWhichIsA("BasePart", true)
         end
         model.Parent = folder
 
-        -- ===== POSIÇÃO EXATA DO SPAWN =====
-        -- NÃO move o mapa: ele fica onde já nasce. As coordenadas são as do print.
-        local BASE = Vector3.new(19007.9, 408.8, -88.0)
-        local spawnCF = CFrame.new(BASE + Vector3.new(0, 3, 0))
+        -- ===== POSICIONA O MAPA num lugar conhecido (centro da caixa em BASE, base tocando BASE.Y) =====
+        local BASE = Vector3.new(19000, 400, 0)
+        do
+            local cf0, size0 = model:GetBoundingBox()
+            local target = Vector3.new(BASE.X, BASE.Y + size0.Y / 2, BASE.Z)
+            model:PivotTo(model:GetPivot() + (target - cf0.Position))
+        end
+        local bcf, bsize = model:GetBoundingBox()
 
-        -- acha o chão do mapa embaixo desse ponto, para nascer em cima dele
-        local params = RaycastParams.new()
-        params.FilterType = Enum.RaycastFilterType.Include
-        params.FilterDescendantsInstances = { model }
-        local hit = workspace:Raycast(BASE + Vector3.new(0, 1, 0), Vector3.new(0, -25, 0), params)
-        if hit then
-            spawnCF = CFrame.new(hit.Position + Vector3.new(0, 3.5, 0))
-        else
-            -- não achou chão: põe uma plataforma invisível para você não cair
+        -- ===== ACHA ONDE NASCER =====
+        local spawnCF
+
+        -- 1) SpawnLocation do próprio modelo
+        for _, d in ipairs(model:GetDescendants()) do
+            if d:IsA("SpawnLocation") then
+                spawnCF = CFrame.new(d.Position + Vector3.new(0, d.Size.Y / 2 + 4, 0))
+                break
+            end
+        end
+
+        -- 2) raycast de cima pra baixo: centro e depois anéis ao redor
+        if not spawnCF then
+            local params = RaycastParams.new()
+            params.FilterType = Enum.RaycastFilterType.Include
+            params.FilterDescendantsInstances = { model }
+
+            local topY = bcf.Position.Y + bsize.Y / 2 + 5
+            local len = bsize.Y + 15
+            local function try(x, z)
+                local res = workspace:Raycast(Vector3.new(x, topY, z), Vector3.new(0, -len, 0), params)
+                if res and res.Normal.Y > 0.6 then return res.Position end
+            end
+
+            local cx, cz = bcf.Position.X, bcf.Position.Z
+            local hit = try(cx, cz)
+            if not hit then
+                local maxR = math.min(bsize.X, bsize.Z) / 2
+                local r = 8
+                while not hit and r <= maxR do
+                    for i = 0, 11 do
+                        local a = i / 12 * math.pi * 2
+                        hit = try(cx + math.cos(a) * r, cz + math.sin(a) * r)
+                        if hit then break end
+                    end
+                    r += 8
+                end
+            end
+            if hit then spawnCF = CFrame.new(hit + Vector3.new(0, 4, 0)) end
+        end
+
+        -- 3) nada achado: plataforma invisível no meio do mapa
+        if not spawnCF then
             local plat = Instance.new("Part")
             plat.Anchored = true
             plat.Transparency = 1
-            plat.Size = Vector3.new(10, 1, 10)
-            plat.Position = BASE - Vector3.new(0, 3.5, 0)
+            plat.Size = Vector3.new(40, 1, 40)
+            plat.Position = bcf.Position
             plat.Parent = folder
+            spawnCF = CFrame.new(bcf.Position + Vector3.new(0, 4, 0))
+            notify("Level 188", "Não achei chão no mapa, usei plataforma no centro.")
         end
 
         -- ===== iluminação =====
@@ -1382,14 +1431,16 @@ do
             local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
             if hrp then
                 hrp.Anchored = true
+                hrp.AssemblyLinearVelocity = Vector3.zero
                 hrp.CFrame = spawnCF
-                task.wait(0.3)
+                task.wait(0.6)   -- dá tempo do mapa/colisão assentar antes de soltar
                 hrp.Anchored = false
             end
 
             if partnerName and partnerName ~= "" then
                 local partner = Players:FindFirstChild(partnerName)
-                if partner and partner.Character and partner.Character:FindFirstChild("HumanoidRootPart") then
+                if partner and partner ~= LocalPlayer and partner.Character
+                    and partner.Character:FindFirstChild("HumanoidRootPart") then
                     partner.Character.HumanoidRootPart.CFrame = spawnCF + Vector3.new(3, 0, 0)
                 end
             end
@@ -1416,7 +1467,6 @@ do
         return true
     end
 end
-
 
 -- ================== SALA BRANCA (dimensão própria, lá no céu) ==================
 local SALABRANCA = { token = 0, S = nil, saved = nil, hidden = {} }
