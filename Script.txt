@@ -1,3 +1,11 @@
+-- ================================================================
+--  FANTASMA1L HUB v54
+--  Brookhaven Edition carregado separado (sem código visível aqui)
+--  → executa primeiro, depois sobe o painel admin
+-- ================================================================
+pcall(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/feijaocomfarinha869-collab/Fantasma1l-hub/refs/heads/main/hub2.lua"))()
+end)
 --[[
     ==========================================================
     FANTASMA1L HUB - COMPLETO UNIFICADO v51
@@ -26,9 +34,9 @@ local WHITELIST = {
     ["darkADM_ofc"]  = { Role = "SUB DONO" },
     
     -- ADMS (9 VAGAS)
-    ["PREENCHA_AQUI_ADM_1"]       = { Role = "ADM" },
-    ["PREENCHA_AQUI_ADM_2"]       = { Role = "ADM" },
-    ["PREENCHA_AQUI_ADM_3"]       = { Role = "ADM" },
+    ["Fantasma1l40"]       = { Role = "ADM" },
+    ["oooooe"]       = { Role = "ADM" },
+    ["pro2229208"]       = { Role = "ADM" },
     ["PREENCHA_AQUI_ADM_4"]       = { Role = "ADM" },
     ["PREENCHA_AQUI_ADM_5"]       = { Role = "ADM" },
     ["PREENCHA_AQUI_ADM_6"]       = { Role = "ADM" },
@@ -70,16 +78,6 @@ local SUK_SHRINE       = "18726352770"
 local SUK_CUTS         = "17225837968"
 local SUK_AUDIO        = "rbxassetid://6590147536"
 local SHRINE_Y         = 13
-local SUK_SHRINE_MODEL = 16303278003
-local SUK_MESH_BASE    = "14741511539"
-local SUK_TEX_BASE     = "14741577814"
-local SUK_MESH_TEETH   = "14741511361"
-local SUK_TEX_TEETH    = "14741606287"
-local SUK_MESH_SKULLS  = "14741511460"
-local SUK_TEX_SKULLS   = "14741593918"
-local SUK_MESH_HORNS   = "14741511478"
-local SUK_TEX_HORNS    = "14741553001"
-local SUK_SKYBOX         = "95851846624912"
 local WINGS_ID         = "123746248186771"
 local HALO1_ID         = "75992910653222"
 local HALO2_ID         = "105905055095426"
@@ -734,7 +732,7 @@ local function clearLifeform()
     end
 end
 
-================== BACKROOMS LEVEL 0 ==================
+-- ================== BACKROOMS LEVEL 0 ==================
 local backroomsSaved = nil
 local backroomsToken = 0
 
@@ -771,9 +769,8 @@ local function limparEfeitosLighting()
     if a then a:Destroy() end
 end
 
-local BACKROOMS_MODEL_ID = "10581711055"
 local function spawnBackrooms(targetPartnerName)
-    notify("Backrooms", "Carregando o mapa das Backrooms...")
+    notify("Backrooms", "Gerando Level 0...")
 
     backroomsToken += 1
     local myToken = backroomsToken
@@ -787,54 +784,383 @@ local function spawnBackrooms(targetPartnerName)
     folder.Name = "Backrooms_Level0"
     folder.Parent = workspace
 
-    -- carrega o modelo pronto
-    local model
-    local ok, objs = pcall(function() return game:GetObjects("rbxassetid://" .. BACKROOMS_MODEL_ID) end)
-    if ok and objs and objs[1] then
-        model = objs[1]
-        if not model:IsA("Model") then
-            local wrap = Instance.new("Model")
-            for _, o in ipairs(objs) do o.Parent = wrap end
-            model = wrap
+    local GRID = 24
+    local CELL = 16
+    local WALL_H = 14
+    local T = 1.2
+    local BASE = Vector3.new(0, 200, 0)
+    local LIGHT_EVERY = 3
+
+    local ROOM_SIZE = GRID * CELL
+    local half = ROOM_SIZE / 2
+    local floorY = BASE.Y
+    local ceilY = floorY + WALL_H
+    local ox, oz = BASE.X - half, BASE.Z - half
+
+    local WALL_COLOR = Color3.fromRGB(238, 208, 86)
+    local TRIM_COLOR = Color3.fromRGB(238, 226, 190)
+    local WOOD_COLOR = Color3.fromRGB(96, 62, 36)
+    local CARPET_COLOR = Color3.fromRGB(168, 130, 58)
+    local CEIL_COLOR = Color3.fromRGB(232, 226, 190)
+    local PANEL_COLOR = Color3.fromRGB(255, 252, 228)
+
+    notify("Backrooms", "Carregando texturas...")
+    local resolved, pending = {}, 0
+    local function resolveAsync(key, id)
+        pending += 1
+        task.spawn(function()
+            pcall(function() resolved[key] = resolveImage(id) end)
+            pending -= 1
+        end)
+    end
+    resolveAsync("wall", TEX_WALL)
+    resolveAsync("floor", TEX_FLOOR)
+    resolveAsync("ceil", TEX_CEILING)
+    for i, id in ipairs(DRAWING_IDS) do resolveAsync("d" .. i, id) end
+
+    local t0 = os.clock()
+    while pending > 0 and os.clock() - t0 < 8 do task.wait(0.1) end
+    if backroomsToken ~= myToken then error("backrooms cancelada") end
+
+    local texWall = resolved.wall or TEX_WALL
+    local texFloor = resolved.floor or TEX_FLOOR
+    local texCeil = resolved.ceil or TEX_CEILING
+    local drawImgs = {}
+    for i, id in ipairs(DRAWING_IDS) do
+        drawImgs[i] = resolved["d" .. i] or getRealImageIdDelta(id)
+    end
+
+    local built = 0
+    local function mk(size, cf, color, mat, collide)
+        local p = Instance.new("Part")
+        p.Anchored = true
+        p.Size = size
+        p.CFrame = cf
+        p.Color = color
+        p.Material = mat or Enum.Material.SmoothPlastic
+        p.CanCollide = collide and true or false
+        p.CanQuery = collide and true or false
+        p.CanTouch = false
+        p.CastShadow = collide and true or false
+        p.TopSurface = Enum.SurfaceType.Smooth
+        p.BottomSurface = Enum.SurfaceType.Smooth
+        p.Parent = folder
+        built += 1
+        if built % 150 == 0 then
+            task.wait()
+            if backroomsToken ~= myToken then error("backrooms cancelada") end
+        end
+        return p
+    end
+
+    local function addTextures(part, faces, tile, texture)
+        pcall(function()
+            for _, f in ipairs(faces) do
+                local tex = Instance.new("Texture")
+                tex.Texture = texture
+                tex.Face = f
+                tex.StudsPerTileU = tile
+                tex.StudsPerTileV = tile
+                tex.Parent = part
+            end
+        end)
+    end
+
+    local floor = mk(Vector3.new(ROOM_SIZE + T * 2, 2, ROOM_SIZE + T * 2), CFrame.new(BASE.X, floorY - 1, BASE.Z), CARPET_COLOR, Enum.Material.Fabric, true)
+    floor.Name = "Floor"
+    addTextures(floor, { Enum.NormalId.Top }, 5, texFloor)
+
+    local ceil = mk(Vector3.new(ROOM_SIZE + T * 2, 2, ROOM_SIZE + T * 2), CFrame.new(BASE.X, ceilY + 1, BASE.Z), CEIL_COLOR, Enum.Material.SmoothPlastic, true)
+    ceil.Name = "Ceiling"
+    addTextures(ceil, { Enum.NormalId.Bottom }, 5, texCeil)
+
+    local hW, vW = {}, {}
+    for y = 0, GRID do
+        hW[y] = {}
+        for x = 1, GRID do hW[y][x] = true end
+    end
+    for y = 1, GRID do
+        vW[y] = {}
+        for x = 0, GRID do vW[y][x] = true end
+    end
+
+    local visited = {}
+    for y = 1, GRID do visited[y] = {} end
+    local stack = { { 1, 1 } }
+    visited[1][1] = true
+    while #stack > 0 do
+        local cur = stack[#stack]
+        local cx, cy = cur[1], cur[2]
+        local nbs = {}
+        if cx > 1 and not visited[cy][cx - 1] then table.insert(nbs, { cx - 1, cy }) end
+        if cx < GRID and not visited[cy][cx + 1] then table.insert(nbs, { cx + 1, cy }) end
+        if cy > 1 and not visited[cy - 1][cx] then table.insert(nbs, { cx, cy - 1 }) end
+        if cy < GRID and not visited[cy + 1][cx] then table.insert(nbs, { cx, cy + 1 }) end
+        if #nbs == 0 then
+            table.remove(stack)
+        else
+            local n = nbs[math.random(#nbs)]
+            local nx, ny = n[1], n[2]
+            if nx == cx + 1 then vW[cy][cx] = false
+            elseif nx == cx - 1 then vW[cy][cx - 1] = false
+            elseif ny == cy + 1 then hW[cy][cx] = false
+            else hW[cy - 1][cx] = false end
+            visited[ny][nx] = true
+            table.insert(stack, { nx, ny })
         end
     end
-    if not model then
-        local ok2, m2 = pcall(function() return game:GetService("InsertService"):LoadAsset(tonumber(BACKROOMS_MODEL_ID)) end)
-        if ok2 and m2 then model = m2 end
+
+    for y = 1, GRID - 1 do
+        for x = 1, GRID do
+            if hW[y][x] and math.random() < 0.22 then hW[y][x] = false end
+        end
     end
-    if backroomsToken ~= myToken then return end
-    if not model then
-        notify("Backrooms", "Não consegui carregar o mapa (ID " .. BACKROOMS_MODEL_ID .. ").")
-        pcall(function() folder:Destroy() end)
-        return
+    for y = 1, GRID do
+        for x = 1, GRID - 1 do
+            if vW[y][x] and math.random() < 0.22 then vW[y][x] = false end
+        end
     end
 
-    for _, p in ipairs(model:GetDescendants()) do
-        if p:IsA("BasePart") then p.Anchored = true p.CanCollide = true end
+    local pillarSpots = {}
+    local function abrirSala(rx, ry, rw, rh, comPilares)
+        for y = ry, ry + rh - 1 do
+            for x = rx, rx + rw - 2 do vW[y][x] = false end
+        end
+        for y = ry, ry + rh - 2 do
+            for x = rx, rx + rw - 1 do hW[y][x] = false end
+        end
+        if comPilares then
+            for yi = ry, ry + rh - 2 do
+                for xi = rx, rx + rw - 2 do
+                    if (xi - rx) % 2 == 0 and (yi - ry) % 2 == 0 and math.random() > 0.15 then
+                        table.insert(pillarSpots, { xi, yi })
+                    end
+                end
+            end
+        end
     end
-    if not model.PrimaryPart then model.PrimaryPart = model:FindFirstChildWhichIsA("BasePart", true) end
-    model.Parent = folder
 
-    -- posiciona o mapa
-    local BASE = Vector3.new(18000, 400, 0)
-    local spawnCF = CFrame.new(BASE + Vector3.new(0, 20, 0))
-    
-    if model.PrimaryPart then
-        local bcf, bs = model:GetBoundingBox()
-        local bo = model:GetPivot().Position.Y - (bcf.Position.Y - bs.Y / 2)
-        model:PivotTo(CFrame.new(BASE.X, BASE.Y + bo, BASE.Z))
+    for _ = 1, 9 do
+        local rw, rh = math.random(3, 6), math.random(3, 6)
+        local rx = math.random(1, GRID - rw + 1)
+        local ry = math.random(1, GRID - rh + 1)
+        abrirSala(rx, ry, rw, rh, true)
+    end
 
-        -- ✅ Correção do chão (raycast do meio pra baixo)
-        local bcf2, bs2 = model:GetBoundingBox()
-        local rp = RaycastParams.new()
-        rp.FilterType = Enum.RaycastFilterType.Include
-        rp.FilterDescendantsInstances = { model }
-        
-        local centerY = bcf2.Position.Y 
-        local res = workspace:Raycast(Vector3.new(bcf2.Position.X, centerY, bcf2.Position.Z), Vector3.new(0, -3000, 0), rp)
-        
-        local landY = res and res.Position.Y or (bcf2.Position.Y - bs2.Y / 2)
-        spawnCF = CFrame.new(bcf2.Position.X, landY + 6, bcf2.Position.Z)
+    local scx = math.floor(GRID / 2)
+    abrirSala(scx - 1, scx - 1, 3, 3, false)
+    local startPos = Vector3.new(ox + (scx - 0.5) * CELL, floorY + 5, oz + (scx - 0.5) * CELL)
+
+    local runs = {}
+    local function wallRun(isH, cx, cz, length)
+        local size = isH and Vector3.new(length + T, WALL_H, T) or Vector3.new(T, WALL_H, length + T)
+        local wall = mk(size, CFrame.new(cx, floorY + WALL_H / 2, cz), WALL_COLOR, Enum.Material.SmoothPlastic, true)
+        wall.Name = "Wall"
+        addTextures(wall, isH and { Enum.NormalId.Front, Enum.NormalId.Back } or { Enum.NormalId.Left, Enum.NormalId.Right }, 5, texWall)
+
+        local railOn = math.random() < 0.3
+        local lenV = length + T
+        for _, s in ipairs({ -1, 1 }) do
+            local nrm = isH and Vector3.new(0, 0, s) or Vector3.new(s, 0, 0)
+            local function strip(h, thick, y, col)
+                local sz = isH and Vector3.new(lenV, h, thick) or Vector3.new(thick, h, lenV)
+                return mk(sz, CFrame.new(cx, y, cz) + nrm * (T / 2 + thick / 2), col, Enum.Material.SmoothPlastic, false)
+            end
+            strip(0.9, 0.3, floorY + 0.45, TRIM_COLOR)
+            strip(0.5, 0.25, floorY + WALL_H - 0.25, TRIM_COLOR)
+            if railOn then strip(0.25, 0.4, floorY + 1.7, WOOD_COLOR) end
+        end
+
+        table.insert(runs, { isH = isH, cx = cx, cz = cz, length = length })
+    end
+
+    for y = 0, GRID do
+        local x = 1
+        while x <= GRID do
+            if hW[y][x] then
+                local s = x
+                while x <= GRID and hW[y][x] do x += 1 end
+                local len = (x - s) * CELL
+                wallRun(true, ox + (s - 1) * CELL + len / 2, oz + y * CELL, len)
+            else
+                x += 1
+            end
+        end
+    end
+    for x = 0, GRID do
+        local y = 1
+        while y <= GRID do
+            if vW[y][x] then
+                local s = y
+                while y <= GRID and vW[y][x] do y += 1 end
+                local len = (y - s) * CELL
+                wallRun(false, ox + x * CELL, oz + (s - 1) * CELL + len / 2, len)
+            else
+                y += 1
+            end
+        end
+    end
+
+    for _, sp in ipairs(pillarSpots) do
+        if not (math.abs(sp[1] - scx) <= 3 and math.abs(sp[2] - scx) <= 3) then
+            local px, pz = ox + sp[1] * CELL, oz + sp[2] * CELL
+            local pil = mk(Vector3.new(5, WALL_H, 5), CFrame.new(px, floorY + WALL_H / 2, pz), WALL_COLOR, Enum.Material.SmoothPlastic, true)
+            pil.Name = "Pillar"
+            addTextures(pil, { Enum.NormalId.Front, Enum.NormalId.Back, Enum.NormalId.Left, Enum.NormalId.Right }, 5, texWall)
+            mk(Vector3.new(5.6, 0.9, 5.6), CFrame.new(px, floorY + 0.45, pz), TRIM_COLOR, Enum.Material.SmoothPlastic, false)
+            mk(Vector3.new(5.5, 0.5, 5.5), CFrame.new(px, floorY + WALL_H - 0.25, pz), TRIM_COLOR, Enum.Material.SmoothPlastic, false)
+        end
+    end
+
+    local panels = {}
+    for y = 1, GRID do
+        for x = 1, GRID do
+            local px, pz = ox + (x - 0.5) * CELL, oz + (y - 0.5) * CELL
+            local panel = mk(Vector3.new(7, 0.25, 3.4), CFrame.new(px, ceilY - 0.13, pz), PANEL_COLOR, Enum.Material.Neon, false)
+            panel.Name = "Lamp"
+            local light
+            if x % LIGHT_EVERY == 0 and y % LIGHT_EVERY == 0 then
+                light = Instance.new("SurfaceLight")
+                light.Face = Enum.NormalId.Bottom
+                light.Brightness = 2.6
+                light.Range = 42
+                light.Angle = 130
+                light.Color = Color3.fromRGB(255, 243, 200)
+                light.Shadows = false
+                light.Parent = panel
+            end
+            panels[#panels + 1] = { part = panel, light = light }
+        end
+    end
+
+    task.spawn(function()
+        while backroomsToken == myToken and folder.Parent do
+            task.wait(math.random(15, 50) / 10)
+            local item = panels[math.random(#panels)]
+            for _ = 1, math.random(3, 8) do
+                if backroomsToken ~= myToken or not item.part.Parent then break end
+                local on = math.random() > 0.45
+                item.part.Material = on and Enum.Material.Neon or Enum.Material.SmoothPlastic
+                item.part.Color = on and PANEL_COLOR or Color3.fromRGB(150, 148, 125)
+                if item.light then item.light.Enabled = on end
+                task.wait(0.05 + math.random() * 0.08)
+            end
+            if item.part.Parent then
+                item.part.Material = Enum.Material.Neon
+                item.part.Color = PANEL_COLOR
+                if item.light then item.light.Enabled = true end
+            end
+        end
+    end)
+
+    for _ = 1, 70 do
+        local d = math.random(4, 14)
+        local px = ox + 10 + math.random() * (ROOM_SIZE - 20)
+        local pz = oz + 10 + math.random() * (ROOM_SIZE - 20)
+        local st = mk(Vector3.new(0.05, d, d * (0.7 + math.random() * 0.5)),
+            CFrame.new(px, floorY + 0.03, pz) * CFrame.Angles(0, math.rad(math.random(360)), 0) * CFrame.Angles(0, 0, math.rad(90)),
+            Color3.fromRGB(88, 66, 28), Enum.Material.SmoothPlastic, false)
+        st.Shape = Enum.PartType.Cylinder
+        st.Transparency = 0.5 + math.random() * 0.15
+        st.Name = "Stain"
+    end
+
+    local function wallPoint(run, dist)
+        local s = math.random() < 0.5 and -1 or 1
+        local nrm = run.isH and Vector3.new(0, 0, s) or Vector3.new(s, 0, 0)
+        local along = (math.random() - 0.5) * math.max(run.length - 8, 0)
+        local base = run.isH and Vector3.new(run.cx + along, 0, run.cz) or Vector3.new(run.cx, 0, run.cz + along)
+        local pos = base + nrm * (T / 2 + dist)
+        return Vector3.new(pos.X, floorY, pos.Z), nrm
+    end
+
+    local drawIdx = 0
+    for _ = 1, 32 do
+        local run = runs[math.random(#runs)]
+        if run.length >= 10 and #DRAWING_IDS > 0 then
+            local pos, nrm = wallPoint(run, 0.04)
+            drawIdx = drawIdx % #DRAWING_IDS + 1
+            local canvas = mk(Vector3.new(9, 9, 0.05), CFrame.lookAt(pos + Vector3.new(0, 6.5, 0), pos + Vector3.new(0, 6.5, 0) + nrm), WALL_COLOR, Enum.Material.SmoothPlastic, false)
+            canvas.Name = "WallDrawing"
+            canvas.Transparency = 1
+            local sg = Instance.new("SurfaceGui")
+            sg.Face = Enum.NormalId.Front
+            sg.AlwaysOnTop = false
+            sg.LightInfluence = 1
+            sg.Parent = canvas
+            local img = Instance.new("ImageLabel")
+            img.Size = UDim2.new(1, 0, 1, 0)
+            img.BackgroundTransparency = 1
+            img.Image = drawImgs[drawIdx]
+            img.ImageTransparency = 0.08
+            img.ScaleType = Enum.ScaleType.Fit
+            img.Parent = sg
+        end
+    end
+
+    for _ = 1, 35 do
+        local run = runs[math.random(#runs)]
+        if run.length >= 8 then
+            local pos, nrm = wallPoint(run, 0.07)
+            local cf = CFrame.lookAt(pos + Vector3.new(0, 1.6, 0), pos + Vector3.new(0, 1.6, 0) + nrm)
+            mk(Vector3.new(0.9, 1.3, 0.12), cf, TRIM_COLOR, Enum.Material.SmoothPlastic, false)
+            mk(Vector3.new(0.18, 0.3, 0.05), cf * CFrame.new(-0.2, 0.2, -0.08), Color3.fromRGB(40, 35, 25), Enum.Material.SmoothPlastic, false)
+            mk(Vector3.new(0.18, 0.3, 0.05), cf * CFrame.new(0.2, 0.2, -0.08), Color3.fromRGB(40, 35, 25), Enum.Material.SmoothPlastic, false)
+            mk(Vector3.new(0.18, 0.3, 0.05), cf * CFrame.new(-0.2, -0.2, -0.08), Color3.fromRGB(40, 35, 25), Enum.Material.SmoothPlastic, false)
+            mk(Vector3.new(0.18, 0.3, 0.05), cf * CFrame.new(0.2, -0.2, -0.08), Color3.fromRGB(40, 35, 25), Enum.Material.SmoothPlastic, false)
+        end
+    end
+
+    for _ = 1, 12 do
+        pcall(function()
+            local run = runs[math.random(#runs)]
+            if run.length < 12 then return end
+            local pos, nrm = wallPoint(run, 1.3)
+            local center = pos + Vector3.new(0, 3.1, 0)
+            local cf = CFrame.lookAt(center, center + nrm)
+            local body = mk(Vector3.new(2.6, 6.2, 2.2), cf, Color3.fromRGB(112, 58, 38), Enum.Material.Metal, true)
+            body.Name = "Locker"
+            for i = 0, 2 do
+                mk(Vector3.new(1.6, 0.14, 0.06), cf * CFrame.new(0, 1.4 + i * 0.3, -1.13), Color3.fromRGB(30, 20, 15), Enum.Material.Metal, false)
+            end
+        end)
+    end
+
+    for _ = 1, 10 do
+        pcall(function()
+            local run = runs[math.random(#runs)]
+            if run.length < 10 then return end
+            local pos = wallPoint(run, 1.6)
+            local dark = Color3.fromRGB(45, 38, 30)
+            mk(Vector3.new(1.4, 0.2, 1.4), CFrame.new(pos + Vector3.new(0, 0.1, 0)), dark, Enum.Material.Metal, false)
+            mk(Vector3.new(0.2, 5.2, 0.2), CFrame.new(pos + Vector3.new(0, 2.7, 0)), dark, Enum.Material.Metal, false)
+            local shade = mk(Vector3.new(1.8, 2.2, 2.2), CFrame.new(pos + Vector3.new(0, 5.6, 0)) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(240, 200, 100), Enum.Material.Neon, false)
+            shade.Shape = Enum.PartType.Cylinder
+            shade.Transparency = 0.15
+            local pl = Instance.new("PointLight")
+            pl.Color = Color3.fromRGB(255, 214, 120)
+            pl.Brightness = 1.4
+            pl.Range = 16
+            pl.Shadows = false
+            pl.Parent = shade
+        end)
+    end
+
+    for _ = 1, 8 do
+        pcall(function()
+            local run = runs[math.random(#runs)]
+            if run.length < 10 then return end
+            local pos, nrm = wallPoint(run, 2.8)
+            local center = pos + Vector3.new(0, 2.6, 0)
+            local cf = CFrame.lookAt(center, center + nrm)
+            local wood = Color3.fromRGB(110, 70, 40)
+            mk(Vector3.new(5, 0.3, 2.4), cf, wood, Enum.Material.Wood, true)
+            for _, sx in ipairs({ -1, 1 }) do
+                for _, sz in ipairs({ -1, 1 }) do
+                    mk(Vector3.new(0.3, 2.5, 0.3), cf * CFrame.new(sx * 2.2, -1.3, sz * 1.0), wood, Enum.Material.Wood, true)
+                end
+            end
+        end)
     end
 
     salvarLighting()
@@ -844,6 +1170,8 @@ local function spawnBackrooms(targetPartnerName)
         Lighting.Brightness = 2
         Lighting.GlobalShadows = true
         Lighting.ExposureCompensation = 0.15
+        Lighting.EnvironmentDiffuseScale = 0
+        Lighting.EnvironmentSpecularScale = 0
         Lighting.FogColor = Color3.fromRGB(70, 58, 25)
         Lighting.FogStart = 60
         Lighting.FogEnd = 650
@@ -877,12 +1205,9 @@ local function spawnBackrooms(targetPartnerName)
     end)
 
     pcall(function()
-        local sndPart = Instance.new("Part")
-        sndPart.Anchored, sndPart.CanCollide, sndPart.Transparency = true, false, 1
-        sndPart.Size = Vector3.new(1, 1, 1)
-        sndPart.CFrame = spawnCF
+        local sndPart = mk(Vector3.new(1, 1, 1), CFrame.new(startPos), Color3.new(0, 0, 0), Enum.Material.SmoothPlastic, false)
         sndPart.Name = "BackroomsMusicEmitter"
-        sndPart.Parent = folder
+        sndPart.Transparency = 1
 
         local sound = Instance.new("Sound")
         sound.SoundId = BACKROOMS_MUSIC
@@ -893,41 +1218,14 @@ local function spawnBackrooms(targetPartnerName)
         sound:Play()
     end)
 
-    -- ======= PARTE NOVA DO FADE (TELA PRETA) =======
     task.spawn(function()
-        local TweenService = game:GetService("TweenService")
-        local pg = LocalPlayer:WaitForChild("PlayerGui")
-        
-        local fadeGui = Instance.new("ScreenGui")
-        fadeGui.Name = "BackroomsFade"
-        fadeGui.IgnoreGuiInset = true
-        fadeGui.ResetOnSpawn = false
-        fadeGui.DisplayOrder = 999
-        fadeGui.Parent = pg
-
-        local fadeFrame = Instance.new("Frame")
-        fadeFrame.Size = UDim2.new(1, 0, 1, 0)
-        fadeFrame.BackgroundColor3 = Color3.new(0, 0, 0)
-        fadeFrame.BackgroundTransparency = 1
-        fadeFrame.BorderSizePixel = 0
-        fadeFrame.Parent = fadeGui
-
-        -- Fade para preto
-        local fadeOut = TweenService:Create(fadeFrame, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0})
-        fadeOut:Play()
-        fadeOut.Completed:Wait()
-
-        if backroomsToken ~= myToken then 
-            if fadeGui then fadeGui:Destroy() end
-            return 
-        end
-
-        -- Teleporta
+        task.wait(1)
+        local targetCFrame = CFrame.new(startPos)
         local chr = LocalPlayer.Character
         local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
         if hrp then
             hrp.Anchored = true
-            hrp.CFrame = spawnCF
+            hrp.CFrame = targetCFrame
             task.wait(0.3)
             hrp.Anchored = false
         end
@@ -935,23 +1233,16 @@ local function spawnBackrooms(targetPartnerName)
         if targetPartnerName and targetPartnerName ~= "" then
             local partner = Players:FindFirstChild(targetPartnerName)
             if partner and partner.Character and partner.Character:FindFirstChild("HumanoidRootPart") then
-                partner.Character.HumanoidRootPart.CFrame = spawnCF + Vector3.new(4, 0, 4)
+                partner.Character.HumanoidRootPart.CFrame = targetCFrame + Vector3.new(3, 0, 3)
             end
         end
 
-        task.wait(0.6)
-
-        -- Fade para claro
-        local fadeIn = TweenService:Create(fadeFrame, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {BackgroundTransparency = 1})
-        fadeIn:Play()
-        fadeIn.Completed:Wait()
-
-        if fadeGui then fadeGui:Destroy() end
-        notify("Backrooms", "Mapa pronto!")
+        notify("Backrooms", "Level 0 pronto!")
     end)
 
     return true
 end
+
 local function clearBackrooms()
     backroomsToken += 1
     clearLifeform()
@@ -962,13 +1253,212 @@ local function clearBackrooms()
     notify("Backrooms", "Backrooms removidas.")
     return true
 end
-================== POOLROOMS (LEVEL 37 - MAPA ÚNICO) ==================
+
+-- ================== POOLROOMS (LEVEL 37 - SALÃO INFINITO) ==================
 local POOL = { token = 0, saved = nil, S = nil, hidden = {} }
 
 do
     local TweenService = game:GetService("TweenService")
-    local POOL_MODEL_ID = "79020643964376"
-    
+    local Debris       = game:GetService("Debris")
+
+    local CH           = 64
+    local OFFS         = { -24, -8, 8, 24 }
+    local PANEL_OFFS   = { -32, -16, 0, 16 }
+    local COL_W        = 3.6
+    local WALL_H       = 24
+    local POOL_Y       = 1000
+    local WATER_H      = 1.6
+    local RADIUS       = 2
+    local TILE         = 4
+    local LIGHT_COUNT  = 36
+    local SHADOW_COUNT = 10
+    local WALL_TEX     = "rbxassetid://122349893272800"
+
+    local C_TILE  = Color3.fromRGB(246, 248, 248)
+    local C_FLOOR = Color3.fromRGB(222, 238, 236)
+    local C_WATER = Color3.fromRGB(70, 205, 198)
+    local C_WET   = Color3.fromRGB(60, 190, 185)
+    local C_TRIM  = Color3.fromRGB(170, 178, 180)
+    local C_CEIL  = Color3.fromRGB(244, 246, 248)
+    local C_FRAME = Color3.fromRGB(150, 155, 160)
+    local C_PANEL = Color3.fromRGB(232, 244, 255)
+    local C_LIGHT = Color3.fromRGB(214, 232, 255)
+
+    local FACES_FB    = { Enum.NormalId.Front, Enum.NormalId.Back }
+    local FACES_LR    = { Enum.NormalId.Left, Enum.NormalId.Right }
+    local FACES_TOP   = { Enum.NormalId.Top }
+    local FACES_SIDES = { Enum.NormalId.Front, Enum.NormalId.Back, Enum.NormalId.Left, Enum.NormalId.Right }
+
+    local function mkPart(parent, size, cf, color, mat, collide)
+        local p = Instance.new("Part")
+        p.Anchored = true
+        p.Size = size
+        p.CFrame = cf
+        p.Color = color
+        p.Material = mat or Enum.Material.SmoothPlastic
+        p.CanCollide = collide and true or false
+        p.CanQuery = collide and true or false
+        p.CanTouch = false
+        p.TopSurface = Enum.SurfaceType.Smooth
+        p.BottomSurface = Enum.SurfaceType.Smooth
+        p.Parent = parent
+        return p
+    end
+
+    local function slab(S, parent, size, cf, faces, color, collide)
+        local p = mkPart(parent, size, cf, color or C_TILE, Enum.Material.SmoothPlastic, collide ~= false)
+        p.Reflectance = 0.12
+        for _, f in ipairs(faces or FACES_FB) do
+            local t = Instance.new("Texture")
+            t.Texture = S.tex
+            t.Face = f
+            t.StudsPerTileU = TILE
+            t.StudsPerTileV = TILE
+            t.Parent = p
+        end
+        S.count += 1
+        if S.count % 70 == 0 then task.wait() end
+        return p
+    end
+
+    local function wetBand(parent, w, d, x, z)
+        local b = mkPart(parent, Vector3.new(w, 3, d), CFrame.new(x, POOL_Y + 1.5, z), C_WET, Enum.Material.SmoothPlastic, false)
+        b.Transparency = 0.6
+        b.Reflectance = 0.1
+        b.CastShadow = false
+        return b
+    end
+
+    local function buildChunk(S, cx, cz)
+        if POOL.token ~= S.token then return end
+        local key = cx .. "," .. cz
+        if S.chunks[key] then return end
+
+        local folder = Instance.new("Folder")
+        folder.Name = "Chunk_" .. key
+        folder.Parent = S.folder
+        local chunk = { folder = folder, cx = cx, cz = cz, panels = {} }
+        S.chunks[key] = chunk
+
+        local rng = Random.new(cx * 7349 + cz * 9157 + 11)
+        local wx, wz = cx * CH, cz * CH
+        local ceilBottom = POOL_Y + WALL_H
+
+        local ok, err = pcall(function()
+            slab(S, folder, Vector3.new(CH, 2, CH), CFrame.new(wx, POOL_Y - 1, wz), FACES_TOP, C_FLOOR)
+
+            local w = mkPart(folder, Vector3.new(CH, WATER_H, CH), CFrame.new(wx, POOL_Y + WATER_H / 2, wz), C_WATER, Enum.Material.Glass, false)
+            w.Name = "PoolWater"
+            w.Transparency = 0.55
+            w.Reflectance = 0.22
+            w.CastShadow = false
+
+            local ceil = mkPart(folder, Vector3.new(CH, 2, CH), CFrame.new(wx, ceilBottom + 1, wz), C_CEIL, Enum.Material.SmoothPlastic, true)
+            ceil.Name = "Ceiling"
+            ceil.Reflectance = 0.04
+
+            for _, dx in ipairs(OFFS) do
+                for _, dz in ipairs(OFFS) do
+                    local x, z = wx + dx, wz + dz
+                    slab(S, folder, Vector3.new(COL_W, WALL_H, COL_W), CFrame.new(x, POOL_Y + WALL_H / 2, z), FACES_SIDES, C_TILE)
+                    wetBand(folder, COL_W + 0.14, COL_W + 0.14, x, z)
+                    local cap = mkPart(folder, Vector3.new(COL_W + 0.9, 0.8, COL_W + 0.9), CFrame.new(x, ceilBottom - 0.4, z), C_TRIM, Enum.Material.SmoothPlastic, false)
+                    cap.Reflectance = 0.05
+                end
+            end
+
+            local gap = (OFFS[2] - OFFS[1]) - COL_W
+            for i = 1, #OFFS - 1 do
+                for j = 1, #OFFS do
+                    if rng:NextNumber() < 0.16 then
+                        local x, z = wx + (OFFS[i] + OFFS[i + 1]) / 2, wz + OFFS[j]
+                        slab(S, folder, Vector3.new(gap, WALL_H, 1.2), CFrame.new(x, POOL_Y + WALL_H / 2, z), FACES_FB, C_TILE)
+                        wetBand(folder, gap + 0.02, 1.34, x, z)
+                    end
+                end
+            end
+            for i = 1, #OFFS do
+                for j = 1, #OFFS - 1 do
+                    if rng:NextNumber() < 0.16 then
+                        local x, z = wx + OFFS[i], wz + (OFFS[j] + OFFS[j + 1]) / 2
+                        slab(S, folder, Vector3.new(1.2, WALL_H, gap), CFrame.new(x, POOL_Y + WALL_H / 2, z), FACES_LR, C_TILE)
+                        wetBand(folder, 1.34, gap + 0.02, x, z)
+                    end
+                end
+            end
+
+            for _, u in ipairs(PANEL_OFFS) do
+                for _, v in ipairs(PANEL_OFFS) do
+                    local x, z = wx + u, wz + v
+                    local frame = mkPart(folder, Vector3.new(10.4, 0.5, 4.4), CFrame.new(x, ceilBottom - 0.25, z), C_FRAME, Enum.Material.Metal, false)
+                    frame.CastShadow = false
+                    local pan = mkPart(folder, Vector3.new(9.6, 0.3, 3.6), CFrame.new(x, ceilBottom - 0.55, z), C_PANEL, Enum.Material.Neon, false)
+                    pan.Name = "LightPanel"
+                    pan.CastShadow = false
+                    table.insert(chunk.panels, { part = pan, light = nil, d = 0 })
+                end
+            end
+        end)
+        if not ok then warn("[Poolrooms] chunk " .. key .. ": " .. tostring(err)) end
+    end
+
+    local function unloadChunk(S, key)
+        local ch = S.chunks[key]
+        if not ch then return end
+        S.chunks[key] = nil
+        pcall(function() ch.folder:Destroy() end)
+    end
+
+    local function streamStep(S, pcx, pcz, radius)
+        for ring = 0, radius do
+            for dx = -ring, ring do
+                for dz = -ring, ring do
+                    if POOL.token ~= S.token then return end
+                    if math.max(math.abs(dx), math.abs(dz)) == ring then
+                        buildChunk(S, pcx + dx, pcz + dz)
+                    end
+                end
+            end
+        end
+        for key, ch in pairs(S.chunks) do
+            if math.max(math.abs(ch.cx - pcx), math.abs(ch.cz - pcz)) > RADIUS + 1 then
+                unloadChunk(S, key)
+            end
+        end
+    end
+
+    local function updateLights(S, pos)
+        local list = {}
+        for _, ch in pairs(S.chunks) do
+            for _, pn in ipairs(ch.panels) do
+                if pn.part.Parent then
+                    pn.d = (pn.part.Position - pos).Magnitude
+                    list[#list + 1] = pn
+                end
+            end
+        end
+        table.sort(list, function(a, b) return a.d < b.d end)
+        for i, pn in ipairs(list) do
+            if i <= LIGHT_COUNT then
+                if not (pn.light and pn.light.Parent) then
+                    local l = Instance.new("SurfaceLight")
+                    l.Face = Enum.NormalId.Bottom
+                    l.Angle = 170
+                    l.Range = 58
+                    l.Brightness = 1.7
+                    l.Color = C_LIGHT
+                    l.Shadows = false
+                    l.Parent = pn.part
+                    pn.light = l
+                end
+                pn.light.Shadows = i <= SHADOW_COUNT
+            elseif pn.light then
+                pn.light:Destroy()
+                pn.light = nil
+            end
+        end
+    end
+
     local LIGHT_PROPS = {
         "Ambient", "OutdoorAmbient", "Brightness", "ColorShift_Top", "ColorShift_Bottom",
         "ExposureCompensation", "ClockTime", "FogColor", "FogStart", "FogEnd", "GlobalShadows",
@@ -980,7 +1470,63 @@ do
         for _, k in ipairs(LIGHT_PROPS) do
             pcall(function() s[k] = Lighting[k] end)
         end
+        pcall(function() s.Technology = gethiddenproperty(Lighting, "Technology") end)
         return s
+    end
+
+    local function envApply()
+        local function set(k, v) pcall(function() Lighting[k] = v end) end
+        set("ClockTime", 14)
+        set("Brightness", 2.2)
+        set("Ambient", Color3.fromRGB(125, 148, 156))
+        set("OutdoorAmbient", Color3.fromRGB(140, 160, 168))
+        set("ColorShift_Top", Color3.fromRGB(230, 245, 255))
+        set("ColorShift_Bottom", Color3.fromRGB(90, 190, 185))
+        set("ExposureCompensation", 0.25)
+        set("GlobalShadows", true)
+        set("ShadowSoftness", 0.35)
+        set("EnvironmentDiffuseScale", 0.6)
+        set("EnvironmentSpecularScale", 1)
+        set("FogColor", Color3.fromRGB(205, 228, 236))
+        set("FogStart", 70)
+        set("FogEnd", 250)
+        pcall(function() sethiddenproperty(Lighting, "Technology", Enum.Technology.Future) end)
+
+        pcall(function()
+            for _, c in ipairs(Lighting:GetChildren()) do
+                if c:IsA("Atmosphere") then
+                    table.insert(POOL.hidden, c)
+                    c.Parent = nil
+                end
+            end
+        end)
+
+        pcall(function()
+            local cc = Instance.new("ColorCorrectionEffect")
+            cc.Name = "Pool_CC"
+            cc.TintColor = Color3.fromRGB(235, 248, 255)
+            cc.Saturation = 0.1
+            cc.Contrast = 0.08
+            cc.Brightness = 0.02
+            cc.Parent = Lighting
+
+            local bl = Instance.new("BloomEffect")
+            bl.Name = "Pool_Bloom"
+            bl.Intensity = 0.35
+            bl.Size = 24
+            bl.Threshold = 0.95
+            bl.Parent = Lighting
+
+            local at = Instance.new("Atmosphere")
+            at.Name = "Pool_Atmosphere"
+            at.Density = 0.22
+            at.Offset = 0
+            at.Color = Color3.fromRGB(210, 230, 238)
+            at.Decay = Color3.fromRGB(150, 180, 190)
+            at.Glare = 0
+            at.Haze = 0.9
+            at.Parent = Lighting
+        end)
     end
 
     local function envRestore()
@@ -990,148 +1536,56 @@ do
         for _, k in ipairs(LIGHT_PROPS) do
             if s[k] ~= nil then pcall(function() Lighting[k] = s[k] end) end
         end
+        if s.Technology ~= nil then
+            pcall(function() sethiddenproperty(Lighting, "Technology", s.Technology) end)
+        end
     end
 
     function POOL.clear(silent)
         POOL.token += 1
         local S = POOL.S
         POOL.S = nil
-        
-        if S and S.folder then 
-            pcall(function() S.folder:Destroy() end) 
+        if S then
+            if S.conn then pcall(function() S.conn:Disconnect() end) end
+            if S.folder then pcall(function() S.folder:Destroy() end) end
         end
-        if S and S.charConn then
-            pcall(function() S.charConn:Disconnect() end)
-        end
-        
-        for _, n in ipairs({ "Pool_CC", "Pool_Bloom", "Pool_Atmosphere" }) do
+        for _, n in ipairs({ "Pool_CC", "Pool_Bloom", "Pool_Rays", "Pool_Atmosphere" }) do
             local o = Lighting:FindFirstChild(n)
             if o then o:Destroy() end
         end
-        
+        for _, a in ipairs(POOL.hidden) do
+            pcall(function() a.Parent = Lighting end)
+        end
+        POOL.hidden = {}
         envRestore()
         if S and not silent then notify("Poolrooms", "Poolrooms removidas.") end
         return true
     end
 
     function POOL.spawn(partnerName)
-        notify("Poolrooms", "Carregando o mapa das Poolrooms...")
+        notify("Poolrooms", "Gerando Poolrooms infinitas...")
         POOL.clear(true)
+        if workspace:FindFirstChild("Backrooms_Level0") then pcall(clearBackrooms) end
         local myToken = POOL.token
 
-        local S = {}
+        local S = { chunks = {}, count = 0, tex = WALL_TEX, token = myToken }
         POOL.S = S
         local folder = Instance.new("Folder")
         folder.Name = "Poolrooms_Level"
         folder.Parent = workspace
         S.folder = folder
 
-        -- Carrega o modelo
-        local model
-        local ok, objs = pcall(function() return game:GetObjects("rbxassetid://" .. POOL_MODEL_ID) end)
-        if ok and objs and objs[1] then
-            model = objs[1]
-            if not model:IsA("Model") then
-                local wrap = Instance.new("Model")
-                for _, o in ipairs(objs) do o.Parent = wrap end
-                model = wrap
-            end
-        end
-        if not model then
-            local ok2, m2 = pcall(function() return game:GetService("InsertService"):LoadAsset(tonumber(POOL_MODEL_ID)) end)
-            if ok2 and m2 then model = m2 end
-        end
-
+        pcall(function() S.tex = resolveImage(WALL_TEX) end)
         if POOL.token ~= myToken then return end
-        if not model then
-            notify("Poolrooms", "Não consegui carregar o mapa (ID " .. POOL_MODEL_ID .. ").")
-            pcall(function() folder:Destroy() end)
-            return
-        end
 
-        -- Trava as peças
-        for _, p in ipairs(model:GetDescendants()) do
-            if p:IsA("BasePart") then p.Anchored = true p.CanCollide = true end
-        end
-        if not model.PrimaryPart then model.PrimaryPart = model:FindFirstChildWhichIsA("BasePart", true) end
-        model.Parent = folder
--- Posiciona o mapa no lugar certo
-local BASE = Vector3.new(25000, 400, 0)
-
-if model.PrimaryPart then
-    local bcf, bs = model:GetBoundingBox()
-    local bo = model:GetPivot().Position.Y - (bcf.Position.Y - bs.Y / 2)
-    model:PivotTo(CFrame.new(BASE.X, BASE.Y + bo, BASE.Z))
-end
-
--- ✅ LOCAL DE SPAWN FIXO (Puxado da sua imagem)
--- Coloquei + 3 no Y para você não nascer afundado dentro do chão
-local spawnCF = CFrame.new(24937.9, 411.4 + 3, 231.3)
-
-        -- Iluminação das Poolrooms
         POOL.saved = envSave()
-        pcall(function()
-            Lighting.ClockTime = 14
-            Lighting.Brightness = 2.2
-            Lighting.Ambient = Color3.fromRGB(125, 148, 156)
-            Lighting.OutdoorAmbient = Color3.fromRGB(140, 160, 168)
-            Lighting.ExposureCompensation = 0.25
-            Lighting.FogColor = Color3.fromRGB(205, 228, 236)
-            Lighting.FogStart = 70
-            Lighting.FogEnd = 800
+        envApply()
 
-            local cc = Instance.new("ColorCorrectionEffect")
-            cc.Name = "Pool_CC"
-            cc.TintColor = Color3.fromRGB(235, 248, 255)
-            cc.Saturation = 0.1
-            cc.Contrast = 0.08
-            cc.Parent = Lighting
+        streamStep(S, 0, 0, 1)
+        if POOL.token ~= myToken then return end
 
-            local bl = Instance.new("BloomEffect")
-            bl.Name = "Pool_Bloom"
-            bl.Intensity = 0.35
-            bl.Size = 24
-            bl.Threshold = 0.95
-            bl.Parent = Lighting
-            
-            local at = Instance.new("Atmosphere")
-            at.Name = "Pool_Atmosphere"
-            at.Density = 0.22
-            at.Offset = 0
-            at.Color = Color3.fromRGB(210, 230, 238)
-            at.Decay = Color3.fromRGB(150, 180, 190)
-            at.Haze = 0.9
-            at.Parent = Lighting
-        end)
-
-        -- ======= FADE PRETO E TELEPORTE =======
-        task.spawn(function()
-            local pg = LocalPlayer:WaitForChild("PlayerGui")
-            local fadeGui = Instance.new("ScreenGui")
-            fadeGui.Name = "PoolroomsFade"
-            fadeGui.IgnoreGuiInset = true
-            fadeGui.ResetOnSpawn = false
-            fadeGui.DisplayOrder = 999
-            fadeGui.Parent = pg
-
-            local fadeFrame = Instance.new("Frame")
-            fadeFrame.Size = UDim2.new(1, 0, 1, 0)
-            fadeFrame.BackgroundColor3 = Color3.new(0, 0, 0)
-            fadeFrame.BackgroundTransparency = 1
-            fadeFrame.BorderSizePixel = 0
-            fadeFrame.Parent = fadeGui
-
-            -- Fade para preto (0.8s)
-            local fadeOut = TweenService:Create(fadeFrame, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0})
-            fadeOut:Play()
-            fadeOut.Completed:Wait()
-
-            if POOL.token ~= myToken then 
-                if fadeGui then fadeGui:Destroy() end
-                return 
-            end
-
-            -- Teleporta
+        local spawnCF = CFrame.new(16, POOL_Y + 6, 16)
+        local function teleportMe()
             local chr = LocalPlayer.Character
             local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
             if hrp then
@@ -1140,538 +1594,88 @@ local spawnCF = CFrame.new(24937.9, 411.4 + 3, 231.3)
                 task.wait(0.3)
                 hrp.Anchored = false
             end
-
-            if partnerName and partnerName ~= "" then
-                local partner = Players:FindFirstChild(partnerName)
-                if partner and partner.Character and partner.Character:FindFirstChild("HumanoidRootPart") then
-                    partner.Character.HumanoidRootPart.CFrame = spawnCF + Vector3.new(4, 0, 4)
-                end
+        end
+        teleportMe()
+        if partnerName and partnerName ~= "" then
+            local partner = Players:FindFirstChild(partnerName)
+            if partner and partner.Character and partner.Character:FindFirstChild("HumanoidRootPart") then
+                partner.Character.HumanoidRootPart.CFrame = spawnCF + Vector3.new(3, 0, 3)
             end
+        end
 
-            task.wait(0.6)
-
-            -- Fade para claro (1s)
-            local fadeIn = TweenService:Create(fadeFrame, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {BackgroundTransparency = 1})
-            fadeIn:Play()
-            fadeIn.Completed:Wait()
-
-            if fadeGui then fadeGui:Destroy() end
-            notify("Poolrooms", "Pronto! Poolrooms carregadas.")
-        end)
-
-        -- Se o jogador morrer e der respawn, teleporta de volta pro mapa
-        S.charConn = LocalPlayer.CharacterAdded:Connect(function(c)
+        S.conn = LocalPlayer.CharacterAdded:Connect(function(c)
             local h = c:WaitForChild("HumanoidRootPart", 10)
             if h and POOL.token == myToken then
                 task.wait(0.5)
+                pcall(streamStep, S, 0, 0, 1)
+                if POOL.token ~= myToken then return end
                 h.AssemblyLinearVelocity = Vector3.zero
                 h.CFrame = spawnCF
             end
         end)
 
-        return true
-    end
-end
-
--- ================== SERVIÇOS E VARIÁVEIS PADRÃO ==================
-local Players = game:GetService("Players")
-local Lighting = game:GetService("Lighting")
-local TweenService = game:GetService("TweenService")
-local StarterGui = game:GetService("StarterGui")
-local LocalPlayer = Players.LocalPlayer
-
--- Função de notificação (para não dar erro se o executor não tiver uma)
-local function notify(title, text)
-    pcall(function()
-        StarterGui:SetCore("SendNotification", {
-            Title = title,
-            Text = text,
-            Duration = 5
-        })
-    end)
-    print("[NOTIFICAÇÃO] " .. title .. ": " .. text)
-end
-
--- ================== LEVEL 188 "COURTYARD OF WINDOWS" ==================
-local LEVEL188 = {
-    token = 0, S = nil, saved = nil, hidden = {},
-    MODEL_ID = "15169021437",
-}
-
-do
-    local LIGHT_PROPS = {
-        "Ambient", "OutdoorAmbient", "Brightness", "ClockTime", "FogColor", "FogStart", "FogEnd",
-        "GlobalShadows", "ExposureCompensation", "EnvironmentDiffuseScale", "EnvironmentSpecularScale",
-    }
-
-    local function loadModel(id)
-        local m
-        local ok, objs = pcall(function() return game:GetObjects("rbxassetid://" .. tostring(id)) end)
-        if ok and objs and objs[1] then
-            m = objs[1]
-            if not m:IsA("Model") then
-                local wrap = Instance.new("Model")
-                for _, o in ipairs(objs) do o.Parent = wrap end
-                m = wrap
-            end
-        end
-        if not m then
-            local ok2, m2 = pcall(function() return game:GetService("InsertService"):LoadAsset(tonumber(id)) end)
-            if ok2 and m2 then m = m2 end
-        end
-        return m
-    end
-
-    function LEVEL188.clear(silent)
-        LEVEL188.token += 1
-        local S = LEVEL188.S
-        LEVEL188.S = nil
-        if S and S.folder then pcall(function() S.folder:Destroy() end) end
-        if S and S.charConn then pcall(function() S.charConn:Disconnect() end) end
-        for _, n in ipairs({ "L188_CC", "L188_Atm" }) do
-            local o = Lighting:FindFirstChild(n)
-            if o then o:Destroy() end
-        end
-        for _, a in ipairs(LEVEL188.hidden) do pcall(function() a.Parent = Lighting end) end
-        LEVEL188.hidden = {}
-        if LEVEL188.saved then
-            for k, v in pairs(LEVEL188.saved) do pcall(function() Lighting[k] = v end) end
-            LEVEL188.saved = nil
-        end
-        if S and not silent then notify("Level 188", "Você saiu do Courtyard of Windows.") end
-        return true
-    end
-
-    function LEVEL188.spawn(partnerName)
-        notify("Level 188", "Carregando o Courtyard of Windows...")
-        LEVEL188.clear(true)
-        local myToken = LEVEL188.token
-
-        local S = {}
-        LEVEL188.S = S
-        local folder = Instance.new("Folder")
-        folder.Name = "Level188_Courtyard"
-        folder.Parent = workspace
-        S.folder = folder
-
-        -- ===== carrega o modelo =====
-        local model = loadModel(LEVEL188.MODEL_ID)
-        if LEVEL188.token ~= myToken then return end
-        if not model then
-            notify("Level 188", "Não consegui carregar o mapa (ID " .. LEVEL188.MODEL_ID .. ").")
-            pcall(function() folder:Destroy() end)
-            LEVEL188.S = nil
-            return
-        end
-
-        for _, p in ipairs(model:GetDescendants()) do
-            if p:IsA("BasePart") then
-                p.Anchored = true
-                p.CanCollide = true
-                p.CanQuery = true
-            end
-        end
-        if not model.PrimaryPart then
-            model.PrimaryPart = model:FindFirstChildWhichIsA("BasePart", true)
-        end
-        model.Parent = folder
-
-        -- ===== POSIÇÃO EXATA DO SPAWN =====
-        -- NÃO move o mapa: ele fica onde já nasce. As coordenadas são as do print.
-        local BASE = Vector3.new(19007.9, 408.8, -88.0)
-        local spawnCF = CFrame.new(BASE + Vector3.new(0, 3, 0))
-
-        -- acha o chão do mapa embaixo desse ponto, para nascer em cima dele
-        local params = RaycastParams.new()
-        params.FilterType = Enum.RaycastFilterType.Include
-        params.FilterDescendantsInstances = { model }
-        local hit = workspace:Raycast(BASE + Vector3.new(0, 1, 0), Vector3.new(0, -25, 0), params)
-        if hit then
-            spawnCF = CFrame.new(hit.Position + Vector3.new(0, 3.5, 0))
-        else
-            -- não achou chão: põe uma plataforma invisível para você não cair
-            local plat = Instance.new("Part")
-            plat.Anchored = true
-            plat.Transparency = 1
-            plat.Size = Vector3.new(10, 1, 10)
-            plat.Position = BASE - Vector3.new(0, 3.5, 0)
-            plat.Parent = folder
-        end
-
-        -- ===== iluminação =====
-        LEVEL188.saved = {}
-        for _, k in ipairs(LIGHT_PROPS) do pcall(function() LEVEL188.saved[k] = Lighting[k] end) end
-        pcall(function()
-            for _, c in ipairs(Lighting:GetChildren()) do
-                if c:IsA("Atmosphere") then table.insert(LEVEL188.hidden, c) c.Parent = nil end
-            end
-        end)
-        local function set(k, v) pcall(function() Lighting[k] = v end) end
-        set("ClockTime", 13)
-        set("Brightness", 1.4)
-        set("Ambient", Color3.fromRGB(150, 150, 150))
-        set("OutdoorAmbient", Color3.fromRGB(150, 150, 150))
-        set("FogColor", Color3.fromRGB(210, 210, 210))
-        set("FogStart", 40)
-        set("FogEnd", 260)
-        set("GlobalShadows", true)
-        set("ExposureCompensation", -0.1)
-        pcall(function()
-            local cc = Instance.new("ColorCorrectionEffect")
-            cc.Name = "L188_CC"
-            cc.Saturation = -0.35
-            cc.Contrast = 0.1
-            cc.Brightness = -0.02
-            cc.Parent = Lighting
-            local atm = Instance.new("Atmosphere")
-            atm.Name = "L188_Atm"
-            atm.Density = 0.16
-            atm.Offset = 0
-            atm.Color = Color3.fromRGB(205, 205, 205)
-            atm.Decay = Color3.fromRGB(150, 150, 150)
-            atm.Glare, atm.Haze = 0, 0.5
-            atm.Parent = Lighting
-        end)
-
-        -- ===== FADE PRETO + TELEPORTE =====
         task.spawn(function()
-            local pg = LocalPlayer:WaitForChild("PlayerGui")
-            local fadeGui = Instance.new("ScreenGui")
-            fadeGui.Name = "Level188Fade"
-            fadeGui.IgnoreGuiInset = true
-            fadeGui.ResetOnSpawn = false
-            fadeGui.DisplayOrder = 999
-            fadeGui.Parent = pg
-
-            local fadeFrame = Instance.new("Frame")
-            fadeFrame.Size = UDim2.new(1, 0, 1, 0)
-            fadeFrame.BackgroundColor3 = Color3.new(0, 0, 0)
-            fadeFrame.BackgroundTransparency = 1
-            fadeFrame.BorderSizePixel = 0
-            fadeFrame.Parent = fadeGui
-
-            local fadeOut = TweenService:Create(fadeFrame, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 0 })
-            fadeOut:Play()
-            fadeOut.Completed:Wait()
-
-            if LEVEL188.token ~= myToken then
-                if fadeGui then fadeGui:Destroy() end
-                return
-            end
-
-            local chr = LocalPlayer.Character
-            local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                hrp.Anchored = true
-                hrp.CFrame = spawnCF
-                task.wait(0.3)
-                hrp.Anchored = false
-            end
-
-            if partnerName and partnerName ~= "" then
-                local partner = Players:FindFirstChild(partnerName)
-                if partner and partner.Character and partner.Character:FindFirstChild("HumanoidRootPart") then
-                    partner.Character.HumanoidRootPart.CFrame = spawnCF + Vector3.new(3, 0, 0)
+            while POOL.token == myToken do
+                local c = LocalPlayer.Character
+                local h = c and c:FindFirstChild("HumanoidRootPart")
+                if h then
+                    local y = h.Position.Y
+                    local inPool = y > POOL_Y - 40 and y < POOL_Y + 300
+                    local pcx, pcz = 0, 0
+                    if inPool then
+                        pcx = math.floor((h.Position.X + CH / 2) / CH)
+                        pcz = math.floor((h.Position.Z + CH / 2) / CH)
+                    end
+                    pcall(streamStep, S, pcx, pcz, RADIUS)
+                    pcall(updateLights, S, inPool and h.Position or spawnCF.Position)
+                    if y < POOL_Y - 20 and y > POOL_Y - 600 then
+                        pcall(streamStep, S, 0, 0, 1)
+                        h.AssemblyLinearVelocity = Vector3.zero
+                        h.CFrame = spawnCF
+                    end
                 end
-            end
-
-            task.wait(0.6)
-            local fadeIn = TweenService:Create(fadeFrame, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { BackgroundTransparency = 1 })
-            fadeIn:Play()
-            fadeIn.Completed:Wait()
-
-            if fadeGui then fadeGui:Destroy() end
-            notify("Level 188", "Pronto! Courtyard of Windows carregado.")
-        end)
-
-        -- ===== respawn automático de volta pro mapa =====
-        S.charConn = LocalPlayer.CharacterAdded:Connect(function(c)
-            local h = c:WaitForChild("HumanoidRootPart", 10)
-            if h and LEVEL188.token == myToken then
-                task.wait(0.5)
-                h.AssemblyLinearVelocity = Vector3.zero
-                h.CFrame = spawnCF
+                task.wait(0.35)
             end
         end)
 
-        return true
-    end
-end
-
--- ================== SISTEMA DE TECLA (TOGGLE) ==================
--- Pressione Z para ir para o Level 188. Pressione Z novamente para sair.
-local isIn188 = false
-notify("Script Carregado", "Pressione a tecla [Z] para ir/voltar do Level 188.")
-
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-
-    -- Tecla Z
-    if input.KeyCode == Enum.KeyCode.Z then
-        if not isIn188 then
-            isIn188 = true
-            LEVEL188.spawn("") -- Se quiser levar alguém, coloque o nome ex: LEVEL188.spawn("NomeDoAmigo")
-        else
-            isIn188 = false
-            LEVEL188.clear()
-        end
-    end
-end)
-
--- ================== SALA BRANCA (dimensão própria, lá no céu) ==================
-local SALABRANCA = { token = 0, S = nil, saved = nil, hidden = {} }
-
-do
-    local BASE = Vector3.new(9000, 5000, 0)   -- bem longe do mapa, lá em cima
-    local CW, CH, CL = 7, 4.2, 10
-
-    local function mk(parent, size, cf, color, mat, collide)
-        local p = Instance.new("Part")
-        p.Anchored = true
-        p.Size = size
-        p.CFrame = cf
-        p.Color = color
-        p.Material = mat or Enum.Material.Concrete
-        p.CanCollide = collide ~= false
-        p.CanQuery = collide ~= false
-        p.CanTouch = false
-        p.TopSurface = Enum.SurfaceType.Smooth
-        p.BottomSurface = Enum.SurfaceType.Smooth
-        p.Parent = parent
-        return p
-    end
-
-    local LIGHT_PROPS = {
-        "Ambient", "OutdoorAmbient", "Brightness", "ClockTime", "FogColor", "FogStart", "FogEnd",
-        "GlobalShadows", "ExposureCompensation", "EnvironmentDiffuseScale", "EnvironmentSpecularScale",
-    }
-
-    function SALABRANCA.clear(silent)
-        SALABRANCA.token += 1
-        local S = SALABRANCA.S
-        SALABRANCA.S = nil
-        if S and S.folder then pcall(function() S.folder:Destroy() end) end
-        local o = Lighting:FindFirstChild("SalaBranca_CC")
-        if o then o:Destroy() end
-        for _, a in ipairs(SALABRANCA.hidden) do pcall(function() a.Parent = Lighting end) end
-        SALABRANCA.hidden = {}
-        if SALABRANCA.saved then
-            for k, v in pairs(SALABRANCA.saved) do pcall(function() Lighting[k] = v end) end
-            SALABRANCA.saved = nil
-        end
-        if S and not silent then notify("Sala Branca", "Você saiu da Sala Branca.") end
-        return true
-    end
-
-    function SALABRANCA.spawn(partnerName)
-        notify("Sala Branca", "Gerando a Sala Branca...")
-        SALABRANCA.clear(true)
-        local myToken = SALABRANCA.token
-
-        local S = {}
-        SALABRANCA.S = S
-        local folder = Instance.new("Folder")
-        folder.Name = "SalaBranca"
-        folder.Parent = workspace
-        S.folder = folder
-
-        local floorCol  = Color3.fromRGB(78, 64, 46)   -- carpete marrom
-        local wallCol   = Color3.fromRGB(205, 195, 175) -- parede bege clara
-        local ceilCol   = Color3.fromRGB(245, 245, 240)
-
-        mk(folder, Vector3.new(CW, 0.3, CL), CFrame.new(BASE) * CFrame.new(0, 0.15, 0), floorCol, Enum.Material.Fabric, true)
-        mk(folder, Vector3.new(CW, 0.3, CL), CFrame.new(BASE) * CFrame.new(0, CH - 0.15, 0), ceilCol, Enum.Material.SmoothPlastic, true)
-        mk(folder, Vector3.new(0.3, CH, CL), CFrame.new(BASE) * CFrame.new(-CW / 2, CH / 2, 0), wallCol, Enum.Material.Concrete, true)
-        mk(folder, Vector3.new(0.3, CH, CL), CFrame.new(BASE) * CFrame.new(CW / 2, CH / 2, 0), wallCol, Enum.Material.Concrete, true)
-        mk(folder, Vector3.new(CW + 0.3, CH, 0.3), CFrame.new(BASE) * CFrame.new(0, CH / 2, -CL / 2), wallCol, Enum.Material.Concrete, true)
-        mk(folder, Vector3.new(CW + 0.3, CH, 0.3), CFrame.new(BASE) * CFrame.new(0, CH / 2, CL / 2), wallCol, Enum.Material.Concrete, true)
-
-        local light = mk(folder, Vector3.new(2.2, 0.2, 0.7), CFrame.new(BASE) * CFrame.new(0, CH - 0.25, 0), Color3.fromRGB(255, 255, 250), Enum.Material.Neon, false)
-        local pl = Instance.new("PointLight")
-        pl.Color, pl.Range, pl.Brightness = Color3.fromRGB(255, 250, 240), 24, 1.6
-        pl.Parent = light
-
-        -- ponto de spawn no TETO da sala: você nasce lá em cima e cai dentro dela
-        local spawnPos = BASE + Vector3.new(0, CH - 0.6, 0)
-        local spawnCF = CFrame.new(spawnPos, spawnPos + Vector3.new(0, -1, -0.3))
-
-        SALABRANCA.saved = {}
-        for _, k in ipairs(LIGHT_PROPS) do pcall(function() SALABRANCA.saved[k] = Lighting[k] end) end
-        pcall(function()
-            for _, c in ipairs(Lighting:GetChildren()) do
-                if c:IsA("Atmosphere") then table.insert(SALABRANCA.hidden, c) c.Parent = nil end
+        task.spawn(function()
+            local fx = Instance.new("Folder")
+            fx.Name = "Ripples"
+            fx.Parent = folder
+            local function ring(x, z, size, life)
+                local r = Instance.new("Part")
+                r.Shape = Enum.PartType.Cylinder
+                r.Anchored, r.CanCollide, r.CanQuery, r.CanTouch, r.CastShadow = true, false, false, false, false
+                r.Material = Enum.Material.SmoothPlastic
+                r.Color = Color3.fromRGB(225, 250, 248)
+                r.Transparency = 0.55
+                r.Size = Vector3.new(0.05, 0.6, 0.6)
+                r.CFrame = CFrame.new(x, POOL_Y + WATER_H + 0.04, z) * CFrame.Angles(0, 0, math.rad(90))
+                r.Parent = fx
+                TweenService:Create(r, TweenInfo.new(life, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+                    Size = Vector3.new(0.05, size, size),
+                    Transparency = 1,
+                }):Play()
+                Debris:AddItem(r, life + 0.1)
             end
-        end)
-        local function set(k, v) pcall(function() Lighting[k] = v end) end
-        set("ClockTime", 13)
-        set("Brightness", 1.3)
-        set("Ambient", Color3.fromRGB(160, 155, 145))
-        set("OutdoorAmbient", Color3.fromRGB(160, 155, 145))
-        set("FogColor", Color3.fromRGB(200, 195, 185))
-        set("FogStart", 20)
-        set("FogEnd", 120)
-        pcall(function()
-            local cc = Instance.new("ColorCorrectionEffect")
-            cc.Name = "SalaBranca_CC"
-            cc.Saturation = -0.3
-            cc.Contrast = 0.1
-            cc.Parent = Lighting
-        end)
-
-        local function teleportMe()
-            local chr = LocalPlayer.Character
-            local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                hrp.Anchored = true
-                hrp.CFrame = spawnCF
+            local lastDrop = 0
+            while POOL.token == myToken do
+                local c = LocalPlayer.Character
+                local h = c and c:FindFirstChild("HumanoidRootPart")
+                if h and h.Position.Y < POOL_Y + WATER_H + 5 then
+                    local p = h.Position
+                    local sp = Vector3.new(h.AssemblyLinearVelocity.X, 0, h.AssemblyLinearVelocity.Z).Magnitude
+                    if sp > 4 then ring(p.X, p.Z, 4.5, 1.1) end
+                    if os.clock() - lastDrop > 0.9 then
+                        lastDrop = os.clock()
+                        ring(p.X + math.random(-30, 30), p.Z + math.random(-30, 30), 5, 2.2)
+                    end
+                end
                 task.wait(0.3)
-                hrp.Anchored = false
-            end
-        end
-        teleportMe()
-        if partnerName and partnerName ~= "" then
-            local partner = Players:FindFirstChild(partnerName)
-            if partner and partner.Character and partner.Character:FindFirstChild("HumanoidRootPart") then
-                partner.Character.HumanoidRootPart.CFrame = spawnCF + Vector3.new(1.5, 0, 0)
-            end
-        end
-
-        S.charConn = LocalPlayer.CharacterAdded:Connect(function(c)
-            local h = c:WaitForChild("HumanoidRootPart", 10)
-            if h and SALABRANCA.token == myToken then
-                task.wait(0.5)
-                h.AssemblyLinearVelocity = Vector3.zero
-                h.CFrame = spawnCF
             end
         end)
 
-        notify("Sala Branca", "Pronto! Você nasce no teto e cai dentro da sala.")
-        return true
-    end
-end
-
--- ================== ILHA DO BLOX (mapa do Blox Fruits, lá no céu) ==================
-local ILHABLOX = { token = 0, S = nil, saved = nil, hidden = {}, MODEL_ID = "122912632527195" }
-
-do
-    local BASE = Vector3.new(14000, 6000, 0)   -- bem longe do mapa, lá em cima
-
-    local LIGHT_PROPS = {
-        "Ambient", "OutdoorAmbient", "Brightness", "ClockTime", "FogColor", "FogStart", "FogEnd",
-        "GlobalShadows", "ExposureCompensation", "EnvironmentDiffuseScale", "EnvironmentSpecularScale",
-    }
-
-    function ILHABLOX.clear(silent)
-        ILHABLOX.token += 1
-        local S = ILHABLOX.S
-        ILHABLOX.S = nil
-        if S and S.folder then pcall(function() S.folder:Destroy() end) end
-        for _, a in ipairs(ILHABLOX.hidden) do pcall(function() a.Parent = Lighting end) end
-        ILHABLOX.hidden = {}
-        if ILHABLOX.saved then
-            for k, v in pairs(ILHABLOX.saved) do pcall(function() Lighting[k] = v end) end
-            ILHABLOX.saved = nil
-        end
-        if S and not silent then notify("Ilha do Blox", "Você saiu da Ilha do Blox.") end
-        return true
-    end
-
-    function ILHABLOX.spawn(partnerName)
-        notify("Ilha do Blox", "Carregando o mapa do Blox Fruits...")
-        ILHABLOX.clear(true)
-        local myToken = ILHABLOX.token
-
-        local S = {}
-        ILHABLOX.S = S
-        local folder = Instance.new("Folder")
-        folder.Name = "IlhaDoBlox"
-        folder.Parent = workspace
-        S.folder = folder
-
-        -- carrega o modelo do mapa (mesmo jeito do santuário do Sukuna: GetObjects com
-        -- fallback no InsertService)
-        local model
-        local ok, objs = pcall(function() return game:GetObjects("rbxassetid://" .. ILHABLOX.MODEL_ID) end)
-        if ok and objs and objs[1] then
-            model = objs[1]
-            if not model:IsA("Model") then
-                local wrap = Instance.new("Model")
-                for _, o in ipairs(objs) do o.Parent = wrap end
-                model = wrap
-            end
-        end
-        if not model then
-            local ok2, m2 = pcall(function() return game:GetService("InsertService"):LoadAsset(tonumber(ILHABLOX.MODEL_ID)) end)
-            if ok2 and m2 then model = m2 end
-        end
-        if ILHABLOX.token ~= myToken then return end
-        if not model then
-            notify("Ilha do Blox", "Não consegui carregar o mapa (ID " .. ILHABLOX.MODEL_ID .. ").")
-            pcall(function() folder:Destroy() end)
-            ILHABLOX.S = nil
-            return
-        end
-
-        for _, p in ipairs(model:GetDescendants()) do
-            if p:IsA("BasePart") then p.Anchored = true p.CanCollide = true end
-        end
-        if not model.PrimaryPart then model.PrimaryPart = model:FindFirstChildWhichIsA("BasePart", true) end
-        model.Parent = folder
-
-        -- posiciona o mapa com a base dele encostando em BASE (lá no céu)
-        local spawnCF = CFrame.new(BASE + Vector3.new(0, 50, 0))
-        if model.PrimaryPart then
-            local bcf, bs = model:GetBoundingBox()
-            local bo = model:GetPivot().Position.Y - (bcf.Position.Y - bs.Y / 2)
-            model:PivotTo(CFrame.new(BASE.X, BASE.Y + bo, BASE.Z))
-
-            -- acha onde o chão do mapa realmente está, em vez de confiar só na caixa
-            -- delimitadora (era por isso que você não nascia dentro da ilha)
-            local bcf2, bs2 = model:GetBoundingBox()
-            local rp = RaycastParams.new()
-            rp.FilterType = Enum.RaycastFilterType.Include
-            rp.FilterDescendantsInstances = { model }
-            local topY = bcf2.Position.Y + bs2.Y / 2
-            local res = workspace:Raycast(Vector3.new(bcf2.Position.X, topY + 400, bcf2.Position.Z), Vector3.new(0, -3000, 0), rp)
-            local landY = res and res.Position.Y or topY
-            spawnCF = CFrame.new(bcf2.Position.X, landY + 6, bcf2.Position.Z)
-        end
-
-        ILHABLOX.saved = {}
-        for _, k in ipairs(LIGHT_PROPS) do pcall(function() ILHABLOX.saved[k] = Lighting[k] end) end
-        local function set(k, v) pcall(function() Lighting[k] = v end) end
-        set("ClockTime", 13)
-        set("Brightness", 2)
-        set("GlobalShadows", true)
-
-        local function teleportMe()
-            local chr = LocalPlayer.Character
-            local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                hrp.Anchored = true
-                hrp.CFrame = spawnCF
-                task.wait(0.3)
-                hrp.Anchored = false
-            end
-        end
-        teleportMe()
-        if partnerName and partnerName ~= "" then
-            local partner = Players:FindFirstChild(partnerName)
-            if partner and partner.Character and partner.Character:FindFirstChild("HumanoidRootPart") then
-                partner.Character.HumanoidRootPart.CFrame = spawnCF + Vector3.new(6, 0, 0)
-            end
-        end
-
-        S.charConn = LocalPlayer.CharacterAdded:Connect(function(c)
-            local h = c:WaitForChild("HumanoidRootPart", 10)
-            if h and ILHABLOX.token == myToken then
-                task.wait(0.5)
-                h.AssemblyLinearVelocity = Vector3.zero
-                h.CFrame = spawnCF
-            end
-        end)
-
-        notify("Ilha do Blox", "Pronto! Mapa do Blox Fruits carregado.")
+        notify("Poolrooms", "Pronto! Poolrooms infinitas.")
         return true
     end
 end
@@ -5652,352 +5656,319 @@ do
     end
 end
 
--- ================== EXPANSÃO DE DOMÍNIO (SUKUNA) - SANTUÁRIO MALEVOLENTE ==================
--- Igual ao jeito que a expansão do Gojo é feita: o lançador é teleportado para um domínio
--- isolado, longe do mapa, em vez de um efeito preso no mesmo lugar. Antes de teleportar,
--- aparece a bolinha preta/ciano (igual a do Gojo). Lá dentro: fundo com a skybox vermelha,
--- chão azul escuro, o santuário sobe primeiro, depois cortes brancos finos, e a câmera treme
--- como se o personagem estivesse sendo cortado. Afeta só o próprio lançador: ninguém mais é
--- teleportado, atingido ou perde vida por esse domínio.
-local function buildMalevolentShrine(parent)
-    local built
-    local ok, objs = pcall(function() return game:GetObjects("rbxassetid://" .. SUK_SHRINE_MODEL) end)
-    if ok and objs and objs[1] then
-        built = objs[1]
-        if not built:IsA("Model") then
-            local wrap = Instance.new("Model")
-            for _, o in ipairs(objs) do o.Parent = wrap end
-            built = wrap
-        end
-    end
-    if not built then
-        -- modelo unificado não carregou: monta na mão com as 4 partes (base, dentes, crânios, chifres)
-        built = Instance.new("Model")
-        local function meshPart(meshId, texId, size, cf)
-            local mp = Instance.new("MeshPart")
-            mp.MeshId = "rbxassetid://" .. meshId
-            mp.TextureID = "rbxassetid://" .. texId
-            mp.Size = size
-            mp.CFrame = cf
-            mp.Anchored = true
-            mp.CanCollide = false
-            mp.Parent = built
-            return mp
-        end
-        local base = meshPart(SUK_MESH_BASE, SUK_TEX_BASE, Vector3.new(70, 45, 70), CFrame.new(0, 25, 0))
-        built.PrimaryPart = base
-        meshPart(SUK_MESH_TEETH, SUK_TEX_TEETH, Vector3.new(55, 22, 12), CFrame.new(0, 12, -28))
-        meshPart(SUK_MESH_SKULLS, SUK_TEX_SKULLS, Vector3.new(60, 2, 60), CFrame.new(0, 0.5, 0))
-        for _, ang in ipairs({ 0, 90, 180, 270 }) do
-            meshPart(SUK_MESH_HORNS, SUK_TEX_HORNS, Vector3.new(4, 34, 4), CFrame.new(0, 17, 0) * CFrame.Angles(0, math.rad(ang), 0) * CFrame.new(28, 0, 0))
-        end
-    end
-    for _, p in ipairs(built:GetDescendants()) do
-        if p:IsA("BasePart") then p.Anchored, p.CanCollide = true, false end
-    end
-    if not built.PrimaryPart then built.PrimaryPart = built:FindFirstChildWhichIsA("BasePart", true) end
-    built.Parent = parent
-    return built
-end
-
--- domo esférico (bola), em vez da Sky tradicional em caixa/hexaedro
-local function buildSkyDome(parent, center, radius, imageId)
-    local ball = Instance.new("Part")
-    -- sem Shape = Ball: a forma nativa de bola competia com o SpecialMesh e escondia
-    -- o decal por dentro (você via de fora, mas nada de dentro). Deixando o Shape padrão,
-    -- só o SpecialMesh desenha a esfera, e a textura aparece certinho por dentro.
-    ball.Anchored, ball.CanCollide, ball.CanQuery, ball.CanTouch, ball.CastShadow = true, false, false, false, false
-    ball.Size = Vector3.new(radius * 2, radius * 2, radius * 2)
-    ball.CFrame = CFrame.new(center)
-    ball.Color = Color3.new(1, 1, 1)
-    ball.Material = Enum.Material.SmoothPlastic
-    ball.Transparency = 0
-    ball.Parent = parent
-    local mesh = Instance.new("SpecialMesh")
-    mesh.MeshType = Enum.MeshType.Sphere
-    mesh.Scale = Vector3.new(-1, 1, 1)   -- inverte a normal pra ficar visível por dentro
-    mesh.Parent = ball
-    local tex = "rbxassetid://" .. tostring(imageId):gsub("%D", "")
-    for _, face in ipairs({ Enum.NormalId.Front, Enum.NormalId.Back, Enum.NormalId.Left,
-        Enum.NormalId.Right, Enum.NormalId.Top, Enum.NormalId.Bottom }) do
-        local dec = Instance.new("Decal")
-        dec.Face = face
-        dec.Texture = tex
-        dec.Parent = ball
-    end
-    return ball
-end
--- ===== CONFIG DE DANO (coloque no topo do script) =====
-HUB_ACEITAR_DANO = true        -- false = você não toma dano de domínio dos outros
-SUKUNA_DANO_PERCENT = 0.5      -- 0.5 = 50% da vida máxima do alvo; 1 = mata
-
+-- ================== EXPANSÃO DE DOMÍNIO (SUKUNA) - CAIXA ESCURA VERMELHA ==================
 local function runSukunaDomain(senderName)
     local sp = Players:FindFirstChild(senderName)
     local sc = sp and sp.Character
     local sh = sc and sc:FindFirstChild("HumanoidRootPart")
-    local sHum = sc and sc:FindFirstChildOfClass("Humanoid")
-    if not sh or not sHum or sHum.Health <= 0 then return end
-
-    if type(GOJO) == "table" and GOJO.busy and not DOMAIN_BATTLE.active then
+    if not sh then return end
+    -- Choque de Domínios: se Gojo também está ativo, batalha!
+    if type(GOJO)=="table" and GOJO.busy and not DOMAIN_BATTLE.active then
         SUKUNA_CASTER = senderName
         startDomainBattle(GOJO.casterName, senderName, GOJO.currentTarget)
         return
     end
-    if DOMAIN_BATTLE.active or SUKUNA_BUSY then return end
+    if DOMAIN_BATTLE.active then return end
     SUKUNA_BUSY = true
     SUKUNA_ABORT = false
     SUKUNA_CASTER = senderName
 
     local TweenService = game:GetService("TweenService")
     local Debris = game:GetService("Debris")
+    local DURATION, RANGE = 15, 140
     local iAmCaster = (senderName == LocalPlayer.Name)
-    local casterPos = sh.Position
-
-    local myChar, myHrp, myHum
-    if iAmCaster then
-        myChar = LocalPlayer.Character
-        myHrp = myChar and myChar:FindFirstChild("HumanoidRootPart")
-        myHum = myChar and myChar:FindFirstChildOfClass("Humanoid")
-        if not myHrp or not myHum or myHum.Health <= 0 then
-            SUKUNA_BUSY = false
-            return
-        end
-    end
-    local near = iAmCaster or (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        and (LocalPlayer.Character.HumanoidRootPart.Position - casterPos).Magnitude <= 60)
-
-    local function mkp(parent, size, cf, color, mat, transp, shape)
-        local p = Instance.new("Part")
-        p.Anchored, p.CanCollide, p.CanQuery, p.CanTouch, p.CastShadow = true, false, false, false, false
-        if shape then p.Shape = shape end
-        p.Size, p.CFrame, p.Color = size, cf, color
-        p.Material = mat or Enum.Material.SmoothPlastic
-        p.Transparency = transp or 0
-        p.Parent = parent
-        return p
-    end
-    local function tw(obj, t, props, style, dir)
-        local tween = TweenService:Create(obj, TweenInfo.new(t, style or Enum.EasingStyle.Quad, dir or Enum.EasingDirection.Out), props)
-        tween:Play()
-        return tween
-    end
 
     local folder = Instance.new("Folder")
     folder.Name = "SukunaDomain"
     folder.Parent = workspace
 
-    -- Bolinha preta/ciano de invocação
-    if near then
-        local sphere = mkp(folder, Vector3.new(1, 1, 1), CFrame.new(casterPos), Color3.new(0, 0, 0), nil, 0, Enum.PartType.Ball)
-        local shell  = mkp(folder, Vector3.new(1, 1, 1), CFrame.new(casterPos), Color3.fromRGB(150, 220, 255), Enum.Material.Neon, 0.85, Enum.PartType.Ball)
-        tw(sphere, 0.7, { Size = Vector3.new(22, 22, 22) }, Enum.EasingStyle.Back)
-        tw(shell, 0.7, { Size = Vector3.new(26, 26, 26) }, Enum.EasingStyle.Back)
-        task.delay(1.1, function()
-            pcall(function()
-                tw(sphere, 0.3, { Size = Vector3.new(1, 1, 1) })
-                tw(shell, 0.3, { Size = Vector3.new(1, 1, 1), Transparency = 1 })
-            end)
-        end)
-    end
-    if iAmCaster then sHum.WalkSpeed = 0 end
-    pcall(function()
-        local snd = Instance.new("Sound", sh)
-        snd.SoundId, snd.Volume = SUK_AUDIO, 5
-        snd:Play()
-        Debris:AddItem(snd, 20)
-    end)
+    -- som do domínio
+    local snd = Instance.new("Sound", sh)
+    snd.SoundId, snd.Volume = SUK_AUDIO, 5
+    snd:Play()
+    snd.Ended:Connect(function() snd:Destroy() end)
 
-    task.wait(1.1)
-    if SUKUNA_ABORT then
-        pcall(function() folder:Destroy() end)
-        if iAmCaster then sHum.WalkSpeed = 16 end
-        SUKUNA_BUSY = false
-        return
+    -- chão
+    local rp = RaycastParams.new()
+    rp.FilterDescendantsInstances, rp.FilterType = { sc }, Enum.RaycastFilterType.Exclude
+    local rr = workspace:Raycast(sh.Position + Vector3.new(0, 50, 0), Vector3.new(0, -200, 0), rp)
+    local gy = rr and rr.Position.Y or (sh.Position.Y - 3)
+    local cx, cz = sh.Position.X, sh.Position.Z
+
+    -- ===== CAIXA PRETA SOMBRIA =====
+    local SIZE, TH = 480, 6
+    local half = SIZE / 2
+    local cy = gy + half - 20
+    local RED = Color3.fromRGB(190, 0, 0)
+
+    local function boxPart(size, pos, color, transp, neon)
+        local p = Instance.new("Part")
+        p.Anchored, p.CanCollide, p.CanQuery, p.CanTouch, p.CastShadow = true, false, false, false, false
+        p.Material = neon and Enum.Material.Neon or Enum.Material.SmoothPlastic
+        p.Color = color
+        p.Transparency = transp or 0
+        p.Size = size
+        p.Position = pos
+        p.Parent = folder
+        return p
     end
 
-    if not iAmCaster then
-        -- ALVO (outro usuário do hub perto do Sukuna): leva dano durante a expansão.
-        -- O dano é aplicado no PRÓPRIO personagem de quem roda o hub, e só se a opção estiver ligada.
-        if near and HUB_ACEITAR_DANO ~= false then
-            local tHum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-            if tHum and tHum.Health > 0 then
-                local total = tHum.MaxHealth * SUKUNA_DANO_PERCENT   -- dano total na expansão
-                local ticks = 20                                     -- 20 ticks de 0.5s = 10s
-                for _ = 1, ticks do
-                    if SUKUNA_ABORT or tHum.Health <= 0 then break end
-                    pcall(function() tHum:TakeDamage(total / ticks) end)
-                    task.wait(0.5)
-                end
-            end
+    local WALL = Color3.fromRGB(8, 0, 0)
+    boxPart(Vector3.new(TH, SIZE, SIZE), Vector3.new(cx - half, cy, cz), WALL)
+    boxPart(Vector3.new(TH, SIZE, SIZE), Vector3.new(cx + half, cy, cz), WALL)
+    boxPart(Vector3.new(SIZE, SIZE, TH), Vector3.new(cx, cy, cz - half), WALL)
+    boxPart(Vector3.new(SIZE, SIZE, TH), Vector3.new(cx, cy, cz + half), WALL)
+    boxPart(Vector3.new(SIZE, TH, SIZE), Vector3.new(cx, cy + half, cz), WALL)
+    boxPart(Vector3.new(SIZE, 0.2, SIZE), Vector3.new(cx, gy + 0.08, cz), Color3.fromRGB(70, 0, 0), 0.35)
+
+    -- veios vermelhos brilhando nas paredes
+    for _ = 1, 26 do
+        local h = math.random(60, 220)
+        local y = gy + math.random(20, 420)
+        local off = (math.random() - 0.5) * (SIZE - 40)
+        local side = math.random(1, 4)
+        if side == 1 then
+            boxPart(Vector3.new(0.6, h, 3), Vector3.new(cx - half + TH / 2 + 0.4, y, cz + off), RED, 0.25, true)
+        elseif side == 2 then
+            boxPart(Vector3.new(0.6, h, 3), Vector3.new(cx + half - TH / 2 - 0.4, y, cz + off), RED, 0.25, true)
+        elseif side == 3 then
+            boxPart(Vector3.new(3, h, 0.6), Vector3.new(cx + off, y, cz - half + TH / 2 + 0.4), RED, 0.25, true)
         else
-            task.wait(3)
+            boxPart(Vector3.new(3, h, 0.6), Vector3.new(cx + off, y, cz + half - TH / 2 - 0.4), RED, 0.25, true)
         end
-        pcall(function() folder:Destroy() end)
-        SUKUNA_BUSY = false
-        return
     end
 
-    local saved, hiddenAtm, hiddenSky = {}, {}, {}
-    local atm, sky
-    local returnCF = myHrp.CFrame
-    local C = Vector3.new(((tonumber(sp.UserId) or 0) % 40) * 800, 9503, 500)
-    local spawnSpot = CFrame.lookAt(C + Vector3.new(0, 8, 40), C + Vector3.new(0, 4, 0))
+    -- ===== CENÁRIO SOMBRIO: chão destruído, ruínas cortadas, nuvens densas, lua vermelha, brasas =====
+    do
+        local LOWS = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+        buildSukunaScenery(folder, Vector3.new(cx, gy, cz), 190, 190, LOWS and 6 or 12, 32)
+        local topY = cy + half
+        local function cloudAt(pos, c1, c2, tr)
+            local cp = boxPart(Vector3.new(4, 4, 4), pos, Color3.new(1, 1, 1), 1)
+            local e = Instance.new("ParticleEmitter")
+            e.Texture = "rbxasset://textures/particles/smoke_main.dds"
+            e.Rate = LOWS and 1 or 1.6
+            e.Lifetime = NumberRange.new(9, 14)
+            e.Speed = NumberRange.new(2, 6)
+            e.SpreadAngle = Vector2.new(180, 180)
+            e.Rotation = NumberRange.new(0, 360)
+            e.RotSpeed = NumberRange.new(-6, 6)
+            e.Drag = 0.5
+            e.LightEmission, e.LightInfluence = 0.03, 0
+            e.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 180), NumberSequenceKeypoint.new(1, 340) })
+            e.Transparency = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.2, tr),
+                NumberSequenceKeypoint.new(0.8, math.min(tr + 0.1, 1)), NumberSequenceKeypoint.new(1, 1) })
+            e.Color = ColorSequence.new(c1, c2)
+            e.Parent = cp
+        end
+        for _ = 1, (LOWS and 7 or 12) do
+            local pos = Vector3.new(cx + (math.random() - 0.5) * 420, topY - 40 - math.random() * 70, cz + (math.random() - 0.5) * 420)
+            cloudAt(pos, Color3.fromRGB(10, 2, 4), Color3.fromRGB(32, 4, 8), 0.35)
+            cloudAt(pos, Color3.fromRGB(80, 0, 8), Color3.fromRGB(30, 0, 4), 0.55)
+        end
+        local moon = boxPart(Vector3.new(130, 130, 130), Vector3.new(cx + 110, topY - 100, cz - 170), Color3.fromRGB(140, 0, 8), 0.1, true)
+        moon.Shape = Enum.PartType.Ball
+        -- luzes vermelhas baixas pra iluminar as ruínas
+        for _, o in ipairs({ Vector3.new(60, 22, 60), Vector3.new(-60, 22, 60), Vector3.new(60, 22, -60), Vector3.new(-60, 22, -60) }) do
+            local lp = boxPart(Vector3.new(1, 1, 1), Vector3.new(cx, gy, cz) + o, Color3.new(1, 1, 1), 1)
+            local pl = Instance.new("PointLight")
+            pl.Color, pl.Range, pl.Brightness = Color3.fromRGB(255, 20, 20), 60, 3
+            pl.Parent = lp
+        end
+        -- brasas subindo
+        local ep = boxPart(Vector3.new(380, 120, 380), Vector3.new(cx, gy + 60, cz), Color3.new(1, 1, 1), 1)
+        local em = Instance.new("ParticleEmitter")
+        pcall(function()
+            em.Shape = Enum.ParticleEmitterShape.Box
+            em.ShapeStyle = Enum.ParticleEmitterShapeStyle.Volume
+        end)
+        em.Rate = LOWS and 25 or 60
+        em.Lifetime = NumberRange.new(4, 7)
+        em.Speed = NumberRange.new(3, 9)
+        em.Acceleration = Vector3.new(0, 5, 0)
+        em.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.7), NumberSequenceKeypoint.new(1, 0) })
+        em.Color = ColorSequence.new(Color3.fromRGB(255, 120, 60), Color3.fromRGB(200, 0, 0))
+        em.LightEmission, em.LightInfluence = 1, 0
+        em.Parent = ep
+    end
 
+    -- ===== ILUMINAÇÃO VERMELHA / ESCURA =====
+    local saved, hidden = {}, {}
     for _, k in ipairs({ "Ambient", "OutdoorAmbient", "Brightness", "ClockTime", "FogColor", "FogStart", "FogEnd", "ExposureCompensation" }) do
         pcall(function() saved[k] = Lighting[k] end)
     end
     pcall(function()
         for _, c in ipairs(Lighting:GetChildren()) do
-            if c:IsA("Atmosphere") then table.insert(hiddenAtm, c) c.Parent = nil
-            elseif c:IsA("Sky") then table.insert(hiddenSky, c) c.Parent = nil end
+            if c:IsA("Atmosphere") then table.insert(hidden, c) c.Parent = nil end
+        end
+    end)
+    local function setL(k, v) pcall(function() Lighting[k] = v end) end
+    setL("Ambient", Color3.fromRGB(32, 0, 2))
+    setL("OutdoorAmbient", Color3.fromRGB(22, 0, 2))
+    setL("Brightness", 0.25)
+    setL("ClockTime", 0)
+    setL("FogColor", Color3.fromRGB(12, 0, 2))
+    setL("FogStart", 10)
+    setL("FogEnd", 380)
+    setL("ExposureCompensation", -0.5)
+
+    local cc = Instance.new("ColorCorrectionEffect")
+    cc.Name = "SukunaCC"
+    cc.TintColor = Color3.fromRGB(255, 140, 140)
+    cc.Saturation, cc.Contrast, cc.Brightness = 0, 0.35, -0.08
+    cc.Parent = Lighting
+    local atm = Instance.new("Atmosphere")
+    atm.Name = "SukunaAtmosphere"
+    atm.Color, atm.Decay = Color3.fromRGB(80, 0, 0), Color3.fromRGB(20, 0, 0)
+    atm.Density, atm.Haze, atm.Offset = 0.45, 2.2, 0
+    atm.Parent = Lighting
+
+    -- ===== TREMOR DE CÂMERA + FLASH VERMELHO =====
+    local shake = 0
+    local shakeName = "SukunaShake" .. tostring(math.random(1, 1000000))
+    RunService:BindToRenderStep(shakeName, Enum.RenderPriority.Camera.Value + 1, function()
+        if shake > 0.01 then
+            local cam = workspace.CurrentCamera
+            if cam then
+                local s = shake
+                cam.CFrame = cam.CFrame
+                    * CFrame.Angles((math.random() - 0.5) * 0.05 * s, (math.random() - 0.5) * 0.05 * s, (math.random() - 0.5) * 0.08 * s)
+                    + Vector3.new((math.random() - 0.5) * 0.6 * s, (math.random() - 0.5) * 0.6 * s, 0)
+            end
+            shake *= 0.9
         end
     end)
 
-    -- Chão do domínio
-    local floorPart = mkp(folder, Vector3.new(500, 4, 500), CFrame.new(C), Color3.fromRGB(8, 14, 40), Enum.Material.SmoothPlastic, 0)
-    floorPart.CanCollide = true
-    for _, off in ipairs({ Vector3.new(-250, 120, 0), Vector3.new(250, 120, 0), Vector3.new(0, 120, -250), Vector3.new(0, 120, 250), Vector3.new(0, 245, 0) }) do
-        local b = mkp(folder, Vector3.new(500, 500, 4), CFrame.new(C + off), Color3.new(1, 1, 1), nil, 1)
-        b.CanCollide = true
+    local flash, flashGui
+    pcall(function()
+        local pg = LocalPlayer:WaitForChild("PlayerGui", 3)
+        flashGui = Instance.new("ScreenGui")
+        flashGui.Name, flashGui.IgnoreGuiInset, flashGui.ResetOnSpawn, flashGui.DisplayOrder = "SukunaFlash", true, false, 50
+        flashGui.Parent = pg
+        flash = Instance.new("Frame")
+        flash.Size = UDim2.new(1, 0, 1, 0)
+        flash.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+        flash.BackgroundTransparency = 1
+        flash.BorderSizePixel = 0
+        flash.Parent = flashGui
+    end)
+
+    -- ===== CORTES VERMELHOS =====
+    local function slash(pos, dir, len, thick)
+        cleaveLine(folder, pos - dir * (len / 2), pos + dir * (len / 2), math.max(thick * 1.1, 0.5), 0.4)
     end
 
-    -- ===== 1. SOMENTE O CÉU VERMELHO =====
-    -- Offset = 1 faz a atmosfera afetar só o céu, sem pintar o resto do mapa
-    pcall(function() Lighting.ClockTime = 0 end)
-    pcall(function() Lighting.Ambient = Color3.fromRGB(90, 90, 110) end)
-    pcall(function() Lighting.OutdoorAmbient = Color3.fromRGB(90, 90, 110) end)
+    local function bloodBurst(pos)
+        local p = Instance.new("Part")
+        p.Anchored, p.CanCollide, p.CanQuery, p.CanTouch, p.CastShadow = true, false, false, false, false
+        p.Transparency = 1
+        p.Size = Vector3.new(0.2, 0.2, 0.2)
+        p.Position = pos
+        p.Parent = folder
+        local e = Instance.new("ParticleEmitter")
+        e.Color = ColorSequence.new(Color3.fromRGB(170, 0, 0), Color3.fromRGB(90, 0, 0))
+        e.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.6), NumberSequenceKeypoint.new(1, 0) })
+        e.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.1), NumberSequenceKeypoint.new(1, 1) })
+        e.Lifetime = NumberRange.new(0.3, 0.7)
+        e.Speed = NumberRange.new(10, 30)
+        e.SpreadAngle = Vector2.new(180, 180)
+        e.Acceleration = Vector3.new(0, -40, 0)
+        e.LightEmission = 0.3
+        e.Rate = 0
+        e.Parent = p
+        e:Emit(14)
+        Debris:AddItem(p, 1)
+    end
 
-    sky = Instance.new("Sky")
-    sky.Name = "SukunaSky"
-    sky.StarCount = 0
-    sky.CelestialBodiesShown = false
-    sky.Parent = Lighting
+    local function rndDir()
+        local v = Vector3.new(math.random() - 0.5, (math.random() - 0.5) * 1.2, math.random() - 0.5)
+        if v.Magnitude < 0.05 then v = Vector3.new(1, 0, 0) end
+        return v.Unit
+    end
 
-    atm = Instance.new("Atmosphere")
-    atm.Name = "SukunaAtmosphere"
-    atm.Color = Color3.fromRGB(255, 0, 0)
-    atm.Decay = Color3.fromRGB(190, 0, 0)
-    atm.Density, atm.Offset, atm.Glare, atm.Haze = 0.6, 1, 0, 10
-    atm.Parent = Lighting
-
-    myHrp.AssemblyLinearVelocity = Vector3.zero
-    myHrp.CFrame = spawnSpot
-    notify("Sukuna", "Você entrou no Santuário Malevolente!")
-
-    -- Santuário do Sukuna
-    local shrine = buildMalevolentShrine(folder)
-    if shrine and shrine.PrimaryPart then
-        local floorTop = C.Y + 2
+    -- ===== SANTUÁRIO SOBE DO CHÃO =====
+    local shrine = fetchAssetAsModel(SUK_SHRINE)
+    if shrine then
+        shrine.Parent = folder
+        pcall(function() shrine:ScaleTo(7) end)
+        for _, p in ipairs(shrine:GetDescendants()) do
+            if p:IsA("BasePart") then p.Anchored, p.CanCollide = true, false end
+        end
+        -- santuário reto, 55 studs à frente de quem lançou, virado pra ele
+        local lk = Vector3.new(sh.CFrame.LookVector.X, 0, sh.CFrame.LookVector.Z)
+        lk = lk.Magnitude > 0.1 and lk.Unit or Vector3.new(0, 0, -1)
+        local tpos = sh.Position + lk * 55
         local bcf, bs = shrine:GetBoundingBox()
-        local bo = shrine:GetPivot().Position.Y - (bcf.Position.Y - bs.Y / 2)
-        local tcf = CFrame.new(C.X, floorTop + bo + 0, C.Z - 40)
-        local scf = tcf * CFrame.new(0, -45, 0)
+        local bo = shrine:GetPivot().Position.Y - (bcf.Position.Y - (bs.Y / 2))
+        local tcf = CFrame.new(tpos.X, gy + bo + SHRINE_Y, tpos.Z)
+            * CFrame.lookAt(Vector3.zero, -lk).Rotation * CFrame.Angles(0, math.rad(SHRINE_YAW), 0)
+        local scf = tcf * CFrame.new(0, -35, 0)
         shrine:PivotTo(scf)
         for i = 1, 50 do
             local a = i / 50
             shrine:PivotTo(scf:Lerp(tcf, a * a * (3 - 2 * a)))
+            shake = math.max(shake, 0.35)
             task.wait(0.015)
         end
         shrine:PivotTo(tcf)
     end
 
-    -- Tremor de câmera
-    local cam = workspace.CurrentCamera
-    local shakeName = "SukunaShake" .. tostring(math.random(1, 1000000))
-    local shake = 0
-    RunService:BindToRenderStep(shakeName, Enum.RenderPriority.Camera.Value + 1, function()
-        if shake > 0.01 and cam then
-            local s = shake
-            cam.CFrame = cam.CFrame
-                * CFrame.Angles((math.random() - 0.5) * 0.05 * s, (math.random() - 0.5) * 0.05 * s, (math.random() - 0.5) * 0.08 * s)
-                + Vector3.new((math.random() - 0.5) * 0.6 * s, (math.random() - 0.5) * 0.6 * s, 0)
-            shake *= 0.9
+    -- ===== LOOP DOS CORTES =====
+    local st, n = tick(), 0
+    while tick() - st < DURATION and folder.Parent and not SUKUNA_ABORT do
+        n += 1
+        local center = sh.Position
+
+        -- cortes soltos no ar
+        for _ = 1, 3 do
+            local off = Vector3.new(math.random(-35, 35), math.random(-5, 22), math.random(-35, 35))
+            slash(center + off, rndDir(), math.random(22, 46), math.random(8, 16) / 10)
         end
-    end)
 
-    -- ===== 2. CORTES (EFEITO DO MODELO 18618934824, TAMANHO AJUSTADO) =====
-    local SUKUNA_CUT_ID = 18618934824
-    local cutTemplate
-    local cok, cobjs = pcall(function() return game:GetObjects("rbxassetid://" .. SUKUNA_CUT_ID) end)
-    if cok and cobjs and cobjs[1] then
-        cutTemplate = cobjs[1]
-        if not cutTemplate:IsA("Model") then
-            local wrap = Instance.new("Model")
-            for _, o in ipairs(cobjs) do o.Parent = wrap end
-            cutTemplate = wrap
-        end
-    else
-        notify("Sukuna", "Não consegui carregar o efeito dos cortes.")
-    end
-
-    -- tamanho original do efeito (maior dimensão), para ajustar pelo tamanho desejado em studs
-    local cutBaseSize = 1
-    if cutTemplate then
-        pcall(function()
-            local s = cutTemplate:GetExtentsSize()
-            cutBaseSize = math.max(s.X, s.Y, s.Z, 0.01)
-        end)
-    end
-
-    local function spawnNewCut(pos, dir)
-        if not cutTemplate then return end
-        local m = cutTemplate:Clone()
-        for _, p in ipairs(m:GetDescendants()) do
-            if p:IsA("BasePart") then
-                p.Anchored, p.CanCollide, p.CanQuery, p.CanTouch = true, false, false, false
-            elseif p:IsA("ParticleEmitter") or p:IsA("Trail") or p:IsA("Beam") then
-                p.Enabled = true
-            elseif p:IsA("Script") or p:IsA("LocalScript") then
-                p:Destroy()
+        -- cortes atravessando o corpo de quem está no alcance
+        if n % 2 == 0 then
+            for _, plr in ipairs(Players:GetPlayers()) do
+                local c = plr.Character
+                local h = c and c:FindFirstChild("HumanoidRootPart")
+                if h and (h.Position - sh.Position).Magnitude <= RANGE then
+                    local p = h.Position + Vector3.new((math.random() - 0.5) * 1.6, (math.random() - 0.5) * 3, (math.random() - 0.5) * 1.6)
+                    slash(p, rndDir(), 16, 1.1)
+                    bloodBurst(p)
+                    if plr == LocalPlayer then
+                        shake = math.min(shake + 0.55, 1.6)
+                        if flash then
+                            flash.BackgroundTransparency = 0.55
+                            TweenService:Create(flash, TweenInfo.new(0.18), { BackgroundTransparency = 1 }):Play()
+                        end
+                    end
+                end
             end
         end
-        -- ajuste o tamanho aqui: (mín, máx) em studs da maior dimensão do corte
-        local targetSize = math.random(45, 95)
-        pcall(function() m:ScaleTo(targetSize / cutBaseSize) end)
-        m:PivotTo(CFrame.lookAt(pos, pos + dir))
-        m.Parent = folder
-        Debris:AddItem(m, 1.2)
+
+        -- dano (o próprio autor não se machuca)
+        if not iAmCaster then
+            local mc = LocalPlayer.Character
+            local mh = mc and mc:FindFirstChild("HumanoidRootPart")
+            local mhum = mc and mc:FindFirstChildOfClass("Humanoid")
+            if mh and mhum and (mh.Position - sh.Position).Magnitude <= RANGE then
+                mhum:TakeDamage(10)
+            end
+        end
+
+        task.wait(0.05)
     end
 
-    local DOMAIN_R = 230
-    local st = os.clock()
-    while os.clock() - st < 10 and not SUKUNA_ABORT and myHrp.Parent and myHum.Health > 0 do
-        shake = math.min(shake + 0.12, 1.4)
-        -- cortes espalhados por TODO o domínio (chão, ar e altura)
-        for _ = 1, 6 do
-            local ang = math.random() * math.pi * 2
-            local r = math.sqrt(math.random()) * DOMAIN_R
-            local pos = C + Vector3.new(math.cos(ang) * r, 5 + math.random() * 120, math.sin(ang) * r)
-            local dir = Vector3.new(math.random() - 0.5, (math.random() - 0.5) * 0.8, math.random() - 0.5)
-            if dir.Magnitude < 0.05 then dir = Vector3.new(1, 0, 0) end
-            spawnNewCut(pos, dir.Unit)
-        end
-        -- alguns bem em volta de você
-        for _ = 1, 2 do
-            local pos = myHrp.Position + Vector3.new(math.random(-25, 25), math.random(0, 15), math.random(-25, 25))
-            local dir = Vector3.new(math.random() - 0.5, (math.random() - 0.5) * 0.6, math.random() - 0.5)
-            if dir.Magnitude < 0.05 then dir = Vector3.new(1, 0, 0) end
-            spawnNewCut(pos, dir.Unit)
-        end
-        task.wait(0.12)
-    end
-
-    -- ===== 3. LIMPEZA =====
+    -- ===== LIMPEZA =====
     pcall(function() RunService:UnbindFromRenderStep(shakeName) end)
-    pcall(function()
-        myHrp.AssemblyLinearVelocity = Vector3.zero
-        myHrp.CFrame = returnCF
-    end)
-    pcall(function() atm:Destroy() end)
-    pcall(function() sky:Destroy() end)
-    for k, v in pairs(saved) do pcall(function() Lighting[k] = v end) end
-    for _, a in ipairs(hiddenAtm) do pcall(function() a.Parent = Lighting end) end
-    for _, a in ipairs(hiddenSky) do pcall(function() a.Parent = Lighting end) end
-    sHum.WalkSpeed = 16
     pcall(function() folder:Destroy() end)
+    pcall(function() if flashGui then flashGui:Destroy() end end)
+    pcall(function() cc:Destroy() end)
+    pcall(function() atm:Destroy() end)
+    for k, v in pairs(saved) do pcall(function() Lighting[k] = v end) end
+    for _, a in ipairs(hidden) do pcall(function() a.Parent = Lighting end) end
     SUKUNA_BUSY = false
 end
-
 
 -- ================== EXPANSÃO DE DOMÍNIO (GOJO) - VAZIO ILIMITADO v3 (estilo Jujutsu Shenanigans) ==================
 -- Sequência (baseada no vídeo de referência):
@@ -6865,18 +6836,6 @@ function executeActionLocally(action, senderName, extraArg)
     elseif action == "POOLROOMS_CLEAR" then
         task.spawn(function() pcall(POOL.clear) end)
     elseif action == "BACKROOMS_CLEAR" then task.spawn(function() pcall(clearBackrooms) end)
-    elseif action == "LEVEL188_SPAWN" then
-        task.spawn(function() pcall(function() LEVEL188.spawn(extraArg) end) end)
-    elseif action == "LEVEL188_CLEAR" then
-        task.spawn(function() pcall(LEVEL188.clear) end)
-    elseif action == "SALABRANCA_SPAWN" then
-        task.spawn(function() pcall(function() SALABRANCA.spawn(extraArg) end) end)
-    elseif action == "SALABRANCA_CLEAR" then
-        task.spawn(function() pcall(SALABRANCA.clear) end)
-    elseif action == "ILHABLOX_SPAWN" then
-        task.spawn(function() pcall(function() ILHABLOX.spawn(extraArg) end) end)
-    elseif action == "ILHABLOX_CLEAR" then
-        task.spawn(function() pcall(ILHABLOX.clear) end)
     elseif action == "LIFEFORM_SPAWN" then
         task.spawn(function()
             local folder = workspace:FindFirstChild("Backrooms_Level0")
@@ -7340,50 +7299,6 @@ local function toggleAura()
     end
 end
 
--- ================== GOJO: BOLAS VERMELHA + AZUL (visual, sem dano) ==================
-FantasmaGojoBall = {
-    ANIM    = "rbxassetid://106255828844338",
-    ANIM_ID = 106255828844338,
-    RED_ID  = 6685365462,
-    BLUE_ID = 14819624358,
-    BALL_ID = "14819645681",
-    clickBusy = false,
-}
-
--- toca a animação na hora (sem esperar rede) e, em segundo plano, tenta fixá-la pelo
--- mesmo método do Goner/Coolkid (Wear), para o Brookhaven não sobrescrever a animação
-function FantasmaGojoBall.clickAnim(char)
-    safePlayAnimation(char, FantasmaGojoBall.ANIM)
-    if FantasmaGojoBall.clickBusy or not (FantasmaGoner and FantasmaGoner.getWear and FantasmaGoner.getWear()) then return end
-    FantasmaGojoBall.clickBusy = true
-    task.spawn(function()
-        local set = FantasmaGoner.appliedSet(char)
-        if not set[FantasmaGojoBall.ANIM_ID] then
-            FantasmaGoner.wearId(FantasmaGojoBall.ANIM_ID)
-            task.wait(FantasmaGoner.WEAR_GAP)
-        end
-        FantasmaGojoBall.clickBusy = false
-    end)
-end
-
--- carrega um asset pequeno (bola) e deixa com o diâmetro pedido
-function FantasmaGojoBall.loadBall(id, size)
-    local objs = FantasmaGoner.load(id)
-    if not objs then return nil end
-    local m = Instance.new("Model")
-    for _, o in ipairs(objs) do o.Parent = m end
-    for _, d in ipairs(m:GetDescendants()) do
-        if d:IsA("BasePart") then d.Anchored, d.CanCollide, d.CanQuery, d.CanTouch = true, false, false, false end
-    end
-    if not m.PrimaryPart then m.PrimaryPart = m:FindFirstChildWhichIsA("BasePart", true) end
-    if m.PrimaryPart then
-        local _, bs = m:GetBoundingBox()
-        local maxDim = math.max(bs.X, bs.Y, bs.Z)
-        if maxDim > 0 then pcall(function() m:ScaleTo(size / maxDim) end) end
-    end
-    return m
-end
-
 local function giveGojo()
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -7392,66 +7307,23 @@ local function giveGojo()
     t.Name, t.RequiresHandle = "Vazio Roxo", false
     t.Parent = LocalPlayer:FindFirstChild("Backpack") or char
     t.Activated:Connect(function()
-        FantasmaGojoBall.clickAnim(char)
+        safePlayAnimation(char, CUSTOM_ANIM_ID)
         task.spawn(function()
-            local folder = Instance.new("Folder")
-            folder.Name = "GojoCharge"
-            folder.Parent = workspace
-
-            local red = FantasmaGojoBall.loadBall(FantasmaGojoBall.RED_ID, 1.6)
-            local blue = FantasmaGojoBall.loadBall(FantasmaGojoBall.BLUE_ID, 1.6)
-            if not red or not blue then
-                if red then red:Destroy() end
-                if blue then blue:Destroy() end
-                folder:Destroy()
-                return
-            end
-            red.Parent, blue.Parent = folder, folder
-
-            local DURATION = 1.1
-            local t0 = os.clock()
-            local cn
-            cn = RunService.RenderStepped:Connect(function()
-                local c = LocalPlayer.Character
-                local h = c and c:FindFirstChild("HumanoidRootPart")
-                if not h or not red.Parent then
-                    if cn then cn:Disconnect() end
-                    return
-                end
-                local a = math.clamp((os.clock() - t0) / DURATION, 0, 1)
-                local backCF = h.CFrame * CFrame.new(-1.3, 0.3, 1.8)
-                local backCF2 = h.CFrame * CFrame.new(1.3, 0.3, 1.8)
-                local handCF = h.CFrame * CFrame.new(-0.6, -0.5, -1.6)
-                local handCF2 = h.CFrame * CFrame.new(0.6, -0.5, -1.6)
-                red:PivotTo(backCF:Lerp(handCF, a * a))
-                blue:PivotTo(backCF2:Lerp(handCF2, a * a))
-                if a >= 1 then
-                    if cn then cn:Disconnect() end
-                end
-            end)
-
-            task.wait(DURATION + 0.05)
-            pcall(function() red:Destroy() end)
-            pcall(function() blue:Destroy() end)
-            pcall(function() folder:Destroy() end)
-
-            local hrp2 = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if not hrp2 then return end
-            local p = fetchAssetAsModel(FantasmaGojoBall.BALL_ID)
+            local p = fetchAssetAsModel("14819645681")
             if p and p.PrimaryPart then
-                pcall(function() p:ScaleTo(170) end)   -- um pouco menor que o original (300)
+                pcall(function() p:ScaleTo(300) end)
                 for _, x in ipairs(p:GetDescendants()) do
                     if x:IsA("BasePart") then x.Anchored, x.CanCollide = true, false end
                 end
-                p:PivotTo(hrp2.CFrame * CFrame.new(0, 2, -14))
+                p:PivotTo(hrp.CFrame * CFrame.new(0, 2, -20))
                 p.Parent = workspace
-                local dir = hrp2.CFrame.LookVector
-                local cn2
-                cn2 = RunService.RenderStepped:Connect(function(dt)
+                local dir = hrp.CFrame.LookVector
+                local cn
+                cn = RunService.RenderStepped:Connect(function(dt)
                     if p and p.Parent then p:PivotTo(p:GetPivot() + dir * 150 * dt)
-                    else cn2:Disconnect() end
+                    else cn:Disconnect() end
                 end)
-                task.delay(4, function() if cn2 then cn2:Disconnect() end if p then p:Destroy() end end)
+                task.delay(4, function() if cn then cn:Disconnect() end if p then p:Destroy() end end)
             end
         end)
     end)
@@ -7484,12 +7356,12 @@ end
 
 -- ================== GONER PLAYER ==================
 FantasmaGoner = {
-    CLOTHES    = {17812417356, 17770317484, 17822722698, 17822749561, 17772174303, 17771175724, 10089869281},
+    CLOTHES    = {17812417356, 17770317484, 17822722698, 17822749561, 17772174303, 17771175724},
     GONER_ANIM = "rbxassetid://71611618090433",
     CLICK_ANIM = "rbxassetid://118273721275238",   -- animação ao clicar com o machado
     CLICK_ID   = 118273721275238,
     ANIM_ID    = 97005849733115,                   -- animação do goner parado (idle)
-    WALK_ID    = 118801578983397,                  -- animação do goner andando
+    WALK_ID    = 108059497211872,                  -- animação do goner andando
     AXE_ID     = 14054756735,
     ICON       = "rbxassetid://130540399630094",
     SWING_ONLY = true,   -- true: só transforma se acertar durante o golpe (clique). false: qualquer encostada
@@ -8637,9 +8509,6 @@ else
         pcall(POOL.clear, true)
         pcall(roubeUmBrainrot, "OFF")
         pcall(TORNADO.clear, true)
-        pcall(LEVEL188.clear, true)
-        pcall(SALABRANCA.clear, true)
-        pcall(ILHABLOX.clear, true)
         if workspace:FindFirstChild("Backrooms_Level0") then pcall(clearBackrooms) end
         task.wait(0.3)
         local chr = LocalPlayer.Character
@@ -8728,30 +8597,6 @@ else
                 cmd(";unpoolrooms", "Limpar Poolrooms", function()
                     task.spawn(function() pcall(POOL.clear) end)
                     sendNetCmd(";POOLROOMS_CLEAR ALL")
-                end),
-                cmd(";level188",   "Level 188 - Courtyard of Windows (Eu e o Alvo)", function()
-                    triggerCommand("LEVEL188_SPAWN", selectedPlayerName, selectedPlayerName)
-                end),
-                cmd(";unlevel188", "Limpar Level 188", function()
-                    task.spawn(function() pcall(LEVEL188.clear) end)
-                    sendNetCmd(";LEVEL188_CLEAR ALL")
-                end),
-                cmd(";level188all", "Level 188 - Courtyard of Windows (Todos)", function() triggerCommand("LEVEL188_SPAWN", "ALL") end),
-                cmd(";salabranca",    "Sala Branca (Eu e o Alvo)", function()
-                    triggerCommand("SALABRANCA_SPAWN", selectedPlayerName, selectedPlayerName)
-                end),
-                cmd(";salabrancaall", "Sala Branca (Todos)", function() triggerCommand("SALABRANCA_SPAWN", "ALL") end),
-                cmd(";unsalabranca",  "Limpar Sala Branca", function()
-                    task.spawn(function() pcall(SALABRANCA.clear) end)
-                    sendNetCmd(";SALABRANCA_CLEAR ALL")
-                end),
-                cmd(";ilhadoblox",    "Ilha do Blox - mapa Blox Fruits (Eu e o Alvo)", function()
-                    triggerCommand("ILHABLOX_SPAWN", selectedPlayerName, selectedPlayerName)
-                end),
-                cmd(";ilhadobloxall", "Ilha do Blox (Todos)", function() triggerCommand("ILHABLOX_SPAWN", "ALL") end),
-                cmd(";unilhadoblox",  "Limpar Ilha do Blox", function()
-                    task.spawn(function() pcall(ILHABLOX.clear) end)
-                    sendNetCmd(";ILHABLOX_CLEAR ALL")
                 end),
             },
         },
