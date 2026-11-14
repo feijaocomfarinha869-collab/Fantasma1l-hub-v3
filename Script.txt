@@ -5542,8 +5542,10 @@ end
 -- ===== CONFIG DE DANO (coloque no topo do script) =====
 HUB_ACEITAR_DANO = true        -- false = você não toma dano de domínio dos outros
 SUKUNA_DANO_PERCENT = 0.5      -- 0.5 = 50% da vida máxima do alvo; 1 = mata
+SUKUNA_RAIO = 600              -- quem usa o hub dentro desse raio (studs) é PUXADO pro domínio via rede
+SUKUNA_RECOVER = nil           -- (interno) limpeza de emergência caso a expansão dê erro no meio
 
-local function runSukunaDomain(senderName)
+function runSukunaDomainInner(senderName)
     local sp = Players:FindFirstChild(senderName)
     local sc = sp and sp.Character
     local sh = sc and sc:FindFirstChild("HumanoidRootPart")
@@ -5565,18 +5567,21 @@ local function runSukunaDomain(senderName)
     local iAmCaster = (senderName == LocalPlayer.Name)
     local casterPos = sh.Position
 
-    local myChar, myHrp, myHum
-    if iAmCaster then
-        myChar = LocalPlayer.Character
-        myHrp = myChar and myChar:FindFirstChild("HumanoidRootPart")
-        myHum = myChar and myChar:FindFirstChildOfClass("Humanoid")
-        if not myHrp or not myHum or myHum.Health <= 0 then
-            SUKUNA_BUSY = false
-            return
-        end
+    -- personagem de quem roda o script (caster OU usuário do hub que recebeu o comando pela rede)
+    local myChar = LocalPlayer.Character
+    local myHrp = myChar and myChar:FindFirstChild("HumanoidRootPart")
+    local myHum = myChar and myChar:FindFirstChildOfClass("Humanoid")
+    if iAmCaster and (not myHrp or not myHum or myHum.Health <= 0) then
+        SUKUNA_BUSY = false
+        return
     end
-    local near = iAmCaster or (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        and (LocalPlayer.Character.HumanoidRootPart.Position - casterPos).Magnitude <= 60)
+    local dist = myHrp and (myHrp.Position - casterPos).Magnitude or math.huge
+    local near = iAmCaster or dist <= 80                       -- só pra bolinha de invocação
+    -- >>> CORREÇÃO: usuário do hub dentro do raio TAMBÉM é teleportado pro domínio (antes só tomava dano parado no mapa)
+    local participant = iAmCaster or (dist <= SUKUNA_RAIO and HUB_ACEITAR_DANO ~= false
+        and myHum ~= nil and myHum.Health > 0)
+    local oldWS = 16
+    if iAmCaster and sHum.WalkSpeed > 0 then oldWS = sHum.WalkSpeed end
 
     local function mkp(parent, size, cf, color, mat, transp, shape)
         local p = Instance.new("Part")
@@ -5622,28 +5627,14 @@ local function runSukunaDomain(senderName)
     task.wait(1.1)
     if SUKUNA_ABORT then
         pcall(function() folder:Destroy() end)
-        if iAmCaster then sHum.WalkSpeed = 16 end
+        if iAmCaster then sHum.WalkSpeed = oldWS end
         SUKUNA_BUSY = false
         return
     end
 
-    if not iAmCaster then
-        -- ALVO (outro usuário do hub perto do Sukuna): leva dano durante a expansão.
-        -- O dano é aplicado no PRÓPRIO personagem de quem roda o hub, e só se a opção estiver ligada.
-        if near and HUB_ACEITAR_DANO ~= false then
-            local tHum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-            if tHum and tHum.Health > 0 then
-                local total = tHum.MaxHealth * SUKUNA_DANO_PERCENT   -- dano total na expansão
-                local ticks = 20                                     -- 20 ticks de 0.5s = 10s
-                for _ = 1, ticks do
-                    if SUKUNA_ABORT or tHum.Health <= 0 then break end
-                    pcall(function() tHum:TakeDamage(total / ticks) end)
-                    task.wait(0.5)
-                end
-            end
-        else
-            task.wait(3)
-        end
+    if not participant then
+        -- longe demais (ou com HUB_ACEITAR_DANO = false): não é puxado, só assiste o efeito e libera
+        task.wait(3)
         pcall(function() folder:Destroy() end)
         SUKUNA_BUSY = false
         return
@@ -5692,9 +5683,59 @@ local function runSukunaDomain(senderName)
     atm.Density, atm.Offset, atm.Glare, atm.Haze = 0.6, 1, 0, 10
     atm.Parent = Lighting
 
-    myHrp.AssemblyLinearVelocity = Vector3.zero
-    myHrp.CFrame = spawnSpot
+    -- ===== LIMPEZA (idempotente: roda no fim normal OU se a expansão der erro no meio) =====
+    local shakeName = "SukunaShake" .. tostring(math.random(1, 1000000))
+    local domainOn = true
+    local function cleanupAll()
+        domainOn = false
+        pcall(function() RunService:UnbindFromRenderStep(shakeName) end)
+        pcall(function()
+            myHrp.Anchored = false
+            myHrp.AssemblyLinearVelocity = Vector3.zero
+            myChar:PivotTo(returnCF)
+        end)
+        pcall(function() atm:Destroy() end)
+        pcall(function() sky:Destroy() end)
+        for k, v in pairs(saved) do pcall(function() Lighting[k] = v end) end
+        for _, a in ipairs(hiddenAtm) do pcall(function() a.Parent = Lighting end) end
+        for _, a in ipairs(hiddenSky) do pcall(function() a.Parent = Lighting end) end
+        if iAmCaster then pcall(function() sHum.WalkSpeed = oldWS end) end
+        pcall(function() folder:Destroy() end)
+        SUKUNA_BUSY = false
+        SUKUNA_RECOVER = nil
+    end
+    SUKUNA_RECOVER = cleanupAll
+
+    -- ===== TELEPORTE PRO DOMÍNIO (reforçado: se o jogo puxar de volta, teleporta de novo) =====
+    local function goDomain()
+        pcall(function()
+            myHum.Sit = false
+            myHrp.Anchored = false
+            myHrp.AssemblyLinearVelocity = Vector3.zero
+            myChar:PivotTo(spawnSpot)
+        end)
+    end
+    goDomain()
+    task.spawn(function()
+        local t0 = os.clock()
+        while domainOn and os.clock() - t0 < 1.5 and myHrp.Parent do
+            task.wait(0.1)
+            if (myHrp.Position - C).Magnitude > 400 then goDomain() end
+        end
+    end)
     notify("Sukuna", "Você entrou no Santuário Malevolente!")
+
+    -- quem foi puxado pela rede (não é o Sukuna) leva dano durante a expansão
+    if not iAmCaster then
+        task.spawn(function()
+            local total = myHum.MaxHealth * SUKUNA_DANO_PERCENT
+            for _ = 1, 20 do
+                if SUKUNA_ABORT or not domainOn or myHum.Health <= 0 then break end
+                pcall(function() myHum:TakeDamage(total / 20) end)
+                task.wait(0.5)
+            end
+        end)
+    end
 
     -- Santuário do Sukuna
     local shrine = buildMalevolentShrine(folder)
@@ -5715,7 +5756,6 @@ local function runSukunaDomain(senderName)
 
     -- Tremor de câmera
     local cam = workspace.CurrentCamera
-    local shakeName = "SukunaShake" .. tostring(math.random(1, 1000000))
     local shake = 0
     RunService:BindToRenderStep(shakeName, Enum.RenderPriority.Camera.Value + 1, function()
         if shake > 0.01 and cam then
@@ -5795,19 +5835,22 @@ local function runSukunaDomain(senderName)
     end
 
     -- ===== 3. LIMPEZA =====
-    pcall(function() RunService:UnbindFromRenderStep(shakeName) end)
-    pcall(function()
-        myHrp.AssemblyLinearVelocity = Vector3.zero
-        myHrp.CFrame = returnCF
-    end)
-    pcall(function() atm:Destroy() end)
-    pcall(function() sky:Destroy() end)
-    for k, v in pairs(saved) do pcall(function() Lighting[k] = v end) end
-    for _, a in ipairs(hiddenAtm) do pcall(function() a.Parent = Lighting end) end
-    for _, a in ipairs(hiddenSky) do pcall(function() a.Parent = Lighting end) end
-    sHum.WalkSpeed = 16
-    pcall(function() folder:Destroy() end)
-    SUKUNA_BUSY = false
+    cleanupAll()
+end
+
+-- wrapper: se a expansão der erro em qualquer ponto, desfaz tudo (antes o SUKUNA_BUSY ficava preso e nunca mais rodava)
+local function runSukunaDomain(senderName)
+    local ok, err = pcall(runSukunaDomainInner, senderName)
+    if not ok then
+        warn("[Sukuna] " .. tostring(err))
+        if SUKUNA_RECOVER then pcall(SUKUNA_RECOVER) end
+        SUKUNA_RECOVER = nil
+        SUKUNA_BUSY = false
+        pcall(function()
+            local f = workspace:FindFirstChild("SukunaDomain")
+            if f then f:Destroy() end
+        end)
+    end
 end
 
 -- ================== EXPANSÃO DE DOMÍNIO (GOJO) - VAZIO ILIMITADO v3 (estilo Jujutsu Shenanigans) ==================
@@ -6810,6 +6853,99 @@ function executeActionLocally(action, senderName, extraArg)
     end
 end
 
+-- ================== TLPORTSER (PUXAR USUÁRIO DO HUB DE OUTRO SERVER) ==================
+-- Roblox não deixa um servidor falar com outro, então a "ponte" é um arquivo no SEU GitHub:
+--   tlportser.json  (mesma pasta do hub2.lua). Todo cliente com o hub lê esse arquivo a cada
+--   TLPORTSER_POLL segundos e, se o comando for pra ele, teleporta pro seu servidor.
+TLPORTSER_URL         = "https://raw.githubusercontent.com/feijaocomfarinha869-collab/Fantasma1l-hub/refs/heads/main/tlportser.json"
+TLPORTSER_POLL        = 15    -- segundos entre cada checagem do arquivo
+TLPORTSER_VALIDADE    = 600   -- um comando só vale por 10 min (não puxa ninguém com comando velho)
+HUB_ACEITAR_TLPORTSER = true  -- false = você não aceita ser puxado por ninguém
+
+function TLPORTSER_MATCH(alvo)
+    alvo = string.lower(tostring(alvo or ""))
+    if alvo == "" then return false end
+    if alvo == "all" or alvo == "todos" then return true end
+    local n, dn = string.lower(LocalPlayer.Name), string.lower(LocalPlayer.DisplayName)
+    return n == alvo or dn == alvo
+end
+
+-- ADMIN: gera o comando pra puxar `alvo` (nome do jogador ou "ALL") pro servidor onde você está agora
+function tlportser(alvo)
+    if not IS_ADMIN then return false end
+    if type(alvo) ~= "string" or alvo == "" then
+        notify("tlportser", "Use: tlportser(\"NomeDoJogador\")  ou  ;tlportser NomeDoJogador")
+        return false
+    end
+    local low = string.lower(alvo)
+    if low ~= "all" and low ~= "todos" then
+        for _, p in ipairs(Players:GetPlayers()) do
+            if string.lower(p.Name) == low or string.lower(p.DisplayName) == low then
+                notify("tlportser", p.Name .. " já está no seu servidor.")
+                return false
+            end
+        end
+    end
+    local json = game:GetService("HttpService"):JSONEncode({
+        id = tostring(os.time()) .. "-" .. tostring(math.random(1000, 9999)),
+        ts = os.time(),
+        alvo = alvo,
+        placeId = game.PlaceId,
+        jobId = game.JobId,
+    })
+    local copiou = pcall(function() setclipboard(json) end)
+    print("[tlportser] conteúdo do tlportser.json:\n" .. json)
+    notify("tlportser", copiou
+        and "Comando copiado! Cole no tlportser.json do GitHub e dê commit."
+        or "Veja o F9 (console): copie o JSON e cole no tlportser.json do GitHub.")
+    return true
+end
+_G.tlportser = tlportser
+-- ┌──────────────────────────────────────────────────────────────────────────────┐
+-- │ tlportser(alvo)  — O QUE ELA FAZ                                              │
+-- │  Puxa um usuário do hub que está em OUTRO servidor para o SEU servidor.       │
+-- │  1) Você chama tlportser("Nome") (ou digita ;tlportser Nome no chat).         │
+-- │  2) Ela monta um comando com o SEU servidor atual (placeId + jobId) e copia   │
+-- │     o JSON pra área de transferência (também imprime no console F9).          │
+-- │  3) Você cola esse JSON no arquivo tlportser.json do GitHub do hub e dá commit│
+-- │  4) O hub do alvo (em qualquer servidor) lê o arquivo em até ~15 s e          │
+-- │     teleporta ele pro seu servidor com TeleportToPlaceInstance.               │
+-- │  - alvo = nome ou apelido exato do jogador, ou "ALL" pra puxar todos.         │
+-- │  - Só ADMIN pode gerar o comando; se o alvo já está no seu servidor, avisa.   │
+-- │  - Comando vale 10 min, não repete, e ignora quem já está no mesmo servidor.  │
+-- │  - O alvo pode recusar com HUB_ACEITAR_TLPORTSER = false.                     │
+-- └──────────────────────────────────────────────────────────────────────────────┘
+
+-- receptor: roda em TODO cliente com o hub
+task.spawn(function()
+    local HttpService = game:GetService("HttpService")
+    local TeleportService = game:GetService("TeleportService")
+    local visto = {}
+    local primeira = true
+    while true do
+        task.wait(primeira and 3 or TLPORTSER_POLL)
+        primeira = false
+        if HUB_ACEITAR_TLPORTSER ~= false then
+            local ok, cmd = pcall(function()
+                return HttpService:JSONDecode(game:HttpGet(TLPORTSER_URL .. "?t=" .. tostring(os.time())))
+            end)
+            if ok and type(cmd) == "table" and cmd.id and not visto[cmd.id] then
+                visto[cmd.id] = true
+                local fresco = tonumber(cmd.ts) and (os.time() - tonumber(cmd.ts)) <= TLPORTSER_VALIDADE
+                if fresco and TLPORTSER_MATCH(cmd.alvo) and cmd.jobId and cmd.jobId ~= game.JobId then
+                    notify("Hub", "Você está sendo puxado para outro servidor...")
+                    task.wait(1.5)
+                    local pid = tonumber(cmd.placeId) or game.PlaceId
+                    local ok2 = pcall(function()
+                        TeleportService:TeleportToPlaceInstance(pid, cmd.jobId, LocalPlayer)
+                    end)
+                    if not ok2 then notify("Hub", "Não consegui entrar no servidor (cheio ou fechado).") end
+                end
+            end
+        end
+    end
+end)
+
 -- ================== REDE (PREFIXO ;) ==================
 local recentNet = {}
 local function isMe(t)
@@ -6877,6 +7013,9 @@ function processNetMessage(msg, senderName)
             return
         elseif action == "TAGCOR" then
             FantasmaTag.setColor(tonumber(target) or 1)
+            return
+        elseif action == "TLPORTSER" then
+            tlportser(target)
             return
         end
     end
