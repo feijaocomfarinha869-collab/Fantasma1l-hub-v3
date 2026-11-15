@@ -8,7 +8,7 @@ local Window = Libary:MakeWindow({
     Flags = "Fantasma1lhub"
 })
 Window:AddMinimizeButton({
-    Button = { Image = "rbxassetid://72455921762458"})
+    Button = { Image = "rbxassetid://", BackgroundTransparency = 0 },
     Corner = { CornerRadius = UDim.new(35, 1) },
 })
 
