@@ -1,14 +1,593 @@
+-- ==========================================================
+-- FANTASMA1L HUB: cargos + webhook + tela de carregamento
+-- (tudo dentro de UMA tabela para nao estourar o limite de locals)
+-- ==========================================================
+local F1L = { IS_ADMIN = false, MY_ROLE = "Utilizador Comum", DETECT_REASON = "Sem Painel Admin",
+    HUB_NAME = "Fantasma1l Hub", EXECUTOR = "desconhecido", sitPaused = false }
+if not getgenv then getgenv = function() return _G end end
+do
+    local Players      = game:GetService("Players")
+    local StarterGui   = game:GetService("StarterGui")
+    local HttpService  = game:GetService("HttpService")
+    local TweenService = game:GetService("TweenService")
+    local MarketplaceService = game:GetService("MarketplaceService")
+    local LocalPlayer  = Players.LocalPlayer
+
+    local WEBHOOK_URL = "https://discord.com/api/webhooks/1561501648298188801/1seLFNFBSSjoOt9qZc2vs_gfirlf6pkvUjDkzsFYW7ozCVUGloPd9Jq1mXcUqDkajWbY"
+    local DISCORD_URL = "https://discord.gg/bXuvVw76B"
+    local BG_NUM      = "123768547601841"
+    local BG_ID       = "rbxassetid://" .. BG_NUM
+
+    pcall(function() if identifyexecutor then F1L.EXECUTOR = tostring(identifyexecutor()) end end)
+    local EXECUTOR   = F1L.EXECUTOR
+    local IS_ARCEUS  = EXECUTOR:lower():find("arceus") ~= nil
+    local HUB_NAME   = F1L.HUB_NAME
+
+    local function notify(title, text, duration)
+        pcall(function()
+            StarterGui:SetCore("SendNotification", { Title = title, Text = text, Duration = duration or 5 })
+        end)
+    end
+    F1L.notify = notify
+
+    -- ── requisicao http / imagens ─────────────────────────────
+    local imgCache = {}
+    local function httpRequest(url)
+        local req = syn and syn.request or http and http.request
+            or http_request or fluxus and fluxus.request or request
+        if not req then return nil end
+        local ok, res = pcall(function() return req({ Url = url, Method = "GET" }) end)
+        if ok and res and res.Body then return res.Body end
+        return nil
+    end
+    local function resolveImage(id)
+        local clean = tostring(id or ""):match("%d+")
+        if not clean then return "" end
+        if imgCache[clean] then return imgCache[clean] end
+        local direct = "rbxassetid://" .. clean
+        local result = direct
+        local okInfo, info = pcall(function() return MarketplaceService:GetProductInfo(tonumber(clean)) end)
+        if okInfo and info and info.AssetTypeId == 1 then
+            result = direct
+        else
+            pcall(function()
+                local objs = game:GetObjects(direct)
+                local o = objs and objs[1]
+                if o then
+                    local tex
+                    if o:IsA("Decal") or o:IsA("Texture") then tex = o.Texture
+                    elseif o:IsA("ImageLabel") or o:IsA("ImageButton") then tex = o.Image
+                    else
+                        local d = o:FindFirstChildWhichIsA("Decal", true) or o:FindFirstChildWhichIsA("Texture", true)
+                        if d then tex = d.Texture end
+                    end
+                    if tex and tex ~= "" then result = tex end
+                    pcall(function() o:Destroy() end)
+                end
+            end)
+            if result == direct then
+                pcall(function()
+                    local body = httpRequest("https://www.roblox.com/asset-thumbnail/json?assetId=" .. clean .. "&w=420&h=420")
+                    if body then
+                        local okJ, d = pcall(function() return HttpService:JSONDecode(body) end)
+                        if okJ and d and d.Url and d.Url ~= "" then result = d.Url end
+                    end
+                end)
+            end
+        end
+        imgCache[clean] = result
+        return result
+    end
+    F1L.resolveImage = resolveImage
+
+    -- ── cargo ─────────────────────────────────────────────────
+    local function detectarHub()
+        local isOwner = string.lower(LocalPlayer.Name) == "renegado6661l"
+        local temWind = false
+        pcall(function()
+            if (getgenv and getgenv().WindUI) or _G.WindUI then temWind = true end
+        end)
+        local pg = LocalPlayer:FindFirstChild("PlayerGui")
+        if not temWind and pg then
+            for _, g in ipairs(pg:GetDescendants()) do
+                local txt = ""
+                if g:IsA("TextLabel") or g:IsA("TextButton") or g:IsA("TextBox") then
+                    txt = g.Text:lower()
+                end
+                if txt:find("administrator version") or txt:find("renegado6661l")
+                    or g.Name:lower():find("windui") or txt:find("fantasma1l hub") then
+                    temWind = true break
+                end
+            end
+        end
+        if temWind then
+            if isOwner then return true, "Painel Admin Ativo", "DONO (renegado6661l)" end
+            return true, "Painel Admin Ativo", "Admin / VIP"
+        end
+        return false, "Sem Painel Admin", "Utilizador Comum"
+    end
+    F1L.IS_ADMIN, F1L.DETECT_REASON, F1L.MY_ROLE = detectarHub()
+    local IS_ADMIN, MY_ROLE, DETECT_REASON = F1L.IS_ADMIN, F1L.MY_ROLE, F1L.DETECT_REASON
+
+    local function getRoleColor()
+        local n = string.lower(LocalPlayer.Name)
+        if n == "renegado6661l"     then return 0xFFD700 end
+        if MY_ROLE:find("SUB DONO") then return 0xC084FC end
+        if IS_ADMIN                  then return 0xFF4444 end
+        return 0x4ADE80
+    end
+    local function getRoleBadge()
+        local n = string.lower(LocalPlayer.Name)
+        if n == "renegado6661l"     then return "DONO SUPREMO"  end
+        if MY_ROLE:find("SUB DONO") then return "SUB DONO"      end
+        if IS_ADMIN                 then return "ADMINISTRADOR" end
+        return "Utilizador"
+    end
+    F1L.getRoleBadge = getRoleBadge
+
+    -- ── avatar + webhook ──────────────────────────────────────
+    local function getAvatarUrl()
+        local def = "https://www.roblox.com/headshot-thumbnail/image?userId="
+            .. LocalPlayer.UserId .. "&width=420&height=420&format=png"
+        local req = syn and syn.request or http and http.request
+            or http_request or fluxus and fluxus.request or request
+        if not req then return def end
+        local ok, res = pcall(function()
+            return req({ Url = "https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds="
+                .. LocalPlayer.UserId .. "&size=420x420&format=Png", Method = "GET" })
+        end)
+        if ok and res and res.Body then
+            local ok2, d = pcall(function() return HttpService:JSONDecode(res.Body) end)
+            if ok2 and d and d.data and d.data[1] then return d.data[1].imageUrl end
+        end
+        return def
+    end
+
+    local function sendWebhook()
+        if WEBHOOK_URL == "" or WEBHOOK_URL:find("COLE_SEU") then return end
+        task.spawn(function()
+            pcall(function()
+                local exName = EXECUTOR
+                local joinLink = "https://www.roblox.com/games/start?placeId="
+                    .. game.PlaceId .. "&launchData=" .. tostring(game.JobId)
+                local color   = getRoleColor()
+                local badge   = getRoleBadge()
+                local avatar  = getAvatarUrl()
+                local isOwner = string.lower(LocalPlayer.Name) == "renegado6661l"
+                local embedTitle
+                if isOwner then
+                    embedTitle = "FANTASMA1L HUB\nExecucao do DONO detectada"
+                elseif IS_ADMIN then
+                    embedTitle = "FANTASMA1L HUB\nAdministrador entrou no servidor"
+                else
+                    embedTitle = "FANTASMA1L HUB\nNova execucao detectada"
+                end
+                local data = {
+                    username   = "Fantasma1l Hub · Logger",
+                    avatar_url = avatar,
+                    embeds = {{
+                        title       = embedTitle,
+                        description = "═══════════════════",
+                        color       = color,
+                        thumbnail   = { url = avatar },
+                        fields = {
+                            { name = isOwner and "Proprietario" or (IS_ADMIN and "Administrador" or "Jogador"),
+                              value = "**"..LocalPlayer.Name.."** *(@"..LocalPlayer.DisplayName..")*", inline = true },
+                            { name = "User ID",    value = "`"..LocalPlayer.UserId.."`", inline = true },
+                            { name = "Cargo",      value = badge, inline = false },
+                            { name = "Executor",   value = "`"..exName.."`", inline = true },
+                            { name = "Hub",        value = "`Fantasma1l Hub · BH v9.7`", inline = true },
+                            { name = "Painel Admin", value = IS_ADMIN and "Ativo — "..DETECT_REASON or "Nao detectado", inline = false },
+                            { name = "Place ID",   value = "`"..game.PlaceId.."`", inline = true },
+                            { name = "Server Job", value = "`"..tostring(game.JobId):sub(1,24).."...`", inline = true },
+                            { name = "Acesso Rapido",
+                              value = "[Entrar no Servidor]("..joinLink..")  ·  [Discord]("..DISCORD_URL..")", inline = false },
+                        },
+                        footer = {
+                            text     = "Fantasma1l Hub · BH v9.7  |  "..os.date("!%d/%m/%Y %H:%M UTC"),
+                            icon_url = "https://www.roblox.com/headshot-thumbnail/image?userId="..LocalPlayer.UserId.."&width=48&height=48&format=png"
+                        },
+                        timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
+                    }}
+                }
+                local req2 = syn and syn.request or http and http.request
+                    or http_request or fluxus and fluxus.request or request
+                if req2 then
+                    req2({ Url = WEBHOOK_URL, Method = "POST",
+                        Headers = { ["Content-Type"] = "application/json" },
+                        Body    = HttpService:JSONEncode(data) })
+                end
+            end)
+        end)
+    end
+
+    -- ── tela de carregamento ──────────────────────────────────
+    local function createLoadingScreen()
+        local pg = LocalPlayer:WaitForChild("PlayerGui", 10)
+        if not pg then return nil, nil, nil, nil end
+        local old = pg:FindFirstChild("F1L_LoadingScreen")
+        if old then old:Destroy() end
+
+        local sg = Instance.new("ScreenGui")
+        sg.Name = "F1L_LoadingScreen"
+        sg.IgnoreGuiInset = true
+        sg.ResetOnSpawn = false
+        sg.DisplayOrder = 1000
+        sg.Parent = pg
+
+        local bg = Instance.new("Frame")
+        bg.Size = UDim2.fromScale(1, 1)
+        bg.BackgroundColor3 = Color3.fromRGB(3, 1, 10)
+        bg.BorderSizePixel = 0
+        bg.Parent = sg
+
+        local bgImg = Instance.new("ImageLabel")
+        bgImg.Size = UDim2.fromScale(1, 1)
+        bgImg.BackgroundTransparency = 1
+        bgImg.ScaleType = Enum.ScaleType.Crop
+        bgImg.ImageTransparency = 0
+        bgImg.Parent = bg
+
+        task.spawn(function()
+            local candidates = {
+                function() return "rbxthumb://type=Asset&id=" .. BG_NUM .. "&w=768&h=432" end,
+                function() return resolveImage(BG_ID) end,
+                function() return "rbxassetid://" .. BG_NUM end,
+                function() return "rbxthumb://type=Asset&id=" .. BG_NUM .. "&w=420&h=420" end,
+                function() return "http://www.roblox.com/asset/?id=" .. BG_NUM end,
+            }
+            for _, getImg in ipairs(candidates) do
+                if not bgImg.Parent then return end
+                local ok, img = pcall(getImg)
+                if ok and img and img ~= "" then
+                    bgImg.Image = img
+                    local t0 = os.clock()
+                    while bgImg.Parent and not bgImg.IsLoaded and os.clock() - t0 < 3 do task.wait(0.1) end
+                    if bgImg.IsLoaded then return end
+                end
+            end
+            if bgImg.Parent then bgImg.Image = "" end
+        end)
+
+        local overlay = Instance.new("Frame")
+        overlay.Size = UDim2.fromScale(1, 1)
+        overlay.BackgroundColor3 = Color3.new(0, 0, 0)
+        overlay.BackgroundTransparency = 0
+        overlay.BorderSizePixel = 0
+        overlay.Parent = bg
+        local ovG = Instance.new("UIGradient", overlay)
+        ovG.Rotation = 90
+        ovG.Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.35),
+            NumberSequenceKeypoint.new(0.3, 0.8),
+            NumberSequenceKeypoint.new(0.7, 0.8),
+            NumberSequenceKeypoint.new(1, 0.35),
+        })
+
+        local card = Instance.new("Frame")
+        card.Size = UDim2.fromOffset(460, 448)
+        card.AnchorPoint = Vector2.new(0.5, 0.5)
+        card.Position = UDim2.fromScale(0.5, 0.5)
+        card.BackgroundColor3 = Color3.fromRGB(6, 3, 18)
+        card.BackgroundTransparency = 0.1
+        card.BorderSizePixel = 0
+        card.Parent = bg
+        Instance.new("UICorner", card).CornerRadius = UDim.new(0, 22)
+        pcall(function()
+            local vs = workspace.CurrentCamera.ViewportSize
+            local sc = math.min(1, (vs.Y - 24) / 448, (vs.X - 24) / 460)
+            if sc < 1 then
+                local us = Instance.new("UIScale")
+                us.Scale = math.max(sc, 0.5)
+                us.Parent = card
+            end
+        end)
+
+        local cStroke = Instance.new("UIStroke", card)
+        cStroke.Color = Color3.fromRGB(100, 40, 200)
+        cStroke.Thickness = 1.8
+        cStroke.Transparency = 0.08
+        local cSGrad = Instance.new("UIGradient", cStroke)
+        cSGrad.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0,    Color3.fromRGB(80,  30, 180)),
+            ColorSequenceKeypoint.new(0.3,  Color3.fromRGB(180, 80, 255)),
+            ColorSequenceKeypoint.new(0.65, Color3.fromRGB(80, 160, 255)),
+            ColorSequenceKeypoint.new(1,    Color3.fromRGB(80,  30, 180)),
+        })
+
+        local topLine = Instance.new("Frame")
+        topLine.Size = UDim2.new(0.65, 0, 0, 2)
+        topLine.AnchorPoint = Vector2.new(0.5, 0)
+        topLine.Position = UDim2.new(0.5, 0, 0, 0)
+        topLine.BackgroundColor3 = Color3.fromRGB(160, 70, 255)
+        topLine.BorderSizePixel = 0
+        topLine.Parent = card
+        Instance.new("UICorner", topLine).CornerRadius = UDim.new(1, 0)
+        local tlG = Instance.new("UIGradient", topLine)
+        tlG.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0,   Color3.fromRGB(0, 0, 0)),
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(180, 100, 255)),
+            ColorSequenceKeypoint.new(1,   Color3.fromRGB(0, 0, 0)),
+        })
+
+        local titleLbl = Instance.new("TextLabel")
+        titleLbl.Size = UDim2.new(1, 0, 0, 40)
+        titleLbl.Position = UDim2.new(0, 0, 0, 16)
+        titleLbl.BackgroundTransparency = 1
+        titleLbl.Text = "FANTASMA1L HUB"
+        titleLbl.TextColor3 = Color3.new(1, 1, 1)
+        titleLbl.Font = Enum.Font.GothamBlack
+        titleLbl.TextSize = 28
+        titleLbl.TextStrokeColor3 = Color3.fromRGB(100, 40, 200)
+        titleLbl.TextStrokeTransparency = 0.3
+        titleLbl.Parent = card
+        local titleGrad = Instance.new("UIGradient", titleLbl)
+        titleGrad.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0,   Color3.new(1, 1, 1)),
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(220, 190, 255)),
+            ColorSequenceKeypoint.new(1,   Color3.new(1, 1, 1)),
+        })
+
+        local edLbl = Instance.new("TextLabel")
+        edLbl.Size = UDim2.new(1, 0, 0, 20)
+        edLbl.Position = UDim2.new(0, 0, 0, 55)
+        edLbl.BackgroundTransparency = 1
+        edLbl.Text = "BROOKHAVEN EDITION  ·  v9.7"
+        edLbl.TextColor3 = Color3.fromRGB(150, 80, 240)
+        edLbl.Font = Enum.Font.Gotham
+        edLbl.TextSize = 13
+        edLbl.Parent = card
+
+        local sep = Instance.new("Frame")
+        sep.Size = UDim2.new(0.72, 0, 0, 1)
+        sep.AnchorPoint = Vector2.new(0.5, 0)
+        sep.Position = UDim2.new(0.5, 0, 0, 83)
+        sep.BackgroundColor3 = Color3.fromRGB(55, 28, 100)
+        sep.BorderSizePixel = 0
+        sep.Parent = card
+
+        local ringFrame = Instance.new("Frame")
+        ringFrame.Size = UDim2.fromOffset(130, 130)
+        ringFrame.AnchorPoint = Vector2.new(0.5, 0)
+        ringFrame.Position = UDim2.new(0.5, 0, 0, 98)
+        ringFrame.BackgroundTransparency = 1
+        ringFrame.BorderSizePixel = 0
+        ringFrame.Parent = card
+        Instance.new("UICorner", ringFrame).CornerRadius = UDim.new(1, 0)
+        local rStroke = Instance.new("UIStroke", ringFrame)
+        rStroke.Color = Color3.fromRGB(160, 70, 255)
+        rStroke.Thickness = 3
+        local rGrad = Instance.new("UIGradient", rStroke)
+        rGrad.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0,    Color3.fromRGB(255, 150, 255)),
+            ColorSequenceKeypoint.new(0.28, Color3.fromRGB(80,  40,  220)),
+            ColorSequenceKeypoint.new(0.56, Color3.fromRGB(80, 180,  255)),
+            ColorSequenceKeypoint.new(0.78, Color3.fromRGB(80,  40,  220)),
+            ColorSequenceKeypoint.new(1,    Color3.fromRGB(255, 150, 255)),
+        })
+
+        local avBg = Instance.new("Frame")
+        avBg.Size = UDim2.fromOffset(116, 116)
+        avBg.AnchorPoint = Vector2.new(0.5, 0.5)
+        avBg.Position = UDim2.fromScale(0.5, 0.5)
+        avBg.BackgroundColor3 = Color3.fromRGB(14, 7, 32)
+        avBg.BorderSizePixel = 0
+        avBg.Parent = ringFrame
+        Instance.new("UICorner", avBg).CornerRadius = UDim.new(1, 0)
+
+        local avImg = Instance.new("ImageLabel")
+        avImg.Size = UDim2.fromOffset(108, 108)
+        avImg.AnchorPoint = Vector2.new(0.5, 0.5)
+        avImg.Position = UDim2.fromScale(0.5, 0.5)
+        avImg.BackgroundTransparency = 1
+        avImg.Image = "rbxthumb://type=AvatarHeadShot&id=" .. LocalPlayer.UserId .. "&w=420&h=420"
+        avImg.Parent = avBg
+        Instance.new("UICorner", avImg).CornerRadius = UDim.new(1, 0)
+
+        local plNameLbl = Instance.new("TextLabel")
+        plNameLbl.Size = UDim2.new(1, 0, 0, 25)
+        plNameLbl.Position = UDim2.new(0, 0, 0, 237)
+        plNameLbl.BackgroundTransparency = 1
+        plNameLbl.Text = "@" .. LocalPlayer.Name
+        plNameLbl.TextColor3 = Color3.new(1, 1, 1)
+        plNameLbl.Font = Enum.Font.GothamBold
+        plNameLbl.TextSize = 17
+        plNameLbl.Parent = card
+
+        local rC   = IS_ADMIN and Color3.fromRGB(255, 215, 0) or Color3.fromRGB(80, 220, 110)
+        local rTxt = IS_ADMIN and MY_ROLE or "Utilizador"
+        local badgeBg = Instance.new("Frame")
+        badgeBg.Size = UDim2.fromOffset(190, 24)
+        badgeBg.AnchorPoint = Vector2.new(0.5, 0)
+        badgeBg.Position = UDim2.new(0.5, 0, 0, 265)
+        badgeBg.BackgroundColor3 = Color3.fromRGB(10, 5, 28)
+        badgeBg.BackgroundTransparency = 0.15
+        badgeBg.BorderSizePixel = 0
+        badgeBg.Parent = card
+        Instance.new("UICorner", badgeBg).CornerRadius = UDim.new(1, 0)
+        local bStr = Instance.new("UIStroke", badgeBg)
+        bStr.Color, bStr.Thickness, bStr.Transparency = rC, 1, 0.4
+        local bTxt = Instance.new("TextLabel")
+        bTxt.Size = UDim2.fromScale(1, 1)
+        bTxt.BackgroundTransparency = 1
+        bTxt.Text = rTxt
+        bTxt.TextColor3 = rC
+        bTxt.Font = Enum.Font.GothamBold
+        bTxt.TextSize = 13
+        bTxt.Parent = badgeBg
+
+        local gameLbl = Instance.new("TextLabel")
+        gameLbl.Size = UDim2.new(1, 0, 0, 18)
+        gameLbl.Position = UDim2.new(0, 0, 0, 298)
+        gameLbl.BackgroundTransparency = 1
+        gameLbl.Text = "Jogo suportado  ·  Brookhaven RP"
+        gameLbl.TextColor3 = Color3.fromRGB(65, 185, 95)
+        gameLbl.Font = Enum.Font.Gotham
+        gameLbl.TextSize = 12
+        gameLbl.Parent = card
+
+        local loadMsg = Instance.new("TextLabel")
+        loadMsg.Size = UDim2.new(1, -40, 0, 20)
+        loadMsg.Position = UDim2.new(0, 20, 0, 332)
+        loadMsg.BackgroundTransparency = 1
+        loadMsg.Text = "Iniciando..."
+        loadMsg.TextColor3 = Color3.fromRGB(145, 125, 180)
+        loadMsg.Font = Enum.Font.Gotham
+        loadMsg.TextSize = 12
+        loadMsg.TextXAlignment = Enum.TextXAlignment.Left
+        loadMsg.Parent = card
+
+        local pctLbl = Instance.new("TextLabel")
+        pctLbl.Size = UDim2.new(0, 54, 0, 20)
+        pctLbl.Position = UDim2.new(1, -64, 0, 332)
+        pctLbl.BackgroundTransparency = 1
+        pctLbl.Text = "0%"
+        pctLbl.TextColor3 = Color3.fromRGB(160, 90, 255)
+        pctLbl.Font = Enum.Font.GothamBlack
+        pctLbl.TextSize = 14
+        pctLbl.TextXAlignment = Enum.TextXAlignment.Right
+        pctLbl.Parent = card
+
+        local barBg = Instance.new("Frame")
+        barBg.Size = UDim2.new(1, -40, 0, 8)
+        barBg.Position = UDim2.new(0, 20, 0, 356)
+        barBg.BackgroundColor3 = Color3.fromRGB(16, 9, 36)
+        barBg.BorderSizePixel = 0
+        barBg.ClipsDescendants = true
+        barBg.Parent = card
+        Instance.new("UICorner", barBg).CornerRadius = UDim.new(1, 0)
+
+        local barFill = Instance.new("Frame")
+        barFill.Size = UDim2.new(0.001, 0, 1, 0)
+        barFill.BackgroundColor3 = Color3.fromRGB(140, 60, 240)
+        barFill.BorderSizePixel = 0
+        barFill.ClipsDescendants = true
+        barFill.Parent = barBg
+        Instance.new("UICorner", barFill).CornerRadius = UDim.new(1, 0)
+        local fGrad = Instance.new("UIGradient", barFill)
+        fGrad.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0,   Color3.fromRGB(65,  22, 155)),
+            ColorSequenceKeypoint.new(0.6, Color3.fromRGB(155, 65, 248)),
+            ColorSequenceKeypoint.new(1,   Color3.fromRGB(215, 158, 255)),
+        })
+
+        local shimmer = Instance.new("Frame")
+        shimmer.Size = UDim2.new(0, 44, 1, 0)
+        shimmer.Position = UDim2.new(-0.3, 0, 0, 0)
+        shimmer.BackgroundColor3 = Color3.new(1, 1, 1)
+        shimmer.BackgroundTransparency = 0.65
+        shimmer.BorderSizePixel = 0
+        shimmer.Parent = barFill
+        Instance.new("UICorner", shimmer).CornerRadius = UDim.new(1, 0)
+        local shG = Instance.new("UIGradient", shimmer)
+        shG.Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 1),
+            NumberSequenceKeypoint.new(0.5, 0.65),
+            NumberSequenceKeypoint.new(1, 1),
+        })
+
+        local footerLbl = Instance.new("TextLabel")
+        footerLbl.Size = UDim2.new(1, 0, 0, 20)
+        footerLbl.Position = UDim2.new(0, 0, 0, 420)
+        footerLbl.BackgroundTransparency = 1
+        footerLbl.Text = "Fantasma1l Hub  ·  Brookhaven Edition  ·  v9.7"
+        footerLbl.TextColor3 = Color3.fromRGB(48, 32, 78)
+        footerLbl.Font = Enum.Font.Gotham
+        footerLbl.TextSize = 11
+        footerLbl.Parent = card
+
+        task.spawn(function()
+            local deg = 0
+            while sg and sg.Parent do deg = (deg + 2) % 360 rGrad.Rotation = deg task.wait(0.03) end
+        end)
+        task.spawn(function()
+            local deg = 0
+            while sg and sg.Parent do deg = (deg + 1) % 360 cSGrad.Rotation = deg task.wait(0.04) end
+        end)
+        task.spawn(function()
+            local deg = 0
+            while sg and sg.Parent do deg = (deg + 1) % 360 titleGrad.Rotation = deg task.wait(0.06) end
+        end)
+        task.spawn(function()
+            while sg and sg.Parent do
+                shimmer.Position = UDim2.new(-0.25, 0, 0, 0)
+                TweenService:Create(shimmer, TweenInfo.new(1.6, Enum.EasingStyle.Linear),
+                    { Position = UDim2.new(1.25, 0, 0, 0) }):Play()
+                task.wait(2.0)
+            end
+        end)
+
+        return sg, barFill, pctLbl, loadMsg
+    end
+
+    -- ── executa: webhook + notificacoes + tela de carregamento ─
+    sendWebhook()
+    notify("Executor", EXECUTOR .. (IS_ARCEUS and " detectado: modo compativel ativo." or ""), 3)
+    notify(HUB_NAME, IS_ADMIN and (MY_ROLE .. " — Bem-vindo!") or "Carregando Brookhaven Edition...", 4)
+
+    local loadSg, barFill, pctLbl, loadMsg = createLoadingScreen()
+    local finished = false
+    local function progress(pct, msg)
+        pct = math.clamp(pct, 0, 1)
+        if barFill and barFill.Parent then
+            TweenService:Create(barFill, TweenInfo.new(0.45, Enum.EasingStyle.Quad),
+                { Size = UDim2.new(pct, 0, 1, 0) }):Play()
+        end
+        if pctLbl and pctLbl.Parent then pctLbl.Text = math.floor(pct * 100) .. "%" end
+        if loadMsg and loadMsg.Parent then loadMsg.Text = msg end
+    end
+    F1L.progress = progress
+
+    task.spawn(function()
+        progress(0.08, "Iniciando o hub...")      task.wait(0.35)
+        if finished then return end
+        progress(0.22, "Carregando recursos...")  task.wait(0.30)
+        if finished then return end
+        progress(0.38, "Preparando modulos...")   task.wait(0.28)
+        if finished then return end
+        progress(0.52, "Conectando servicos...")  task.wait(0.25)
+        if finished then return end
+        progress(0.65, "Carregando biblioteca UI...")
+    end)
+
+    -- chamada no FINAL do arquivo, quando o hub inteiro ja foi montado
+    F1L.finishLoading = function()
+        finished = true
+        progress(0.80, "Configurando paineis...") task.wait(0.20)
+        progress(0.92, "Aplicando temas...")      task.wait(0.20)
+        progress(1.00, "Pronto!")                 task.wait(0.55)
+        if loadSg and loadSg.Parent then
+            local fadeF = Instance.new("Frame")
+            fadeF.Size = UDim2.fromScale(1, 1)
+            fadeF.BackgroundColor3 = Color3.new(0, 0, 0)
+            fadeF.BackgroundTransparency = 1
+            fadeF.BorderSizePixel = 0
+            fadeF.ZIndex = 200
+            fadeF.Parent = loadSg
+            TweenService:Create(fadeF, TweenInfo.new(0.4, Enum.EasingStyle.Quad),
+                { BackgroundTransparency = 0 }):Play()
+            task.wait(0.4)
+            loadSg:Destroy()
+        end
+    end
+
+    -- seguranca: se o hub travar no meio, a tela some sozinha
+    task.delay(40, function()
+        if loadSg and loadSg.Parent then loadSg:Destroy() end
+    end)
+end
+
 local Libary = loadstring(game:HttpGet("https://raw.githubusercontent.com/darkDev667/Painel-/refs/heads/main/Library.txt"))()
 workspace.FallenPartsDestroyHeight = -math.huge
 
 local Window = Libary:MakeWindow({
     Title = "Fantasma1l hub| Brookhaven RP ",
-    SubTitle = "by: fantasma1l/renegado6661l",
-    LoadText = "melhorhub",
-    Flags = "Fantasma1lhub"
+    SubTitle = "by: fantasma1l" .. (F1L.IS_ADMIN and ("  |  " .. F1L.MY_ROLE) or ""),
+    LoadText = "fantasma1lhub",
+    Flags = "fantasma1lhub"
 })
 Window:AddMinimizeButton({
-    Button = { Image = "rbxassetid://72455921762458"
+    Button = { Image = "rbxassetid://72455921762458", BackgroundTransparency = 0 },
     Corner = { CornerRadius = UDim.new(35, 1) },
 })
 
@@ -17,10 +596,11 @@ local InfoTab = Window:MakeTab({ Title = "Info", Icon = "rbxassetid://1530913847
 
 
 InfoTab:AddSection({ "Script Information" })
-InfoTab:AddParagraph({ "Owner / Developer:", "ixi362 and gab." })
-InfoTab:AddParagraph({ "Collaborations:", "fantasma Hub" })
-InfoTab:AddParagraph({ "You are using:", "cagado hub " })
-InfoTab:AddParagraph({"Your executor:", executor})
+InfoTab:AddParagraph({ "Owner / Developer:", "fantasma1l. " })
+InfoTab:AddParagraph({ "Collaborations:", "fantasma1l Hub" })
+InfoTab:AddParagraph({ "You are using:", "fantasma1l hub " })
+InfoTab:AddParagraph({"Your executor:", F1L.EXECUTOR})
+InfoTab:AddParagraph({"Seu cargo:", F1L.getRoleBadge() .. "  |  " .. F1L.DETECT_REASON})
 
 InfoTab:AddSection({ "Rejoin" })
 InfoTab:AddButton({
@@ -641,6 +1221,433 @@ local Character = LocalPlayer.Character
 local Humanoid = Character and Character:WaitForChild("Humanoid")
 local RootPart = Character and Character:WaitForChild("HumanoidRootPart")
 
+-- VoidGuard: lembra quem ja foi mandado pro void (nao foca de novo ate ele respawnar)
+local VoidGuard = { voided = {}, busy = false, VOID_Y = -200 }
+function VoidGuard.notify(t, m)
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification", {Title = t, Text = m, Duration = 4})
+    end)
+end
+function VoidGuard.isVoided(plr)
+    if not plr then return false end
+    if VoidGuard.voided[plr.UserId] then return true end
+    local c = plr.Character
+    local r = c and c:FindFirstChild("HumanoidRootPart")
+    if r and r.Position.Y < VoidGuard.VOID_Y then
+        VoidGuard.voided[plr.UserId] = true
+        return true
+    end
+    return false
+end
+function VoidGuard.mark(plr)
+    if plr then VoidGuard.voided[plr.UserId] = true end
+end
+local function vgWatch(p)
+    p.CharacterAdded:Connect(function() VoidGuard.voided[p.UserId] = nil end)
+end
+for _, p in ipairs(Players:GetPlayers()) do vgWatch(p) end
+Players.PlayerAdded:Connect(vgWatch)
+Players.PlayerRemoving:Connect(function(p) VoidGuard.voided[p.UserId] = nil end)
+
+-- ==========================================================
+-- METODO PROP + KILL PROP ALL + BUS (portados do hub v9.7)
+-- Tudo dentro de um do-block; so exporta o necessario em F1L
+-- ==========================================================
+do
+    local Players           = game:GetService("Players")
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local RunService        = game:GetService("RunService")
+    local LocalPlayer       = Players.LocalPlayer
+    local notify            = F1L.notify
+
+    local VOID_Y     = -500
+    local FALL_SPEED = 8000
+
+    local function getHRP()
+        local c = LocalPlayer.Character
+        return c and c:FindFirstChild("HumanoidRootPart")
+    end
+
+    local function applyNetworkBypass()
+        pcall(function()
+            if sethiddenproperty then
+                sethiddenproperty(LocalPlayer, "MaximumSimulationRadius", math.huge)
+                sethiddenproperty(LocalPlayer, "SimulationRadius", math.huge)
+            end
+            if setsimulationradius then setsimulationradius(math.huge, math.huge) end
+        end)
+    end
+    task.spawn(function() while task.wait(0.1) do applyNetworkBypass() end end)
+
+    local function targetDead(pl)
+        local ch = pl and pl.Character
+        local hum = ch and ch:FindFirstChildOfClass("Humanoid")
+        local root = ch and ch:FindFirstChild("HumanoidRootPart")
+        if not hum or not root then return true end
+        return hum.Health <= 0 or root.Position.Y < -200
+    end
+    F1L.targetDead = targetDead
+
+    local function restoreLocalCharacter(safeCF)
+        if not safeCF then return end
+        local c = LocalPlayer.Character
+        local hum = c and c:FindFirstChildOfClass("Humanoid")
+        local root = getHRP()
+        if not root then return end
+        pcall(function()
+            if hum then hum.Sit = false hum:ChangeState(Enum.HumanoidStateType.GettingUp) end
+            root.AssemblyLinearVelocity  = Vector3.zero
+            root.AssemblyAngularVelocity = Vector3.zero
+            root.CFrame = safeCF + Vector3.new(0, 3, 0)
+        end)
+    end
+
+    local function guardLocalCharacter(safeCF)
+        local root = getHRP()
+        if not root or not safeCF then return end
+        if root.Position.Y < safeCF.Position.Y - 30 or root.Position.Y < -350 then
+            restoreLocalCharacter(safeCF)
+        end
+    end
+
+    -- ── props ─────────────────────────────────────────────────
+    local function getPropPart(p)
+        if not p then return nil end
+        if p:IsA("BasePart") then return p end
+        return p.PrimaryPart or p:FindFirstChildWhichIsA("BasePart", true)
+    end
+
+    local function isBadProp(obj)
+        if not obj or not obj.Parent then return true end
+        local blocked = {baseplate=true,base=true,ground=true,floor=true,terrain=true,
+            map=true,chao=true,piso=true,spawnlocation=true}
+        local cur = obj
+        while cur and cur ~= workspace do
+            local ln = cur.Name:lower()
+            if blocked[ln] or ln:find("baseplate") or ln:find("ground") or ln:find("terrain") then return true end
+            if cur:IsA("Model") and (cur:FindFirstChildOfClass("Humanoid") or cur.Name:find("Car") or cur.Name:find("Bus")) then return true end
+            if cur:IsA("Tool") or cur:IsA("Terrain") or cur.Name == "Vehicles" then return true end
+            cur = cur.Parent
+        end
+        local root = getPropPart(obj)
+        if root then local sz = root.Size if sz.X >= 200 or sz.Z >= 200 or sz.Y >= 150 then return true end end
+        return false
+    end
+
+    local function scanProps()
+        local mv = {}
+        for _, o in ipairs(workspace:GetDescendants()) do
+            if (o:IsA("Model") or o:IsA("BasePart")) and not isBadProp(o) then
+                local hs = o:IsA("Seat") or o:IsA("VehicleSeat") or o:FindFirstChildWhichIsA("Seat", true) or o:FindFirstChildWhichIsA("VehicleSeat", true)
+                if hs and o:FindFirstChild("SetCurrentCFrame") then table.insert(mv, o) end
+            end
+        end
+        if #mv == 0 then
+            for _, o in ipairs(workspace:GetDescendants()) do
+                if (o:IsA("Model") or o:IsA("BasePart")) and not isBadProp(o) then
+                    if o:FindFirstChildWhichIsA("Seat", true) or o:FindFirstChildWhichIsA("VehicleSeat", true) then table.insert(mv, o) end
+                end
+            end
+        end
+        return mv
+    end
+
+    local function getNearestProp()
+        local props = scanProps()
+        if #props == 0 then return nil end
+        local hrp = getHRP()
+        local best, bestD = props[1], math.huge
+        for _, p in ipairs(props) do
+            local r = getPropPart(p)
+            if r and hrp then local d = (r.Position - hrp.Position).Magnitude if d < bestD then bestD = d best = p end end
+        end
+        return best
+    end
+
+    local function moveProp(prop, cf)
+        if not prop or not prop.Parent then return end
+        local rem = prop:FindFirstChild("SetCurrentCFrame")
+        if rem and rem:IsA("RemoteFunction") then pcall(function() rem:InvokeServer(cf) end)
+        elseif rem and rem:IsA("RemoteEvent") then pcall(function() rem:FireServer(cf) end) end
+        pcall(function()
+            if prop:IsA("Model") then
+                if prop.PrimaryPart then prop:SetPrimaryPartCFrame(cf) else prop:PivotTo(cf) end
+            else prop.CFrame = cf end
+        end)
+    end
+
+    local function isTargetSeatedOn(prop, hum)
+        if not prop or not prop.Parent or not hum or hum.Health <= 0 then return false end
+        local sp = hum.SeatPart
+        if sp and (sp == prop or sp:IsDescendantOf(prop)) then return true end
+        if (prop:IsA("Seat") or prop:IsA("VehicleSeat")) and prop.Occupant == hum then return true end
+        for _, d in ipairs(prop:GetDescendants()) do
+            if (d:IsA("Seat") or d:IsA("VehicleSeat")) and d.Occupant == hum then return true end
+        end
+        return false
+    end
+
+    -- ── METODO PROP (1 alvo) ──────────────────────────────────
+    local function executePropMakerKill(tp, selProp)
+        if not tp or tp == LocalPlayer then return end
+        applyNetworkBypass()
+        local tc = tp.Character
+        local tr = tc and tc:FindFirstChild("HumanoidRootPart")
+        local th = tc and tc:FindFirstChildOfClass("Humanoid")
+        if not tr or not th then return end
+        local prop = selProp or getNearestProp()
+        if not prop then notify("PropMaker", "Nenhum prop no mapa!", 3) return end
+        local pr = getPropPart(prop)
+        if not pr then return end
+        local origCF = pr.CFrame
+        notify("PropMaker", "Enviando prop para " .. tp.Name .. "...")
+        local off = CFrame.new(0, -0.5, 0)
+        pcall(function() local sz = tc:GetExtentsSize() if sz and sz.Y then off = CFrame.new(0, -sz.Y / 2, 0) end end)
+        for _, p in ipairs(prop:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = true end end
+
+        local ss, seated = tick(), false
+        while tick() - ss < 2.2 and tr.Parent and th.Health > 0 do
+            applyNetworkBypass()
+            pcall(function()
+                if pr.Parent then pr.AssemblyAngularVelocity = Vector3.zero pr.AssemblyLinearVelocity = Vector3.zero end
+                moveProp(prop, tr.CFrame * off)
+            end)
+            if isTargetSeatedOn(prop, th) then seated = true break end
+            task.wait(0.03)
+        end
+        if not seated then
+            pcall(function() moveProp(prop, origCF) end)
+            notify("PropMaker", "Servidor nao confirmou; cancelado.", 4)
+            return
+        end
+
+        notify("PropMaker", "Alvo sentado; puxando para o Void...")
+        local ds, voidCF = tick(), CFrame.new(tr.Position.X, VOID_Y - 250, tr.Position.Z) * off
+        while tick() - ds < 1.2 do
+            if not prop.Parent or not tr.Parent or th.Health <= 0 then break end
+            applyNetworkBypass()
+            pcall(function()
+                if pr.Parent then pr.AssemblyLinearVelocity = Vector3.new(0, -FALL_SPEED, 0) pr.AssemblyAngularVelocity = Vector3.zero end
+                moveProp(prop, voidCF)
+            end)
+            task.wait(0.03)
+        end
+        -- marca como "ja mandado pro void" (nao foca de novo)
+        if tr.Parent and tr.Position.Y < (VoidGuard and VoidGuard.VOID_Y or -200) then
+            if VoidGuard then VoidGuard.mark(tp) end
+            notify("PropMaker", tp.Name .. " foi mandado pro void.", 3)
+        end
+        if pr.Parent then
+            pcall(function() pr.AssemblyLinearVelocity = Vector3.zero pr.AssemblyAngularVelocity = Vector3.zero moveProp(prop, origCF) end)
+            task.wait(0.1)
+        end
+    end
+    F1L.propKill = executePropMakerKill
+
+    -- ── KILL PROP ALL ─────────────────────────────────────────
+    local KillPropAll = { Stop = false, ProtActive = false, ProtConn = nil, SafeCF = nil, Finished = true }
+
+    local function stopKillPropAll(silent)
+        KillPropAll.Stop = true
+        KillPropAll.ProtActive = false
+        if KillPropAll.ProtConn then pcall(function() KillPropAll.ProtConn:Disconnect() end) KillPropAll.ProtConn = nil end
+        restoreLocalCharacter(KillPropAll.SafeCF)
+        if not silent then notify("Kill Prop All", "Desativado! Voce esta livre.") end
+    end
+    F1L.stopKillPropAll = stopKillPropAll
+
+    local function executePropThroughTargets(prop, targets)
+        if not prop or not prop.Parent then return end
+        for _, tp in ipairs(targets) do
+            if KillPropAll.Stop then break end
+            if not prop or not prop.Parent then break end
+            if not tp.Parent then continue end
+            if VoidGuard and VoidGuard.isVoided(tp) then continue end   -- nao foca quem ja foi pro void
+            local tc = tp.Character
+            local tr = tc and tc:FindFirstChild("HumanoidRootPart")
+            local th = tc and tc:FindFirstChildOfClass("Humanoid")
+            if not tr or not th or th.Health <= 0 then continue end
+            local pr = getPropPart(prop)
+            if not pr or not pr.Parent then break end
+            local off = CFrame.new(0, -0.5, 0)
+            pcall(function() local sz = tc:GetExtentsSize() if sz and sz.Y then off = CFrame.new(0, -sz.Y / 2, 0) end end)
+            pcall(function() for _, p in ipairs(prop:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = true end end end)
+            local ss, seated = tick(), false
+            while tick() - ss < 2.2 and not KillPropAll.Stop do
+                if not prop.Parent or not tr.Parent or th.Health <= 0 then break end
+                applyNetworkBypass()
+                pcall(function()
+                    if pr.Parent then pr.AssemblyAngularVelocity = Vector3.zero pr.AssemblyLinearVelocity = Vector3.zero end
+                    moveProp(prop, tr.CFrame * off)
+                end)
+                if isTargetSeatedOn(prop, th) then seated = true break end
+                task.wait(0.03)
+            end
+            if not seated then task.wait(0.05) continue end
+            if prop.Parent and tr.Parent and th.Health > 0 and not KillPropAll.Stop then
+                local ds = tick()
+                local vCF = CFrame.new(tr.Position.X, VOID_Y - 250, tr.Position.Z) * off
+                while tick() - ds < 1.2 and not KillPropAll.Stop do
+                    if not prop.Parent or not tr.Parent or th.Health <= 0 then break end
+                    applyNetworkBypass()
+                    pcall(function()
+                        if pr.Parent then pr.AssemblyLinearVelocity = Vector3.new(0, -FALL_SPEED, 0) pr.AssemblyAngularVelocity = Vector3.zero end
+                        moveProp(prop, vCF)
+                    end)
+                    task.wait(0.03)
+                end
+                if tr.Parent and VoidGuard and tr.Position.Y < VoidGuard.VOID_Y then VoidGuard.mark(tp) end
+            end
+            task.wait(0.05)
+        end
+    end
+
+    local function executeKillPropAll()
+        if not KillPropAll.Finished then notify("Kill Prop All", "Ja esta rodando! Use o ON/OFF.", 3) return end
+        KillPropAll.Stop = false
+        KillPropAll.Finished = false
+        local props = scanProps()
+        local uProps, seen = {}, {}
+        for _, p in ipairs(props) do
+            local hs = p and (p:IsA("Seat") or p:IsA("VehicleSeat") or p:FindFirstChildWhichIsA("Seat", true) or p:FindFirstChildWhichIsA("VehicleSeat", true))
+            if p and p.Parent and getPropPart(p) and hs and not seen[p] then seen[p] = true table.insert(uProps, p) end
+        end
+        if #uProps == 0 then notify("Kill Prop All", "Nenhum prop encontrado!") KillPropAll.Finished = true return end
+        local targets = {}
+        for _, pl in ipairs(Players:GetPlayers()) do if pl ~= LocalPlayer then table.insert(targets, pl) end end
+        if #targets == 0 then notify("Kill Prop All", "Sem outros jogadores.") KillPropAll.Finished = true return end
+        local mr = getHRP()
+        local safeCF = mr and mr.CFrame or nil
+        KillPropAll.SafeCF = safeCF
+        KillPropAll.ProtActive = true
+        KillPropAll.ProtConn = RunService.Heartbeat:Connect(function()
+            if not KillPropAll.ProtActive then return end
+            guardLocalCharacter(KillPropAll.SafeCF)
+        end)
+        notify("Kill Prop All", "Movendo " .. #uProps .. " props contra " .. #targets .. " jogadores!")
+        local done, total = 0, #uProps
+        for _, p in ipairs(uProps) do
+            task.spawn(function()
+                local ok, err = pcall(function() executePropThroughTargets(p, targets) end)
+                if not ok then warn("[F1L BH] " .. tostring(err)) end
+                done += 1
+                if done >= total or KillPropAll.Stop then
+                    KillPropAll.ProtActive = false
+                    if KillPropAll.ProtConn then KillPropAll.ProtConn:Disconnect() KillPropAll.ProtConn = nil end
+                    restoreLocalCharacter(KillPropAll.SafeCF)
+                    KillPropAll.Finished = true
+                    notify("Kill Prop All", KillPropAll.Stop and "Interrompido! Voce esta livre." or "Todos os props concluiram!")
+                end
+            end)
+        end
+    end
+    F1L.killPropAll = executeKillPropAll
+
+    -- ── BUS (usado pelo Kill All) ─────────────────────────────
+    local function GetBus()
+        local v = workspace:FindFirstChild("Vehicles")
+        if not v then return nil end
+        local pre = LocalPlayer.Name
+        for _, veh in ipairs(v:GetChildren()) do
+            if veh.Name:sub(1, #pre) == pre then return veh end
+        end
+        return nil
+    end
+
+    local function SpawnBus()
+        local v = workspace:FindFirstChild("Vehicles")
+        local bus = v and (v:FindFirstChild(LocalPlayer.Name .. "Car") or v:FindFirstChild(LocalPlayer.Name .. "Bus"))
+        if bus then return bus end
+        local re = ReplicatedStorage:FindFirstChild("RE")
+        local hrp = getHRP()
+        if not hrp then return nil end
+        if re and re:FindFirstChild("1Cair") then
+            local had = {}
+            if v then for _, veh in ipairs(v:GetChildren()) do had[veh] = true end end
+            pcall(function() re["1Cair"]:FireServer("PickingCar", "SchoolBus") end) task.wait(0.4)
+            pcall(function() re["1Cair"]:FireServer("PickingCar", "Bus") end)
+            local s0 = tick()
+            while not bus and tick() - s0 < 4 do
+                task.wait(0.2)
+                if v then
+                    for _, veh in ipairs(v:GetChildren()) do
+                        if not had[veh] and veh.Name:sub(1, #LocalPlayer.Name) == LocalPlayer.Name then
+                            local ln = veh.Name:lower()
+                            if ln:find("bus") or ln:find("car") then bus = veh end
+                        end
+                    end
+                end
+            end
+            if bus then return bus end
+        end
+        local orig = hrp.CFrame
+        hrp.CFrame = CFrame.new(1118.81, 75.998, -1138.61) task.wait(0.5)
+        if re and re:FindFirstChild("1Cair") then
+            pcall(function() re["1Cair"]:FireServer("PickingCar", "SchoolBus") end) task.wait(0.3)
+            pcall(function() re["1Cair"]:FireServer("PickingCar", "Bus") end)
+        end
+        local s1 = tick()
+        repeat bus = GetBus() task.wait(0.3) until bus or tick() - s1 > 5
+        hrp.CFrame = orig
+        return bus
+    end
+
+    local function doBusDriverKill(tp)
+        if not tp or tp == LocalPlayer then return end
+        applyNetworkBypass()
+        local tc = tp.Character
+        local tr = tc and tc:FindFirstChild("HumanoidRootPart")
+        local th = tc and tc:FindFirstChildOfClass("Humanoid")
+        if not tr or not th then return end
+        local mc = LocalPlayer.Character
+        local mr = getHRP()
+        local mh = mc and mc:FindFirstChildOfClass("Humanoid")
+        if not mr or not mh then return end
+        local orig = mr.CFrame
+        local bus = SpawnBus()
+        if not bus then return end
+        local ds = bus:FindFirstChildWhichIsA("VehicleSeat", true)
+        if not ds then ds = bus:FindFirstChildWhichIsA("Seat", true) or bus.PrimaryPart end
+        if not ds then return end
+        F1L.sitPaused = true
+        mr.CFrame = ds.CFrame * CFrame.new(0, 2, 0) task.wait(0.2)
+        pcall(function() ds:Sit(mh) end) task.wait(0.4)
+        local ang, s = 0, tick()
+        while tick() - s < 4.5 do
+            if not tr.Parent or th.Health <= 0 then break end
+            applyNetworkBypass()
+            ang += 45
+            pcall(function()
+                bus:PivotTo(tr.CFrame * CFrame.Angles(0, math.rad(ang), 0))
+                ds.AssemblyLinearVelocity = Vector3.new(0, -10, 0)
+            end)
+            if th.Sit then break end
+            task.wait()
+        end
+        local ds2 = tick()
+        while tick() - ds2 < 3.5 do
+            if not tr.Parent or th.Health <= 0 then break end
+            applyNetworkBypass()
+            pcall(function()
+                ds.AssemblyLinearVelocity = Vector3.new(0, -FALL_SPEED, 0)
+                tr.AssemblyLinearVelocity = Vector3.new(0, -FALL_SPEED, 0)
+                bus:PivotTo(CFrame.new(tr.Position))
+            end)
+            task.wait()
+            if tr.Position.Y <= VOID_Y then break end
+        end
+        if tr.Parent and VoidGuard and tr.Position.Y < VoidGuard.VOID_Y then VoidGuard.mark(tp) end
+        F1L.sitPaused = false
+        pcall(function() mh.Sit = false end) task.wait(0.1)
+        if mr.Parent then mr.CFrame = orig mr.AssemblyLinearVelocity = Vector3.zero mr.AssemblyAngularVelocity = Vector3.zero end
+        pcall(function()
+            local re = ReplicatedStorage:FindFirstChild("RE")
+            if re and re:FindFirstChild("1Cair") then re["1Cair"]:FireServer("DeleteAllVehicles") end
+        end)
+    end
+    F1L.busKill = doBusDriverKill
+end
+
 -- Function to clean up the couch
 local function cleanupCouch()
     local char = LocalPlayer.Character
@@ -674,8 +1681,12 @@ if Humanoid then
     end)
 end
 
--- KillPlayerCouch Function
+-- KillPlayerCouch Function (melhorado: sentar confirmado, void confirmado, nao foca quem ja foi pro void)
 local function KillPlayerCouch()
+    if VoidGuard.busy then
+        VoidGuard.notify("Kill Couch", "Aguarde, ja existe um kill em andamento.")
+        return
+    end
     if not selectedPlayerName then
         warn("Error: No player selected")
         return
@@ -683,6 +1694,10 @@ local function KillPlayerCouch()
     local target = Players:FindFirstChild(selectedPlayerName)
     if not target or not target.Character then
         warn("Error: Target player not found or has no character")
+        return
+    end
+    if VoidGuard.isVoided(target) then
+        VoidGuard.notify("Kill Couch", target.Name .. " ja foi mandado pro void.")
         return
     end
 
@@ -699,74 +1714,123 @@ local function KillPlayerCouch()
         return
     end
 
-    local originalPos = root.Position 
+    VoidGuard.busy = true
+    local originalCF = root.CFrame
     local sitPos = Vector3.new(145.51, -350.09, 21.58)
+    local align
 
-    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer("ClearAllTools")
-    task.wait(0.2)
-
-    ReplicatedStorage.RE:FindFirstChild("1Too1l"):InvokeServer("PickingTools", "Couch")
-    task.wait(0.3)
-
-    local tool = LocalPlayer.Backpack:FindFirstChild("Couch")
-    if tool then tool.Parent = char end
-    task.wait(0.1)
-
-    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
-    task.wait(0.1)
-
-    hum:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
-    hum.PlatformStand = false
-    cam.CameraSubject = target.Character:FindFirstChild("Head") or tRoot or hum
-
-    local align = Instance.new("BodyPosition")
-    align.Name = "BringPosition"
-    align.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-    align.D = 10
-    align.P = 30000
-    align.Position = root.Position
-    align.Parent = tRoot
+    local function dropCouch()
+        local t = char:FindFirstChild("Couch")
+        if t then t.Parent = LocalPlayer.Backpack end
+    end
 
     task.spawn(function()
-        local angle = 0
-        local startTime = tick()
-        while tick() - startTime < 5 and target and target.Character and target.Character:FindFirstChildOfClass("Humanoid") do
-            local tHum = target.Character:FindFirstChildOfClass("Humanoid")
-            if not tHum or tHum.Sit then break end
+        local ok, err = pcall(function()
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer("ClearAllTools")
+            task.wait(0.2)
 
-            local hrp = target.Character.HumanoidRootPart
-            local adjustedPos = hrp.Position + (hrp.Velocity / 1.5)
+            ReplicatedStorage.RE:FindFirstChild("1Too1l"):InvokeServer("PickingTools", "Couch")
+            task.wait(0.3)
 
-            angle += 50
-            root.CFrame = CFrame.new(adjustedPos + Vector3.new(0, 2, 0)) * CFrame.Angles(math.rad(angle), 0, 0)
-            align.Position = root.Position + Vector3.new(2, 0, 0)
+            local tool = LocalPlayer.Backpack:FindFirstChild("Couch")
+            if tool then tool.Parent = char end
+            task.wait(0.1)
 
-            task.wait()
-        end
+            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
+            task.wait(0.1)
 
-        align:Destroy()
-        hum:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
-        hum.PlatformStand = false
-        cam.CameraSubject = hum
+            hum:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+            hum.PlatformStand = false
+            cam.CameraSubject = target.Character:FindFirstChild("Head") or tRoot or hum
 
-        for _, p in pairs(char:GetDescendants()) do
-            if p:IsA("BasePart") then
-                p.Velocity = Vector3.zero
-                p.RotVelocity = Vector3.zero
+            align = Instance.new("BodyPosition")
+            align.Name = "BringPosition"
+            align.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+            align.D = 10
+            align.P = 30000
+            align.Position = root.Position
+            align.Parent = tRoot
+
+            -- 1) persegue ate o alvo sentar no sofa (maximo 8s)
+            local sat = false
+            local angle = 0
+            local startTime = tick()
+            while tick() - startTime < 8 do
+                local tChar = target.Character
+                local tHum = tChar and tChar:FindFirstChildOfClass("Humanoid")
+                local hrp = tChar and tChar:FindFirstChild("HumanoidRootPart")
+                if not tHum or not hrp or tHum.Health <= 0 then break end
+                if tHum.Sit then sat = true break end
+
+                local adjustedPos = hrp.Position + (hrp.Velocity / 1.5)
+                angle += 50
+                root.CFrame = CFrame.new(adjustedPos + Vector3.new(0, 2, 0)) * CFrame.Angles(math.rad(angle), 0, 0)
+                align.Position = root.Position + Vector3.new(2, 0, 0)
+                task.wait()
             end
+
+            align:Destroy()
+            align = nil
+            hum:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+            hum.PlatformStand = false
+            cam.CameraSubject = hum
+
+            for _, p in pairs(char:GetDescendants()) do
+                if p:IsA("BasePart") then
+                    p.Velocity = Vector3.zero
+                    p.RotVelocity = Vector3.zero
+                end
+            end
+
+            -- 2) se nao sentou, NAO vai pro void sozinho: volta e avisa
+            if not sat then
+                dropCouch()
+                ReplicatedStorage.RE:FindFirstChild("1Clea1rTool1s"):FireServer("ClearAllTools")
+                root.CFrame = originalCF
+                VoidGuard.notify("Kill Couch", "O alvo nao sentou, tente de novo.")
+                return
+            end
+
+            -- 3) leva o alvo pro void e segura la ate confirmar
+            task.wait(0.1)
+            root.CFrame = CFrame.new(sitPos)
+            local confirmed = false
+            local t0 = tick()
+            while tick() - t0 < 3 do
+                local tr = target.Character and target.Character:FindFirstChild("HumanoidRootPart")
+                if not tr then break end
+                if tr.Position.Y < VoidGuard.VOID_Y then confirmed = true break end
+                root.CFrame = CFrame.new(sitPos)
+                task.wait()
+            end
+            task.wait(0.3)
+
+            if confirmed then
+                VoidGuard.mark(target)
+                VoidGuard.notify("Kill Couch", target.Name .. " foi mandado pro void.")
+            else
+                VoidGuard.notify("Kill Couch", "Nao deu pra confirmar o void de " .. target.Name .. ".")
+            end
+
+            -- 4) solta o sofa e volta pro lugar
+            dropCouch()
+            task.wait(0.01)
+            ReplicatedStorage.RE:FindFirstChild("1Too1l"):InvokeServer("PickingTools", "Couch")
+            task.wait(0.2)
+            root.CFrame = originalCF
+        end)
+
+        if not ok then
+            warn("KillPlayerCouch erro: " .. tostring(err))
+            pcall(function()
+                if align then align:Destroy() end
+                hum:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+                hum.PlatformStand = false
+                cam.CameraSubject = hum
+                root.CFrame = originalCF
+            end)
         end
-
-        task.wait(0.1)
-        root.CFrame = CFrame.new(sitPos)
-        task.wait(0.3)
-
-        local tool = char:FindFirstChild("Couch")
-        if tool then tool.Parent = LocalPlayer.Backpack end
-
-        task.wait(0.01)
-        ReplicatedStorage.RE:FindFirstChild("1Too1l"):InvokeServer("PickingTools", "Couch")
-        task.wait(0.2)
-        root.CFrame = CFrame.new(originalPos)
+        VoidGuard.busy = false
     end)
 end
 
@@ -953,9 +2017,13 @@ local function BringWithCouch()
     ReplicatedStorage.RE["1Clea1rTool1s"]:FireServer("ClearAllTools")
 end
 
--- KillWithCouch Function
+-- KillWithCouch Function (melhorado: com limite de tentativas, confirma void, nao foca quem ja foi pro void)
 local function KillWithCouch()
-    local targetPlayer = Players:FindFirstChild(getgenv().Target)
+    if VoidGuard.busy then
+        VoidGuard.notify("Kill Couch", "Aguarde, ja existe um kill em andamento.")
+        return
+    end
+    local targetPlayer = getgenv().Target and Players:FindFirstChild(getgenv().Target)
     if not targetPlayer then
         warn("Error: No target player selected")
         return
@@ -964,89 +2032,121 @@ local function KillWithCouch()
         warn("Error: Target player has no character or HumanoidRootPart")
         return
     end
-
-    local args = { [1] = "ClearAllTools" }
-    ReplicatedStorage.RE["1Clea1rTool1s"]:FireServer(unpack(args))
-    local args = { [1] = "PickingTools", [2] = "Couch" }
-    ReplicatedStorage.RE:FindFirstChild("1Too1l"):InvokeServer(unpack(args))
-
-    local couch = LocalPlayer.Backpack:WaitForChild("Couch", 2)
-    if not couch then
-        warn("Error: Couch not found in Backpack")
+    if VoidGuard.isVoided(targetPlayer) then
+        VoidGuard.notify("Kill Couch", targetPlayer.Name .. " ja foi mandado pro void.")
         return
     end
 
-    couch.Name = "Chaos.Couch"
-    local seat1 = couch:FindFirstChild("Seat1")
-    local seat2 = couch:FindFirstChild("Seat2")
-    local handle = couch:FindFirstChild("Handle")
-    if seat1 and seat2 and handle then
-        seat1.Disabled = true
-        seat2.Disabled = true
-        handle.Name = "Handle "
-    else
-        warn("Error: Couch components not found")
-        return
-    end
-    couch.Parent = LocalPlayer.Character
+    VoidGuard.busy = true
+    local couch, seat1, seat2, tet
 
-    local tet = Instance.new("BodyVelocity", seat1)
-    tet.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-    tet.P = 1250
-    tet.Velocity = Vector3.new(0, 0, 0)
-    tet.Name = "#mOVOOEPF$#@F$#GERE..>V<<<<EW<V<<W"
-
-    repeat
-        for m = 1, 35 do
-            local pos = { x = 0, y = 0, z = 0 }
-            local tRoot = targetPlayer.Character and targetPlayer.Character.HumanoidRootPart
-            if not tRoot then break end
-            pos.x = tRoot.Position.X + (tRoot.Velocity.X / 2)
-            pos.y = tRoot.Position.Y + (tRoot.Velocity.Y / 2)
-            pos.z = tRoot.Position.Z + (tRoot.Velocity.Z / 2)
-            seat1.CFrame = CFrame.new(Vector3.new(pos.x, pos.y, pos.z)) * CFrame.new(-2, 2, 0)
-            task.wait()
-        end
-        tet:Destroy()
-        couch.Parent = LocalPlayer.Backpack
-        task.wait()
-        couch:FindFirstChild("Handle ").Name = "Handle"
-        task.wait(0.2)
-        couch.Parent = LocalPlayer.Character
-        task.wait()
-        couch.Parent = LocalPlayer.Backpack
-        couch.Handle.Name = "Handle "
-        task.wait(0.2)
-        couch.Parent = LocalPlayer.Character
+    local function newBV()
         tet = Instance.new("BodyVelocity", seat1)
         tet.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
         tet.P = 1250
         tet.Velocity = Vector3.new(0, 0, 0)
         tet.Name = "#mOVOOEPF$#@F$#GERE..>V<<<<EW<V<<W"
-    until targetPlayer.Character and targetPlayer.Character.Humanoid and targetPlayer.Character.Humanoid.Sit == true
-    task.wait()
-    couch.Parent = LocalPlayer.Backpack
-    seat1.CFrame = CFrame.new(9999, -450, 9999)
-    seat2.CFrame = CFrame.new(9999, -450, 9999)
-    couch.Parent = LocalPlayer.Character
-    task.wait(0.1)
-    couch.Parent = LocalPlayer.Backpack
-    task.wait(2)
-    local bv = seat1:FindFirstChild("#mOVOOEPF$#@F$#GERE..>V<<<<EW<V<<W")
-    if bv then bv:Destroy() end
-    ReplicatedStorage.RE["1Clea1rTool1s"]:FireServer("ClearAllTools")
+    end
+
+    local ok, err = pcall(function()
+        ReplicatedStorage.RE["1Clea1rTool1s"]:FireServer("ClearAllTools")
+        ReplicatedStorage.RE:FindFirstChild("1Too1l"):InvokeServer("PickingTools", "Couch")
+
+        couch = LocalPlayer.Backpack:WaitForChild("Couch", 2)
+        if not couch then
+            warn("Error: Couch not found in Backpack")
+            return
+        end
+
+        couch.Name = "Chaos.Couch"
+        seat1 = couch:FindFirstChild("Seat1")
+        seat2 = couch:FindFirstChild("Seat2")
+        local handle = couch:FindFirstChild("Handle")
+        if not (seat1 and seat2 and handle) then
+            warn("Error: Couch components not found")
+            return
+        end
+        seat1.Disabled = true
+        seat2.Disabled = true
+        handle.Name = "Handle "
+        couch.Parent = LocalPlayer.Character
+        newBV()
+
+        -- 1) tenta sentar o alvo (maximo 12 rodadas)
+        local sat = false
+        for round = 1, 12 do
+            if VoidGuard.isVoided(targetPlayer) then break end
+            for m = 1, 35 do
+                local tRoot = targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if not tRoot then break end
+                local pos = tRoot.Position + (tRoot.Velocity / 2)
+                seat1.CFrame = CFrame.new(pos) * CFrame.new(-2, 2, 0)
+                task.wait()
+            end
+            if tet then tet:Destroy() end
+            couch.Parent = LocalPlayer.Backpack
+            task.wait()
+            local h = couch:FindFirstChild("Handle ")
+            if h then h.Name = "Handle" end
+            task.wait(0.2)
+            couch.Parent = LocalPlayer.Character
+            task.wait()
+            couch.Parent = LocalPlayer.Backpack
+            if couch:FindFirstChild("Handle") then couch.Handle.Name = "Handle " end
+            task.wait(0.2)
+            couch.Parent = LocalPlayer.Character
+            newBV()
+
+            local tChar = targetPlayer.Character
+            local tHum = tChar and tChar:FindFirstChildOfClass("Humanoid")
+            if not tHum or tHum.Health <= 0 then break end
+            if tHum.Sit then sat = true break end
+        end
+
+        if not sat then
+            VoidGuard.notify("Kill Couch", "O alvo nao sentou, tente de novo.")
+            return
+        end
+
+        -- 2) manda o sofa (com o alvo sentado) pro void
+        task.wait()
+        couch.Parent = LocalPlayer.Backpack
+        seat1.CFrame = CFrame.new(9999, -450, 9999)
+        seat2.CFrame = CFrame.new(9999, -450, 9999)
+        couch.Parent = LocalPlayer.Character
+        task.wait(0.1)
+        couch.Parent = LocalPlayer.Backpack
+        task.wait(2)
+
+        -- 3) confirma que o alvo esta no void e marca
+        local tr = targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if tr and tr.Position.Y < VoidGuard.VOID_Y then
+            VoidGuard.mark(targetPlayer)
+            VoidGuard.notify("Kill Couch", targetPlayer.Name .. " foi mandado pro void.")
+        else
+            VoidGuard.notify("Kill Couch", "Nao deu pra confirmar o void de " .. targetPlayer.Name .. ".")
+        end
+    end)
+
+    if not ok then warn("KillWithCouch erro: " .. tostring(err)) end
+    pcall(function()
+        local bv = seat1 and seat1:FindFirstChild("#mOVOOEPF$#@F$#GERE..>V<<<<EW<V<<W")
+        if bv then bv:Destroy() end
+        ReplicatedStorage.RE["1Clea1rTool1s"]:FireServer("ClearAllTools")
+    end)
+    VoidGuard.busy = false
 end
     local PlayerSection = Troll:AddSection({ Name = "Troll Player" })
 
-    -- Function to get list of players
+    -- Function to get list of players (sempre devolve algo; "Ninguem" quando vazio)
     local function getPlayerList()
-        local players = Players:GetPlayers()
         local playerNames = {}
-        for _, player in ipairs(players) do
+        for _, player in ipairs(Players:GetPlayers()) do
             if player ~= LocalPlayer then
                 table.insert(playerNames, player.Name)
             end
         end
+        if #playerNames == 0 then table.insert(playerNames, "Ninguem") end
         return playerNames
     end
 
@@ -1055,36 +2155,39 @@ end
         Options = getPlayerList(),
         Default = "",
         Callback = function(value)
+            if value == "Ninguem" or value == "" then
+                selectedPlayerName = nil
+                getgenv().Target = nil
+                return
+            end
             selectedPlayerName = value
             getgenv().Target = value
-            print("Selected player: " .. tostring(value))
         end
     })
+
+    local function refreshPlayerList()
+        local list = getPlayerList()
+        pcall(function() killDropdown:Set(list) end)
+        if selectedPlayerName and not Players:FindFirstChild(selectedPlayerName) then
+            selectedPlayerName = nil
+            getgenv().Target = nil
+            pcall(function() killDropdown:Set(list, "") end)
+        end
+        return list
+    end
 
     Troll:AddButton({
         Name = "Refresh Player List",
         Callback = function()
-            local tablePlayers = Players:GetPlayers()
-            local newPlayers = {}
-            if killDropdown and #tablePlayers > 0 then
-                for _, player in ipairs(tablePlayers) do
-                    if player.Name ~= LocalPlayer.Name then
-                        table.insert(newPlayers, player.Name)
-                    end
-                end
-                killDropdown:Set(newPlayers)
-                print("Player list updated: ", table.concat(newPlayers, ", "))
-                if selectedPlayerName and not Players:FindFirstChild(selectedPlayerName) then
-                    selectedPlayerName = nil
-                    getgenv().Target = nil
-                    killDropdown:SetValue("")
-                    print("Selection reset, player is no longer in the server.")
-                end
-            else
-                print("Error: Dropdown not found or no players available.")
-            end
+            local list = refreshPlayerList()
+            F1L.notify("Lista de jogadores", #list .. " na lista.", 3)
         end
     })
+
+    -- atualiza sozinho quando alguem entra/sai + recarrega logo depois do hub abrir
+    Players.PlayerAdded:Connect(function() task.delay(0.8, refreshPlayerList) end)
+    Players.PlayerRemoving:Connect(function() task.delay(0.8, refreshPlayerList) end)
+    task.delay(2, refreshPlayerList)
 
     Troll:AddButton({
         Name = "Teleport to Player",
@@ -1152,7 +2255,7 @@ end
 
     Troll:AddDropdown({
         Name = "Select Kill Method",
-        Options = {"Bus", "Couch", "Couch without going to target [BETA]"},
+        Options = {"Bus", "Couch", "Couch without going to target [BETA]", "Prop"},
         Default = "",
         Callback = function(value)
             methodKill = value
@@ -1171,6 +2274,13 @@ end
                 KillPlayerCouch()
             elseif methodKill == "Couch without going to target [BETA]" then
                 KillWithCouch()
+            elseif methodKill == "Prop" then
+                local tp = Players:FindFirstChild(selectedPlayerName)
+                if tp and VoidGuard.isVoided(tp) then
+                    VoidGuard.notify("Kill Prop", tp.Name .. " ja foi mandado pro void.")
+                else
+                    task.spawn(F1L.propKill, tp)
+                end
             else
                 -- Bus method
                 local character = LocalPlayer.Character
@@ -1264,6 +2374,74 @@ end
         end
     })
 
+    -- ===== KILL ALL (usa o metodo escolhido em Select Kill Method) =====
+    local KillAllState = { running = false, stop = false }
+
+    local function execKillMethod(tp, method)
+        if not tp or tp == LocalPlayer then return end
+        if VoidGuard.isVoided(tp) or F1L.targetDead(tp) then return end   -- pula quem ja foi pro void / morto
+        if method == "Prop" then
+            F1L.propKill(tp)
+        elseif method == "Bus" then
+            F1L.busKill(tp)
+        elseif method == "Couch" or method == "Couch without going to target [BETA]" then
+            local oldSel, oldTgt = selectedPlayerName, getgenv().Target
+            selectedPlayerName = tp.Name
+            getgenv().Target = tp.Name
+            if method == "Couch" then
+                KillPlayerCouch()
+                task.wait(0.3)
+                local t0 = tick()
+                while VoidGuard.busy and tick() - t0 < 30 do task.wait(0.1) end
+            else
+                KillWithCouch()
+            end
+            selectedPlayerName, getgenv().Target = oldSel, oldTgt
+        end
+    end
+
+    Troll:AddButton({
+        Name = "Kill All",
+        Callback = function()
+            if KillAllState.running then
+                F1L.notify("Kill All", "Ja esta rodando! Use Parar Kill All.", 3)
+                return
+            end
+            local method = (methodKill and methodKill ~= "") and methodKill or "Bus"
+            KillAllState.running = true
+            KillAllState.stop = false
+            F1L.notify("Kill All", "Kill All com " .. method .. "!", 3)
+            task.spawn(function()
+                for _, pl in ipairs(Players:GetPlayers()) do
+                    if KillAllState.stop then break end
+                    if pl ~= LocalPlayer and not VoidGuard.isVoided(pl) and not F1L.targetDead(pl) then
+                        local ok, err = pcall(execKillMethod, pl, method)
+                        if not ok then warn("Kill All erro: " .. tostring(err)) end
+                        task.wait(0.2)
+                    end
+                end
+                KillAllState.running = false
+                F1L.notify("Kill All", KillAllState.stop and "Interrompido." or "Fila concluida.", 3)
+            end)
+        end
+    })
+
+    Troll:AddButton({
+        Name = "Parar Kill All",
+        Callback = function()
+            KillAllState.stop = true
+            F1L.notify("Kill All", "Parando apos o alvo atual...", 3)
+        end
+    })
+
+    Troll:AddToggle({
+        Name = "Kill Prop All",
+        Default = false,
+        Callback = function(v)
+            if v then task.spawn(F1L.killPropAll) else F1L.stopKillPropAll() end
+        end
+    })
+
     Troll:AddButton({
         Name = "Bring Player",
         Callback = function()
@@ -1275,6 +2453,8 @@ end
                 BringPlayerLLL()
             elseif methodKill == "Couch without going to target [BETA]" then
                 BringWithCouch()
+            elseif methodKill == "Prop" then
+                F1L.notify("Bring Player", "O metodo Prop so serve para Kill. Use Bus ou Couch.", 4)
             else
                 -- Bus method
                 local character = LocalPlayer.Character
@@ -1621,7 +2801,6 @@ task.wait(0.25)
         end
     end
 })
-
 
 local function FlingBall(target)
 
@@ -9245,3 +10424,400 @@ UniversalTab:AddButton({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/SAZXHUB/Control-update/main/README.md", true))()
     end
 })
+
+
+--==================================================================--
+-- ABAS NOVAS: EFEITOS VISUAIS / CONFIGURACAO / PROTECAO
+--==================================================================--
+do
+    local Players          = game:GetService("Players")
+    local RunService       = game:GetService("RunService")
+    local CoreGui          = game:GetService("CoreGui")
+    local VirtualUser      = game:GetService("VirtualUser")
+    local StarterGui       = game:GetService("StarterGui")
+    local LP               = Players.LocalPlayer
+    local HUB_NAME         = "Fantasma1l Hub"
+
+    local function notify(t, m, d)
+        pcall(function() StarterGui:SetCore("SendNotification", {Title = t, Text = m, Duration = d or 4}) end)
+    end
+
+    ----------------------------------------------------------------
+    -- UIC: helpers visuais (acham a janela do hub e aplicam efeitos)
+    ----------------------------------------------------------------
+    local UIC = { Redz = Libary, BgTransp = 0.35, ready = false }
+    task.delay(4, function() UIC.ready = true end)
+    local resolveImage = F1L.resolveImage
+
+    local function guiRoots()
+        local r = {}
+        pcall(function() if gethui then table.insert(r, gethui()) end end)
+        table.insert(r, CoreGui)
+        pcall(function() table.insert(r, LP:FindFirstChild("PlayerGui")) end)
+        return r
+    end
+
+    -- fallback: acha a janela pelo texto "fantasma1l" (maior Frame do ScreenGui)
+    local function findMainByText()
+        for _, root in ipairs(guiRoots()) do
+            for _, g in ipairs(root:GetChildren()) do
+                if g:IsA("ScreenGui") and g.Name ~= "F1L_LoadingScreen" then
+                    local found = false
+                    for _, d in ipairs(g:GetDescendants()) do
+                        if d:IsA("TextLabel") and d.Text and string.find(d.Text:lower(), "fantasma1l") then
+                            found = true break
+                        end
+                    end
+                    if found then
+                        local best, area = nil, 0
+                        for _, d in ipairs(g:GetDescendants()) do
+                            if d:IsA("Frame") then
+                                local ar = d.AbsoluteSize.X * d.AbsoluteSize.Y
+                                if ar > area then best, area = d, ar end
+                            end
+                        end
+                        if best then return best, g end
+                    end
+                end
+            end
+        end
+    end
+
+    -- acha o "Hub" da Library (mesmo metodo do hub original); se nao achar, usa o fallback
+    function UIC.getHub()
+        for _, r in ipairs(guiRoots()) do
+            if r then
+                local d = r:FindFirstChild("redz Library V5")
+                if d and d:FindFirstChild("Hub") then return d.Hub, d end
+                for _, g in ipairs(r:GetDescendants()) do
+                    if g:IsA("ScreenGui") and g:FindFirstChild("Hub") then return g.Hub, g end
+                end
+            end
+        end
+        return findMainByText()
+    end
+
+    local function warnNoHub()
+        if UIC.ready then notify(HUB_NAME, "Janela do hub nao encontrada.", 3) end
+    end
+
+    function UIC.setBackground(id)
+        local hub = UIC.getHub()
+        if not hub then warnNoHub() return end
+        local old = hub:FindFirstChild("FantasmaBackground")
+        if old then old:Destroy() end
+        if not id or id == "" then hub.BackgroundTransparency = 0.03 return end
+        hub.BackgroundTransparency = 1
+        hub.ClipsDescendants = false
+        local img = Instance.new("ImageLabel")
+        img.Name = "FantasmaBackground"
+        img.Size = UDim2.fromScale(1, 1)
+        img.Position = UDim2.fromScale(0, 0)
+        img.BackgroundTransparency = 1
+        img.Image = resolveImage(id)
+        img.ImageTransparency = UIC.BgTransp
+        img.ScaleType = Enum.ScaleType.Crop
+        img.ZIndex = 0
+        img.Active = false
+        img.Parent = hub
+        Instance.new("UICorner", img).CornerRadius = UDim.new(0, 16)
+    end
+
+    function UIC.setBgTransp(v)
+        UIC.BgTransp = math.clamp(tonumber(v) or 0.35, 0, 0.95)
+        local hub = UIC.getHub()
+        local img = hub and hub:FindFirstChild("FantasmaBackground")
+        if img then img.ImageTransparency = UIC.BgTransp end
+    end
+
+    function UIC.setTitleIcon(id)
+        local hub = UIC.getHub()
+        if not hub then return end
+        local comp = hub:FindFirstChild("Components")
+        local top = comp and comp:FindFirstChild("Top Bar")
+        local ttl = top and top:FindFirstChild("Title")
+        local parent = top or hub
+        local old = parent:FindFirstChild("FantasmaTitleIcon")
+        if old then old:Destroy() end
+        local icon = Instance.new("ImageLabel")
+        icon.Name = "FantasmaTitleIcon"
+        icon.Size = UDim2.fromOffset(24, 24)
+        if top then
+            icon.Position = UDim2.new(0, 8, 0.5, 0)
+            icon.AnchorPoint = Vector2.new(0, 0.5)
+        else
+            icon.Position = UDim2.new(0, 8, 0, 6)
+        end
+        icon.BackgroundTransparency = 1
+        icon.Image = resolveImage(id)
+        icon.ZIndex = 50
+        icon.Parent = parent
+        Instance.new("UICorner", icon).CornerRadius = UDim.new(0, 6)
+        if ttl then ttl.Position = UDim2.new(0, 42, 0.5, 0) end
+    end
+
+    function UIC.setEffect(id)
+        local hub, scr = UIC.getHub()
+        if not hub then warnNoHub() return end
+        scr = scr or hub:FindFirstAncestorOfClass("ScreenGui")
+        if scr then
+            for _, o in ipairs(scr:GetDescendants()) do
+                if o.Name == "FantasmaWindowEffect" then o:Destroy() end
+            end
+        end
+        if not id or id == "" then return end
+        local tex = resolveImage(id)
+        local function dec(g, sc, z)
+            local e = Instance.new("ImageLabel")
+            e.Name = "FantasmaWindowEffect"
+            e.AnchorPoint = Vector2.new(0.5, 0.5)
+            e.Position = UDim2.fromScale(0.5, 0.5)
+            e.Size = UDim2.fromScale(sc, sc)
+            e.BackgroundTransparency = 1
+            e.Image = tex
+            e.ScaleType = Enum.ScaleType.Fit
+            e.ZIndex = z
+            e.Active = false
+            e.Parent = g
+        end
+        hub.ClipsDescendants = false
+        dec(hub, 1.22, 0)
+        if scr then
+            for _, o in ipairs(scr:GetChildren()) do
+                if o:IsA("ImageButton") and o ~= hub then dec(o, 1.8, 0) end
+            end
+        end
+    end
+
+    -- aplica o degrade: via tema da Library E direto na janela (funciona nos dois casos)
+    local function applyHubGradient(c1, c2, mid, light)
+        local id = "F1L_G_" .. tostring(math.floor(c1.R * 255)) .. tostring(math.floor(c2.B * 255)) .. tostring(math.floor(c2.G * 255))
+        if UIC.Redz and UIC.Redz.Themes and UIC.Redz.SetTheme then
+            UIC.Redz.Themes[id] = {
+                ["Color Hub 1"] = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, c1),
+                    ColorSequenceKeypoint.new(0.5, mid),
+                    ColorSequenceKeypoint.new(1, c2),
+                }),
+                ["Color Hub 2"] = c2:Lerp(Color3.new(0, 0, 0), 0.78),
+                ["Color Stroke"] = c1:Lerp(Color3.new(0, 0, 0), 0.25),
+                ["Color Theme"] = c1,
+                ["Color Text"] = light and Color3.fromRGB(20, 20, 26) or Color3.fromRGB(245, 245, 245),
+                ["Color Dark Text"] = light and Color3.fromRGB(70, 70, 80) or Color3.fromRGB(185, 185, 195),
+            }
+            pcall(function() UIC.Redz:SetTheme(id) end)
+        end
+        task.delay(0.3, function()
+            local hub = UIC.getHub()
+            if not hub then return end
+            local seq = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, c1),
+                ColorSequenceKeypoint.new(0.5, mid),
+                ColorSequenceKeypoint.new(1, c2),
+            })
+            local old = hub:FindFirstChild("F1L_HubGrad")
+            if old then old:Destroy() end
+            -- se a Library ja tem um degrade proprio na janela, troca a cor dele (evita escurecer em dobro)
+            local own
+            for _, c in ipairs(hub:GetChildren()) do
+                if c:IsA("UIGradient") then own = c break end
+            end
+            hub.BackgroundColor3 = Color3.new(1, 1, 1)
+            if not hub:FindFirstChild("FantasmaBackground") then hub.BackgroundTransparency = 0 end
+            if own then
+                own.Color = seq
+            else
+                hub.BackgroundColor3 = c1
+                local ug = Instance.new("UIGradient")
+                ug.Name = "F1L_HubGrad"
+                ug.Color = seq
+                ug.Rotation = 135
+                ug.Parent = hub
+            end
+        end)
+    end
+
+    local themeColors = {
+        Vermelho = Color3.fromRGB(235, 25, 45),
+        Azul     = Color3.fromRGB(35, 120, 255),
+        Amarelo  = Color3.fromRGB(255, 205, 25),
+        Preto    = Color3.fromRGB(75, 75, 85),
+        Cinza    = Color3.fromRGB(145, 145, 155),
+    }
+    function UIC.applyTheme(name)
+        local acc = themeColors[name]
+        if not acc then return end
+        local dark = Color3.fromRGB(5, 5, 8)
+        applyHubGradient(acc, acc:Lerp(Color3.new(0, 0, 0), 0.55), dark, false)
+    end
+
+    UIC.GRADS = {
+        { "Roxo e Azul",        Color3.fromRGB(125, 45, 225), Color3.fromRGB(30, 90, 235) },
+        { "Vermelho e Laranja", Color3.fromRGB(230, 30, 55),  Color3.fromRGB(255, 145, 30) },
+        { "Verde e Ciano",      Color3.fromRGB(30, 200, 110), Color3.fromRGB(20, 170, 225) },
+        { "Rosa e Roxo",        Color3.fromRGB(240, 70, 170), Color3.fromRGB(130, 60, 230) },
+        { "Dourado e Preto",    Color3.fromRGB(255, 200, 40), Color3.fromRGB(10, 10, 12) },
+        { "Azul e Ciano",       Color3.fromRGB(30, 80, 235),  Color3.fromRGB(40, 220, 230) },
+        { "Preto e Roxo",       Color3.fromRGB(8, 8, 12),     Color3.fromRGB(145, 70, 235) },
+        { "Por do Sol",         Color3.fromRGB(255, 94, 98),  Color3.fromRGB(255, 195, 113) },
+        { "Oceano",             Color3.fromRGB(0, 60, 130),   Color3.fromRGB(0, 205, 205) },
+        { "Branco e Cinza",     Color3.fromRGB(245, 245, 250), Color3.fromRGB(120, 125, 140), true },
+    }
+    function UIC.gradNames()
+        local n = {}
+        for _, g in ipairs(UIC.GRADS) do table.insert(n, g[1]) end
+        return n
+    end
+    function UIC.applyRealGradient(name)
+        for _, g in ipairs(UIC.GRADS) do
+            if g[1] == name then
+                local mid = g[2]:Lerp(g[3], 0.5):Lerp(Color3.new(0, 0, 0), 0.3)
+                applyHubGradient(g[2], g[3], mid, g[4])
+                if UIC.ready then notify("Config", "Degrade aplicado: " .. name, 3) end
+                return
+            end
+        end
+    end
+
+    ----------------------------------------------------------------
+    -- ABA: EFEITOS VISUAIS
+    ----------------------------------------------------------------
+    local VisualsTab = Window:MakeTab({"Efeitos Visuais", "eye"})
+
+    VisualsTab:AddSection({"Efeitos na Janela"})
+    VisualsTab:AddDropdown({
+        Name = "Efeito ao Redor",
+        Options = {"Nenhum", "Kamui Roxo", "Efeito Azul"},
+        Default = "Nenhum",
+        Callback = function(v)
+            local ids = {["Kamui Roxo"] = "110456504694881", ["Efeito Azul"] = "135653661483044"}
+            UIC.setEffect(ids[v])
+        end
+    })
+    VisualsTab:AddButton({"Efeito Kamui", function() UIC.setEffect("110456504694881") end})
+    VisualsTab:AddButton({"Efeito Azul",  function() UIC.setEffect("135653661483044") end})
+    VisualsTab:AddButton({"Remover Efeito", function() UIC.setEffect("") end})
+
+    VisualsTab:AddSection({"Fundos"})
+    VisualsTab:AddButton({"Fundo 1", function() UIC.setBackground("123754864736277") end})
+    VisualsTab:AddButton({"Fundo 2", function() UIC.setBackground("121502907054918") end})
+    VisualsTab:AddButton({"Janelas", function() UIC.setBackground("81149055236435") end})
+    VisualsTab:AddButton({"Remover Fundo", function() UIC.setBackground("") end})
+
+    task.delay(1.5, function() pcall(UIC.setTitleIcon, "81149055236435") end)
+
+    ----------------------------------------------------------------
+    -- ABA: CONFIGURACAO
+    ----------------------------------------------------------------
+    local ConfigTab = Window:MakeTab({"Configuracao", "settings"})
+
+    ConfigTab:AddSection({"Tema do Hub"})
+    ConfigTab:AddDropdown({
+        Name = "Cor com Degrade de Preto",
+        Options = {"Vermelho", "Azul", "Amarelo", "Preto", "Cinza"},
+        Default = "Preto",
+        Callback = function(v) UIC.applyTheme(v) end
+    })
+
+    ConfigTab:AddSection({"Cor de Fundo do Hub (Degrade)"})
+    ConfigTab:AddDropdown({
+        Name = "Degrade do fundo",
+        Options = UIC.gradNames(),
+        Default = "Roxo e Azul",
+        Callback = function(v) UIC.applyRealGradient(v) end
+    })
+    ConfigTab:AddParagraph({"O que faz", "Muda a cor de fundo do hub com um degrade de duas cores. Escolha na lista."})
+
+    ConfigTab:AddSection({"Fundo da Janela"})
+    local function bgId(n)
+        local ids = {["Fundo 1"] = "123754864736277", ["Fundo 2"] = "121502907054918", ["Janelas"] = "81149055236435"}
+        return ids[n]
+    end
+    ConfigTab:AddDropdown({
+        Name = "Imagem de Fundo",
+        Options = {"Nenhum", "Fundo 1", "Fundo 2", "Janelas"},
+        Default = "Nenhum",
+        Callback = function(v) UIC.setBackground(bgId(v)) end
+    })
+    ConfigTab:AddSlider({
+        Name = "Transparencia do Fundo",
+        Min = 0, Max = 95, Default = 35,
+        Callback = function(v) UIC.setBgTransp((tonumber(v) or 35) / 100) end
+    })
+    ConfigTab:AddButton({"Remover Fundo",   function() UIC.setBackground("") end})
+    ConfigTab:AddButton({"Icone no Titulo", function() UIC.setTitleIcon("81149055236435") end})
+
+    ----------------------------------------------------------------
+    -- ABA: PROTECAO
+    ----------------------------------------------------------------
+    local TabProt = Window:MakeTab({"Protecao", "shield"})
+    local Lighting = game:GetService("Lighting")
+    local LocalPlayer = Players.LocalPlayer
+    local function getHRP()
+        local c = LocalPlayer.Character
+        return c and c:FindFirstChild("HumanoidRootPart")
+    end
+
+    -- PROTECAO
+    local PROT = { antiSit = false, antiFling = false, antiLag = false, conns = {} }
+    TabProt:AddSection({ "Anti-Lag do Cliente" })
+    TabProt:AddToggle({ Name = "Ativar Anti-Lag", Default = false, Callback = function(v)
+        PROT.antiLag = v
+        if v then
+            pcall(function()
+                settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+                Lighting.GlobalShadows = false Lighting.FogEnd = 9e9
+                for _, o in ipairs(workspace:GetDescendants()) do
+                    if o:IsA("ParticleEmitter") or o:IsA("Trail") or o:IsA("Smoke") or o:IsA("Fire") or o:IsA("Sparkles") then
+                        o.Enabled = false
+                    end
+                end
+            end)
+            notify("Anti-Lag","Otimizacoes ativadas!")
+        else
+            pcall(function() settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic Lighting.GlobalShadows = true end)
+            notify("Anti-Lag","Desativado.")
+        end
+    end })
+    TabProt:AddSection({ "Anti-Sit" })
+    TabProt:AddToggle({ Name = "Ativar Anti-Sit", Default = false, Callback = function(v)
+        PROT.antiSit = v
+        if not v then return end
+        local conn = RunService.Heartbeat:Connect(function()
+            if not PROT.antiSit or F1L.sitPaused then return end
+            local character = LocalPlayer.Character
+            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+            if humanoid and humanoid.Sit then
+                humanoid.Sit = false
+                humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+            end
+        end)
+        table.insert(PROT.conns, conn)
+    end })
+    TabProt:AddSection({ "Anti-Fling" })
+    TabProt:AddToggle({ Name = "Ativar Anti-Fling", Default = false, Callback = function(v)
+        PROT.antiFling = v
+        if not v then return end
+        local conn = RunService.Heartbeat:Connect(function()
+            if not PROT.antiFling then return end
+            local hrp = getHRP()
+            if not hrp then return end
+            local velocity = hrp.AssemblyLinearVelocity
+            if velocity.Magnitude > 500 or velocity.Y < -300 or velocity.Y > 500 then
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                hrp.AssemblyAngularVelocity = Vector3.zero
+            end
+        end)
+        table.insert(PROT.conns, conn)
+    end })
+    TabProt:AddButton({ "Desativar Toda a Protecao", function()
+        for _, conn in ipairs(PROT.conns) do pcall(function() conn:Disconnect() end) end
+        PROT.conns = {} PROT.antiSit = false PROT.antiFling = false PROT.antiLag = false
+        notify("Protecao","Toda a protecao foi desativada.")
+    end })
+
+    notify(HUB_NAME, "Abas Efeitos Visuais, Configuracao e Protecao carregadas!", 4)
+end
+
+-- fecha a tela de carregamento (hub montado)
+if F1L.finishLoading then task.spawn(F1L.finishLoading) end
