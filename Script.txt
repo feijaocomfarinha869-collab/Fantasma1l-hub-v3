@@ -39,7 +39,7 @@ local WHITELIST = {
     
     -- ADMS (9 VAGAS)
     ["Fantasma1l40"]       = { Role = "ADM" },
-    ["testconta178"]       = { Role = "ADM" },
+    ["PREENCHA_AQUI_ADM_2"]       = { Role = "ADM" },
     ["PREENCHA_AQUI_ADM_3"]       = { Role = "ADM" },
     ["PREENCHA_AQUI_ADM_4"]       = { Role = "ADM" },
     ["PREENCHA_AQUI_ADM_5"]       = { Role = "ADM" },
@@ -444,6 +444,7 @@ function FantasmaTag.verify()
     end
     table.sort(list)
     notify("Hub", table.concat(list, "\n"))
+    for _, a in ipairs(list) do WORLD.localChat(a) end   -- aparece no chat só pra você: Fantasma1lhub_1234
 end
 
 -- aviso de início: usuário comum só recebe se houver DONO / SUB DONO / ADM no servidor
@@ -6638,6 +6639,1552 @@ function HUBCFG.rejoin()
     if not ok then pcall(function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end) end
 end
 
+-- ================== MEEPCITY4 (modelo 16423000248 construído no workspace, igual às Backrooms) ==================
+-- Não vai pro jogo MeepCity: o MAPA é carregado aqui, longe do mapa atual, e você é teleportado pra ele.
+MEEP = { token = 0, S = nil, saved = nil, MODEL_ID = "16423000248", BASE = Vector3.new(-14000, 6000, 0) }
+
+function MEEP.load()
+    local m
+    local ok, objs = pcall(function() return game:GetObjects("rbxassetid://" .. MEEP.MODEL_ID) end)
+    if ok and objs and objs[1] then
+        m = Instance.new("Model")
+        for _, o in ipairs(objs) do o.Parent = m end
+    end
+    if not m then
+        local ok2, a = pcall(function() return game:GetService("InsertService"):LoadAsset(tonumber(MEEP.MODEL_ID)) end)
+        if ok2 and a then m = a end
+    end
+    return m
+end
+
+function MEEP.clear(silent)
+    MEEP.token += 1
+    local S = MEEP.S
+    MEEP.S = nil
+    if S and S.folder then pcall(function() S.folder:Destroy() end) end
+    if S and S.charConn then pcall(function() S.charConn:Disconnect() end) end
+    if MEEP.saved then
+        for k, v in pairs(MEEP.saved) do pcall(function() Lighting[k] = v end) end
+        MEEP.saved = nil
+    end
+    if S and not silent then notify("MeepCity4", "Você saiu do MeepCity4.") end
+    return true
+end
+
+function MEEP.spawn(partnerName)
+    notify("MeepCity4", "Carregando o mapa do MeepCity4...")
+    MEEP.clear(true)
+    local myToken = MEEP.token
+    local S = {}
+    MEEP.S = S
+    local folder = Instance.new("Folder")
+    folder.Name = "MeepCity4_World"
+    folder.Parent = workspace
+    S.folder = folder
+
+    local model = MEEP.load()
+    if MEEP.token ~= myToken then return end
+    if not model then
+        notify("MeepCity4", "Não consegui carregar o mapa (ID " .. MEEP.MODEL_ID .. ").")
+        pcall(function() folder:Destroy() end)
+        MEEP.S = nil
+        return
+    end
+
+    -- trava as peças e tira scripts do modelo (só o mapa interessa)
+    for _, d in ipairs(model:GetDescendants()) do
+        if d:IsA("BasePart") then
+            d.Anchored = true
+        elseif d:IsA("LuaSourceContainer") then
+            pcall(function() d:Destroy() end)
+        end
+    end
+    local bcf, bs = model:GetBoundingBox()
+    model.WorldPivot = bcf
+    model:PivotTo(CFrame.new(MEEP.BASE.X, MEEP.BASE.Y + bs.Y / 2, MEEP.BASE.Z))
+    model.Parent = folder
+
+    -- ponto de spawn: SpawnLocation do modelo, senão o chão no meio do mapa
+    local spawnCF
+    for _, d in ipairs(model:GetDescendants()) do
+        if d:IsA("SpawnLocation") then
+            spawnCF = CFrame.new(d.Position + Vector3.new(0, d.Size.Y / 2 + 4, 0))
+            break
+        end
+    end
+    if not spawnCF then
+        local bcf2, bs2 = model:GetBoundingBox()
+        local rp = RaycastParams.new()
+        rp.FilterType = Enum.RaycastFilterType.Include
+        rp.FilterDescendantsInstances = { model }
+        local topY = bcf2.Position.Y + bs2.Y / 2
+        for _, o in ipairs({ Vector3.zero, Vector3.new(40, 0, 0), Vector3.new(-40, 0, 0), Vector3.new(0, 0, 40),
+            Vector3.new(0, 0, -40), Vector3.new(120, 0, 0), Vector3.new(-120, 0, 0), Vector3.new(0, 0, 120), Vector3.new(0, 0, -120) }) do
+            local res = workspace:Raycast(Vector3.new(bcf2.Position.X + o.X, topY + 50, bcf2.Position.Z + o.Z), Vector3.new(0, -(bs2.Y + 200), 0), rp)
+            if res then
+                spawnCF = CFrame.new(res.Position + Vector3.new(0, 5, 0))
+                break
+            end
+        end
+        spawnCF = spawnCF or CFrame.new(bcf2.Position + Vector3.new(0, bs2.Y / 2 + 10, 0))
+    end
+
+    -- dia claro (guarda a luz original pra restaurar ao sair)
+    MEEP.saved = {}
+    for _, k in ipairs({ "ClockTime", "Brightness" }) do pcall(function() MEEP.saved[k] = Lighting[k] end) end
+    pcall(function() Lighting.ClockTime = 14 end)
+
+    -- tela preta -> teleporta -> tela clareia (igual às Backrooms)
+    pcall(WORLD.fade, true, 0.8)
+    if MEEP.token ~= myToken then pcall(WORLD.fade, false, 0.3) return end
+    local chr = LocalPlayer.Character
+    local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        hrp.Anchored = true
+        hrp.AssemblyLinearVelocity = Vector3.zero
+        hrp.CFrame = spawnCF
+        task.wait(0.3)
+        hrp.Anchored = false
+    end
+    if partnerName and partnerName ~= "" then
+        local partner = Players:FindFirstChild(partnerName)
+        if partner and partner.Character and partner.Character:FindFirstChild("HumanoidRootPart") then
+            partner.Character.HumanoidRootPart.CFrame = spawnCF + Vector3.new(4, 0, 4)
+        end
+    end
+    task.wait(0.6)
+    pcall(WORLD.fade, false, 1)
+
+    -- se morrer e renascer, volta pro mapa
+    S.charConn = LocalPlayer.CharacterAdded:Connect(function(c)
+        local h = c:WaitForChild("HumanoidRootPart", 10)
+        if h and MEEP.token == myToken then
+            task.wait(0.5)
+            h.AssemblyLinearVelocity = Vector3.zero
+            h.CFrame = spawnCF
+        end
+    end)
+    notify("MeepCity4", "Pronto! Você está no MeepCity4.")
+    return true
+end
+
+-- ================== FNAF 2 (mapa 134563815662337 + Freddy 13869142529 + Jumpscare 8765657361) ==================
+-- O mapa é construído no workspace (longe do mapa atual) igual às Backrooms/MeepCity4.
+-- Os animatrônicos (Freddy 13869142529) andam até VOCÊ e até o ALVO. Se pegarem você: animação + som e você morre.
+FNAF2 = {
+    token = 0, S = nil, saved = nil,
+    MAP_ID = "90038372438162", ANIM_ID = "13869142529",   -- MAPA do FNaF 2 / Freddy
+    HIGHLIGHT = true,  -- contorno vermelho no Freddy (ajuda a achar no escuro; ponha false pra tirar)
+    SINGLE = true,     -- o asset inteiro é UM animatrônico
+    JUMP_ID    = "8765657361",                -- JUMPSCARE: modelo + script (usa a tela/som/modelo de dentro dele)
+    WALK_ANIM  = "rbxassetid://135552757941237",  -- animação do Freddy ANDANDO/CORRENDO (toca enquanto ele se move, para quando ele para)
+    JUMP_FLIP  = false,                            -- se o jumpscare aparecer de costas, troque pra true
+    JUMP_IMG   = "rbxassetid://134604574029060",  -- (reserva) imagem se o modelo acima não trouxer nada
+    JUMP_SOUND = "rbxassetid://5111163553",       -- som do jumpscare (sempre usado)
+    BASE = Vector3.new(-14000, 9000, 0),
+    SPEED = 8,         -- velocidade do Freddy (studs/s) - menor = mais lento
+    CATCH = 5,         -- distância pra "pegar"
+    HOUR_SECONDS = 45, -- segundos reais de cada "hora" da noite (12 AM -> 6 AM = 6 horas)
+    HOME = Vector3.new(-14032.9, 9006.7, 68.0),   -- onde o Freddy fica PARADO e CALMO (X, Y, Z do seu console)
+    SPAWN_POS  = Vector3.new(-13941.9, 9003.9, -71.9),  -- ONDE VOCÊ NASCE no FNaF 2
+    ATTACK_POS = Vector3.new(-13940.2, 9003.9, 3.0),    -- pra onde o Freddy TELEPORTA (depois da câmera) pra pegar/perseguir o alvo
+    ERR_ID = "114583276912002",                   -- ERRO da câmera (imagem e/ou som)
+    CAM_FIRST = 12,                -- segundos até o Freddy aparecer numa câmera pela 1ª vez
+    CAM_MIN = 10, CAM_MAX = 20,    -- intervalo (s) entre uma aparição e outra (diminui conforme a noite avança)
+    ERR_TIME = 3,                  -- quanto tempo a câmera fica com ERRO antes dele aparecer nela
+    STARE_MIN = 7, STARE_MAX = 14, -- quanto tempo ele fica olhando pra câmera
+    CHASE_HOUR = 0,                -- a partir dessa hora ele teleporta pro ATTACK_POS e persegue (0 = sempre; 4 = só de 4 AM em diante; 99 = nunca)
+    CHASE_TIME = 20,               -- segundos perseguindo antes de voltar calmo pro lugar dele
+    FLASH_ID = "14886536073",                      -- lanterna
+    MONITOR_IMG = "194464827", MONITOR_TRANSP = 0.3,   -- adesivo do monitor (0 = opaco, 1 = invisível)
+    CAM_MAP_IMG = "130782022950969",               -- mapa das câmeras (CAM 01, CAM 02...)
+    SND_CAM_UP = "rbxassetid://6575973725",        -- som de abrir o monitor (FNAF Camera Up)
+    SND_STATIC = "rbxassetid://98298255550047",    -- estática das câmeras (FNAF 2 Camera Static)
+    MIN_ANIMS = 1,     -- se o modelo vier com 1 só, quantas cópias criar (suba pra 3-4 se quiser mais)
+}
+
+function FNAF2.loadAsset(id)
+    local m
+    local ok, objs = pcall(function() return game:GetObjects("rbxassetid://" .. id) end)
+    if ok and objs and objs[1] then
+        m = Instance.new("Model")
+        for _, o in ipairs(objs) do o.Parent = m end
+    end
+    if not m then
+        local ok2, a = pcall(function() return game:GetService("InsertService"):LoadAsset(tonumber(id)) end)
+        if ok2 and a then m = a end
+    end
+    return m
+end
+
+function FNAF2.clear(silent)
+    FNAF2.token += 1
+    local S = FNAF2.S
+    FNAF2.S = nil
+    if S and S.hbConn then pcall(function() S.hbConn:Disconnect() end) end
+    if S and S.charConn then pcall(function() S.charConn:Disconnect() end) end
+    if S then pcall(FNAF2.cleanupHUD, S) end
+    if S and S.sound then pcall(function() S.sound:Destroy() end) end
+    if S and S.jumpHandle then pcall(function() S.jumpHandle:Destroy() end) end
+    if S and S.folder then pcall(function() S.folder:Destroy() end) end
+    pcall(function()
+        local g = LocalPlayer.PlayerGui:FindFirstChild("FNAF2Jump")
+        if g then g:Destroy() end
+    end)
+    if FNAF2.saved then
+        for k, v in pairs(FNAF2.saved) do pcall(function() Lighting[k] = v end) end
+        FNAF2.saved = nil
+    end
+    if S and not silent then notify("FNAF 2", "Você saiu do FNAF 2.") end
+    return true
+end
+
+-- ponto livre (6 studs de altura) e com teto acima = chão de DENTRO do prédio
+function FNAF2.isIndoor(pos, rp)
+    if workspace:Raycast(pos + Vector3.new(0, 0.5, 0), Vector3.new(0, 6, 0), rp) then return false end
+    return workspace:Raycast(pos + Vector3.new(0, 6.5, 0), Vector3.new(0, 40, 0), rp) ~= nil
+end
+
+-- todos os chãos internos numa coluna (x, z), de cima pra baixo
+function FNAF2.floors(x, z, topY, len, rp)
+    local out = {}
+    local y = topY + 50
+    local bottom = topY - len
+    for _ = 1, 14 do
+        local res = workspace:Raycast(Vector3.new(x, y, z), Vector3.new(0, -(y - bottom), 0), rp)
+        if not res then break end
+        local p = res.Position
+        if res.Normal.Y >= 0.7 and FNAF2.isIndoor(p, rp) then table.insert(out, p) end
+        y = p.Y - 0.5
+    end
+    return out
+end
+
+-- acha onde você nasce no mapa (dentro do prédio)
+function FNAF2.findSpawn(model)
+    local bcf, bs = model:GetBoundingBox()
+    local rp = RaycastParams.new()
+    rp.FilterType = Enum.RaycastFilterType.Include
+    rp.FilterDescendantsInstances = { model }
+    local topY = bcf.Position.Y + bs.Y / 2
+    local len = bs.Y + 200
+
+    -- 1) SpawnLocation do mapa, se estiver dentro
+    for _, d in ipairs(model:GetDescendants()) do
+        if d:IsA("SpawnLocation") then
+            local p = d.Position + Vector3.new(0, d.Size.Y / 2, 0)
+            if FNAF2.isIndoor(p, rp) then return CFrame.new(p + Vector3.new(0, 4, 0)) end
+        end
+    end
+
+    -- 2) varre o mapa e pega o chão interno mais baixo perto do centro
+    local step = math.max(8, math.min(bs.X, bs.Z) / 10)
+    local nx = math.min(12, math.floor(bs.X / 2 / step))
+    local nz = math.min(12, math.floor(bs.Z / 2 / step))
+    local bottomY = bcf.Position.Y - bs.Y / 2
+    local best, bestScore
+    for ix = -nx, nx do
+        for iz = -nz, nz do
+            local x, z = bcf.Position.X + ix * step, bcf.Position.Z + iz * step
+            for _, p in ipairs(FNAF2.floors(x, z, topY, len, rp)) do
+                local score = Vector3.new(ix * step, 0, iz * step).Magnitude + (p.Y - bottomY) * 2
+                if not bestScore or score < bestScore then best, bestScore = p, score end
+            end
+        end
+        if ix % 4 == 0 then task.wait() end
+    end
+    if best then return CFrame.new(best + Vector3.new(0, 4, 0)) end
+
+    -- 3) último recurso: chão no centro
+    local res = workspace:Raycast(Vector3.new(bcf.Position.X, topY + 50, bcf.Position.Z), Vector3.new(0, -len, 0), rp)
+    if res then return CFrame.new(res.Position + Vector3.new(0, 5, 0)) end
+    return CFrame.new(bcf.Position + Vector3.new(0, bs.Y / 2 + 10, 0))
+end
+
+-- separa o asset dos animatrônicos em uma lista de modelos (1 por animatrônico)
+function FNAF2.splitAnims(container)
+    if FNAF2.SINGLE then
+        local k = container:GetChildren()
+        if #k == 1 and k[1]:IsA("Model") then return { k[1] } end
+        return { container }
+    end
+    local function partCount(inst)
+        local n = 0
+        for _, d in ipairs(inst:GetDescendants()) do if d:IsA("BasePart") then n += 1 end end
+        return n
+    end
+    local root = container
+    local kids = container:GetChildren()
+    if #kids == 1 and kids[1]:IsA("Model") then root = kids[1] end
+
+    local list = {}
+    for _, c in ipairs(root:GetChildren()) do
+        if c:IsA("Model") and partCount(c) > 0 then table.insert(list, c) end
+    end
+    if #list >= 2 then return list end         -- o asset já tem vários animatrônicos
+    if partCount(root) > 0 then                 -- senão o asset inteiro é UM animatrônico
+        if root == container then
+            local m = Instance.new("Model")
+            for _, c in ipairs(container:GetChildren()) do c.Parent = m end
+            return { m }
+        end
+        return { root }
+    end
+    return {}
+end
+
+-- ===== JUMPSCARE = modelo + script (asset FNAF2.JUMP_ID) =====
+-- Lê o modelo e separa o que interessa: telas (ScreenGui), sons, modelos 3D e ids dentro dos scripts.
+-- Os SCRIPTS do modelo NÃO rodam (o original sorteia 1/50 a cada 3s); só o visual/som é usado,
+-- e ele dispara EXATAMENTE quando o Freddy te pega.
+function FNAF2.scanJump(root)
+    local J = { guis = {}, sounds = {}, models = {}, imgs = {}, sndIds = {}, scripts = 0 }
+    if not root then return J end
+    for _, d in ipairs(root:GetDescendants()) do
+        if d:IsA("ScreenGui") then
+            table.insert(J.guis, d)
+        elseif d:IsA("Sound") then
+            table.insert(J.sounds, d)
+        elseif d:IsA("ImageLabel") and not d:FindFirstAncestorWhichIsA("ScreenGui") then
+            if d.Image ~= "" then table.insert(J.imgs, d.Image) end
+        elseif d:IsA("LuaSourceContainer") then
+            J.scripts += 1
+            -- tenta ler o código pra achar imagem/som usados no jumpscare (depende do executor)
+            local okS, src = pcall(function() return (decompile and decompile(d)) or d.Source end)
+            if okS and type(src) == "string" then
+                for line in src:gmatch("[^\r\n]+") do
+                    local id = line:match("rbxassetid://(%d+)")
+                    if id then
+                        local low = line:lower()
+                        if low:find("sound") then
+                            table.insert(J.sndIds, "rbxassetid://" .. id)
+                        elseif low:find("image") or low:find("texture") then
+                            table.insert(J.imgs, "rbxassetid://" .. id)
+                        end
+                    end
+                end
+            end
+        end
+    end
+    for _, d in ipairs(root:GetDescendants()) do
+        if d:IsA("Model") and not d:FindFirstAncestorWhichIsA("ScreenGui") and d:FindFirstChildWhichIsA("BasePart", true) then
+            local nested = false
+            for _, m in ipairs(J.models) do
+                if d:IsDescendantOf(m) then nested = true break end
+            end
+            if not nested then table.insert(J.models, d) end
+        end
+    end
+    if #J.models == 0 and #J.guis == 0 and root:FindFirstChildWhichIsA("BasePart", true) then J.models = { root } end
+    print(string.format("[FNAF2 Jumpscare] telas=%d sons=%d modelos3D=%d imagens=%d scripts=%d",
+        #J.guis, #J.sounds, #J.models, #J.imgs, J.scripts))
+    for i, d in ipairs(root:GetDescendants()) do
+        if i > 60 then break end
+        print("   " .. d.ClassName .. "  " .. d.Name)
+    end
+    return J
+end
+
+-- mostra o jumpscare pra VOCÊ. Devolve um objeto com :Destroy()
+function FNAF2.showJump(S)
+    local J = S.jump
+    local pg = LocalPlayer:WaitForChild("PlayerGui")
+    local old = pg:FindFirstChild("Screamer")
+    if old then old:Destroy() end
+    local cleanups = {}
+    local handle = { Destroy = function() for _, f in ipairs(cleanups) do pcall(f) end end }
+    local function addClean(inst) table.insert(cleanups, function() inst:Destroy() end) end
+    local function stripScripts(inst)
+        for _, d in ipairs(inst:GetDescendants()) do
+            if d:IsA("LuaSourceContainer") then pcall(function() d:Destroy() end) end
+        end
+    end
+    local function playSoundId(id)
+        local sn = Instance.new("Sound")
+        sn.SoundId, sn.Volume = id, 10
+        sn.Parent = game:GetService("SoundService")
+        sn:Play()
+        addClean(sn)
+    end
+    local function playLooseSound()
+        playSoundId(FNAF2.JUMP_SOUND)   -- som novo, sempre
+    end
+    local function shakeGui(root)
+        task.spawn(function()
+            local items = {}
+            for _, c in ipairs(root:GetChildren()) do
+                if c:IsA("GuiObject") and c.Name ~= "F1L_Black" then table.insert(items, { c, c.Position }) end
+            end
+            local st = tick()
+            while tick() - st < 2.5 and root.Parent do
+                for _, it in ipairs(items) do
+                    local p = it[2]
+                    pcall(function()
+                        it[1].Position = UDim2.new(p.X.Scale, p.X.Offset + math.random(-20, 20), p.Y.Scale, p.Y.Offset + math.random(-20, 20))
+                    end)
+                end
+                task.wait(0.04)
+            end
+        end)
+    end
+
+    -- A) o modelo trouxe uma TELA (ScreenGui): usa ela
+    local function routeGui()
+        local g = J.guis[1]:Clone()
+        stripScripts(g)
+        g.Name, g.IgnoreGuiInset, g.ResetOnSpawn, g.DisplayOrder, g.Enabled = "Screamer", true, false, 1000, true
+        for _, d in ipairs(g:GetDescendants()) do
+            if d:IsA("GuiObject") then
+                d.Visible = true
+                if (d:IsA("ImageLabel") or d:IsA("ImageButton")) and d.ImageTransparency >= 0.99 then d.ImageTransparency = 0 end
+            elseif d:IsA("Sound") then
+                d.Looped, d.Volume = false, math.max(d.Volume, 5)
+            end
+        end
+        local bgf = Instance.new("Frame")
+        bgf.Name, bgf.Size, bgf.BackgroundColor3, bgf.BorderSizePixel, bgf.ZIndex = "F1L_Black", UDim2.new(1, 0, 1, 0), Color3.new(0, 0, 0), 0, 0
+        bgf.Parent = g
+        g.Parent = pg
+        addClean(g)
+        for _, d in ipairs(g:GetDescendants()) do
+            if d:IsA("Sound") then pcall(function() d:Destroy() end) end
+        end
+        playLooseSound()
+        shakeGui(g)
+        return true
+    end
+
+    -- B) o modelo trouxe um MODELO 3D: fundo PRETO + o modelo bem de perto, pulando pra cima da tela
+    local function route3D()
+        local m = J.models[1]:Clone()
+        stripScripts(m)
+        for _, d in ipairs(m:GetDescendants()) do
+            if d:IsA("BasePart") then d.Anchored, d.CanCollide, d.CanTouch = true, false, false end
+        end
+        local bcf, sz = m:GetBoundingBox()
+        m.WorldPivot = bcf
+        local ng = Instance.new("ScreenGui")
+        ng.Name, ng.IgnoreGuiInset, ng.ResetOnSpawn, ng.DisplayOrder = "Screamer", true, false, 1000
+        local bg = Instance.new("Frame", ng)
+        bg.Size, bg.BackgroundColor3, bg.BorderSizePixel = UDim2.new(1, 0, 1, 0), Color3.new(0, 0, 0), 0
+        local vp = Instance.new("ViewportFrame", bg)
+        vp.Size, vp.BackgroundTransparency = UDim2.new(1, 0, 1, 0), 1
+        vp.Ambient, vp.LightColor = Color3.fromRGB(210, 210, 210), Color3.fromRGB(255, 255, 255)
+        m.Parent = vp
+        local cam = Instance.new("Camera")
+        cam.FieldOfView = 70
+        cam.Parent = vp
+        vp.CurrentCamera = cam
+        -- foco: a cabeça (se tiver), senão o modelo inteiro
+        local focus, h = bcf.Position, math.max(sz.Y, 0.5)
+        local head = m:FindFirstChild("Head", true)
+        if head and head:IsA("BasePart") then
+            focus, h = head.Position, math.max(head.Size.X, head.Size.Y) * 1.6
+        end
+        local look = bcf.LookVector * (FNAF2.JUMP_FLIP and -1 or 1)
+        local nearD = (h / 2) / math.tan(math.rad(35)) * 0.85   -- MUITO perto: enche a tela
+        ng.Parent = pg
+        addClean(ng)
+        local t0 = tick()
+        local conn = RunService.RenderStepped:Connect(function()
+            local k = math.min((tick() - t0) / 0.18, 1)         -- avanço rápido pra cima da tela
+            local dist = nearD * (2.6 - 1.6 * k)
+            local pos = focus + look * dist
+            cam.CFrame = CFrame.lookAt(pos, focus) * CFrame.new(math.random(-10, 10) / 60, math.random(-10, 10) / 60, 0)
+        end)
+        table.insert(cleanups, function() conn:Disconnect() end)
+        playLooseSound()
+        return true
+    end
+
+    -- C/D) imagem em tela cheia (achada nos scripts do modelo; senão a imagem de reserva)
+    local function routeImage()
+        local img = (J and J.imgs[1]) or FNAF2.JUMP_IMG
+        local ng = Instance.new("ScreenGui", pg)
+        ng.Name, ng.IgnoreGuiInset, ng.ResetOnSpawn, ng.DisplayOrder = "Screamer", true, false, 1000
+        local bg = Instance.new("Frame", ng)
+        bg.Size, bg.BackgroundColor3, bg.BorderSizePixel = UDim2.new(1, 0, 1, 0), Color3.new(0, 0, 0), 0
+        local im = Instance.new("ImageLabel", bg)
+        im.AnchorPoint, im.Size, im.BackgroundTransparency = Vector2.new(0.5, 0.5), UDim2.new(1.12, 0, 1.12, 0), 1
+        im.Position = UDim2.new(0.5, 0, 0.5, 0)
+        im.Image, im.ScaleType = resolveImage(img), Enum.ScaleType.Crop
+        addClean(ng)
+        playLooseSound()
+        task.spawn(function()
+            local st = tick()
+            while tick() - st < 2.5 do
+                if not im.Parent then break end
+                im.Position = UDim2.new(0.5, math.random(-25, 25), 0.5, math.random(-25, 25))
+                im.Rotation = math.random(-3, 3)
+                task.wait(0.04)
+            end
+        end)
+        return true
+    end
+
+    local routes = {}
+    if J and #J.guis > 0 then table.insert(routes, routeGui) end
+    if J and #J.models > 0 then table.insert(routes, route3D) end
+    table.insert(routes, routeImage)
+    for _, r in ipairs(routes) do
+        local ok, res = pcall(r)
+        if ok and res then return handle end
+        handle:Destroy()   -- deu erro nessa opção: limpa e tenta a próxima
+        cleanups = {}
+        handle.Destroy = function() for _, f in ipairs(cleanups) do pcall(f) end end
+    end
+    return handle
+end
+
+-- Freddy pegou alguém: jumpscare (modelo + script do asset FNAF2.JUMP_ID) e, se foi VOCÊ, você morre
+function FNAF2.catch(S, a, t, myToken, spawnCF)
+    if S.catching then return end
+    S.catching = true
+    task.spawn(function()
+        local m = a.model
+        pcall(function()
+            local pos = m:GetPivot().Position
+            local tp = t.hrp.Position
+            m:PivotTo(CFrame.lookAt(pos, Vector3.new(tp.X, pos.Y, tp.Z)))   -- Freddy vira pra quem ele pegou
+        end)
+
+        local ng
+        if t.me then
+            pcall(FNAF2.closeMonitor, S)                  -- fecha o monitor pra aparecer o jumpscare
+            pcall(function() t.hrp.Anchored = true end)   -- você fica parado durante o jumpscare
+            local okj, h = pcall(FNAF2.showJump, S)
+            if okj then
+                ng = h
+                S.jumpHandle = h
+            else
+                warn("[FNAF2] jumpscare: " .. tostring(h))
+            end
+        elseif S.sound then
+            pcall(function() S.sound.TimePosition = 0 S.sound:Play() end)   -- som aqui na sua tela
+            -- >>> o JUMPSCARE aparece na tela do ALVO: manda o comando pra ele pela rede
+            if IS_ADMIN and t.name then pcall(sendNetCmd, ";FNAF2_SCARE " .. string.lower(t.name)) end
+        end
+
+        task.wait(2.8)
+        if ng then pcall(function() ng:Destroy() end) end
+        if FNAF2.token ~= myToken then return end
+        if t.me then
+            pcall(function()
+                t.hrp.Anchored = false
+                local chr = LocalPlayer.Character
+                local hum = chr and chr:FindFirstChildOfClass("Humanoid")
+                if hum then hum.Health = 0 end
+            end)
+        end
+        pcall(function() m:PivotTo(CFrame.new(a.home)) end)
+        S.chasing = false
+        S.catching = false
+        -- (depois do ataque ele volta pro lugar dele e o "diretor" decide a próxima aparição)
+    end)
+end
+
+-- roda na tela do ALVO quando o Freddy (do admin) pega ele: mostra o jumpscare (modelo) na tela dele
+function FNAF2.scareMe()
+    local S = FNAF2.S
+    if not S or S.catching then return end
+    S.catching = true
+    pcall(FNAF2.closeMonitor, S)
+    local myToken = FNAF2.token
+    task.spawn(function()
+        local chr = LocalPlayer.Character
+        local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
+        if hrp then pcall(function() hrp.Anchored = true end) end
+        local okj, h = pcall(FNAF2.showJump, S)
+        if okj then S.jumpHandle = h end
+        task.wait(2.8)
+        if okj and h then pcall(function() h:Destroy() end) end
+        if hrp then pcall(function() hrp.Anchored = false end) end
+        if FNAF2.token == myToken then S.catching = false end
+    end)
+end
+
+-- ===== animação de andar =====
+-- 1) usa a animação do asset (Animator.LoadAnimation, Looped + Priority Movement): toca ao andar, para ao parar
+-- 2) se o ID da animação não carregar (bloqueado pra sua conta), balança braços/pernas por código
+function FNAF2.limbs(a, on, now)
+    if not a.limbList then
+        a.limbList = {}
+        local idx = 0
+        for _, d in ipairs(a.model:GetDescendants()) do
+            if d:IsA("Motor6D") and d.Part0 and d.Part1 then
+                local n = (d.Name .. " " .. d.Part1.Name):lower()
+                local kind
+                if n:find("leg") or n:find("thigh") or n:find("hip") then
+                    kind = "leg"
+                elseif n:find("arm") or n:find("shoulder") then
+                    kind = "arm"
+                end
+                if kind then
+                    idx += 1
+                    local side = n:find("left") and 1 or (n:find("right") and -1 or ((idx % 2 == 0) and 1 or -1))
+                    table.insert(a.limbList, { m = d, kind = kind, side = side })
+                end
+            end
+        end
+    end
+    for _, l in ipairs(a.limbList) do
+        pcall(function()
+            if on then
+                local amp = (l.kind == "leg") and 0.7 or 0.5
+                local sgn = (l.kind == "leg") and l.side or -l.side
+                l.m.Transform = CFrame.Angles(math.sin(now * 8) * amp * sgn, 0, 0)
+            else
+                l.m.Transform = CFrame.new()
+            end
+        end)
+    end
+end
+
+function FNAF2.setWalk(a, on, now, ratio)
+    if not a then return end
+    local w = a.walk
+    if w and not a.walkFailed then
+        if on and not w.IsPlaying then
+            pcall(function() w:Play() end)
+        elseif not on and w.IsPlaying then
+            pcall(function() w:Stop() end)
+        end
+        if on and ratio then pcall(function() w:AdjustSpeed(math.clamp(ratio, 0.8, 1.8)) end) end   -- anda/corre mais rápido conforme a hora
+        return
+    end
+    FNAF2.limbs(a, on, now or tick())
+end
+
+-- ===== helpers de UI/som =====
+function FNAF2.mk(class, props, parent)
+    local o = Instance.new(class)
+    for k, v in pairs(props) do o[k] = v end
+    o.Parent = parent
+    return o
+end
+
+function FNAF2.snd(id, vol, life)
+    local sn = Instance.new("Sound")
+    sn.SoundId, sn.Volume = id, vol or 5
+    sn.Parent = game:GetService("SoundService")
+    sn:Play()
+    game:GetService("Debris"):AddItem(sn, life or 6)
+    return sn
+end
+
+-- ===== câmeras nos CANTOS do mapa (+ uma na sala onde você nasce) =====
+function FNAF2.buildCams(S, map, spawnCF)
+    local bcf, bs = map:GetBoundingBox()
+    local c = bcf.Position
+    local floorY = spawnCF.Position.Y - 4
+    local cams = {}
+    for _, sg in ipairs({ Vector3.new(-1, 0, -1), Vector3.new(1, 0, -1), Vector3.new(1, 0, 1), Vector3.new(-1, 0, 1) }) do
+        local cx, cz = c.X + sg.X * bs.X / 2, c.Z + sg.Z * bs.Z / 2
+        local found
+        for f = 0.06, 0.5, 0.05 do
+            local x, z = cx + (c.X - cx) * f, cz + (c.Z - cz) * f
+            for _, fp in ipairs(FNAF2.floors(x, z, S.topY, S.rayLen, S.rp)) do
+                if math.abs(fp.Y - floorY) < 12 then
+                    local h = 10
+                    local hit = workspace:Raycast(fp + Vector3.new(0, 1, 0), Vector3.new(0, h, 0), S.rp)
+                    if hit then h = math.max(hit.Distance - 1.5, 4) end   -- câmera de teto: nunca dentro do teto
+                    found = Vector3.new(x, fp.Y + h, z)
+                    break
+                end
+            end
+            if found then break end
+        end
+        if found then
+            table.insert(cams, { cf = CFrame.lookAt(found, Vector3.new(c.X, found.Y - 4, c.Z)) })
+        end
+    end
+    local sp = spawnCF.Position + Vector3.new(0, 6, 0)
+    table.insert(cams, { cf = CFrame.lookAt(sp, sp + Vector3.new(0, -2, 30)) })
+    return cams
+end
+
+function FNAF2.switchCam(S, i)
+    if not S.cams or not S.cams[i] then return end
+    S.curCam = i
+    if S.camLabel then S.camLabel.Text = string.format("CAM %02d", i) end
+    for k, b in pairs(S.camBtns or {}) do
+        b.BackgroundColor3 = (k == i) and Color3.fromRGB(30, 140, 50) or Color3.fromRGB(30, 30, 30)
+    end
+    -- estática ao trocar de câmera
+    local token = (S.staticT or 0) + 1
+    S.staticT = token
+    FNAF2.snd(FNAF2.SND_STATIC, 4, 1.2)
+    task.spawn(function()
+        local t0 = tick()
+        while tick() - t0 < 0.7 and S.staticT == token and S.static and S.static.Parent do
+            S.static.BackgroundTransparency = 0.15 + math.random() * 0.5
+            task.wait(0.05)
+        end
+        if S.static and S.static.Parent and S.staticT == token then S.static.BackgroundTransparency = 1 end
+    end)
+end
+
+function FNAF2.openMonitor(S)
+    if not S or S.monitorOpen or S.catching then return end
+    if not S.cams or #S.cams == 0 then
+        notify("FNAF 2", "Esse mapa não tem câmeras.")
+        return
+    end
+    S.monitorOpen = true
+    FNAF2.snd(FNAF2.SND_CAM_UP, 5, 4)
+    local chr = LocalPlayer.Character
+    local hum = chr and chr:FindFirstChildOfClass("Humanoid")
+    if hum then
+        S.saveWS = hum.WalkSpeed
+        hum.WalkSpeed = 0     -- você fica parado vendo as câmeras
+    end
+    if S.monitorGui then S.monitorGui.Enabled = true end
+    if S.camBtn then S.camBtn.Text = "FECHAR" end
+    FNAF2.switchCam(S, S.curCam or 1)
+    S.camConn = RunService.RenderStepped:Connect(function()
+        local c = S.cams[S.curCam or 1]
+        if not c then return end
+        local cam = workspace.CurrentCamera
+        cam.CameraType = Enum.CameraType.Scriptable
+        cam.CFrame = c.cf * CFrame.Angles(0, math.sin(tick() * 0.5) * 0.3, 0)   -- câmera varrendo devagar, igual ao FNaF
+        if S.errFrame then
+            local e = (S.errCam ~= nil and S.errCam == (S.curCam or 1))   -- a câmera que vai receber o Freddy mostra ERRO
+            S.errFrame.Visible = e
+            if e then S.errFrame.BackgroundTransparency = math.random() * 0.25 end
+        end
+    end)
+end
+
+function FNAF2.closeMonitor(S)
+    if not S or not S.monitorOpen then return end
+    S.monitorOpen = false
+    if S.camConn then pcall(function() S.camConn:Disconnect() end) S.camConn = nil end
+    if S.monitorGui then S.monitorGui.Enabled = false end
+    if S.camBtn then S.camBtn.Text = "CÂMERA" end
+    local cam = workspace.CurrentCamera
+    local chr = LocalPlayer.Character
+    local hum = chr and chr:FindFirstChildOfClass("Humanoid")
+    cam.CameraType = Enum.CameraType.Custom
+    if hum then
+        cam.CameraSubject = hum
+        if S.saveWS then hum.WalkSpeed = S.saveWS end
+    end
+end
+
+-- ===== lanterna =====
+function FNAF2.toggleFlash(S)
+    S.flashOn = not S.flashOn
+    if S.flashBtn then
+        S.flashBtn.Text = S.flashOn and "LANTERNA ON" or "LANTERNA"
+        S.flashBtn.BackgroundColor3 = S.flashOn and Color3.fromRGB(150, 130, 20) or Color3.fromRGB(25, 25, 25)
+    end
+    if S.flashOn then
+        if not S.flashLight then
+            local p = Instance.new("Part")
+            p.Name, p.Anchored, p.CanCollide, p.CanQuery, p.Transparency = "F1LFlash", true, false, false, 1
+            p.Size = Vector3.new(0.5, 0.5, 0.5)
+            p.Parent = S.folder
+            local sl = Instance.new("SpotLight")
+            sl.Range, sl.Angle, sl.Brightness, sl.Face = 75, 70, 8, Enum.NormalId.Front
+            sl.Parent = p
+            S.flashPart, S.flashLight = p, sl
+            S.flashConn = RunService.RenderStepped:Connect(function()
+                local cam = workspace.CurrentCamera
+                if S.flashPart then S.flashPart.CFrame = cam.CFrame end
+                if S.flashLight then S.flashLight.Enabled = S.flashOn and not S.monitorOpen end
+            end)
+        end
+        -- se o asset da lanterna trouxe uma Tool, equipa também
+        if S.flashTool and not S.flashEquipped then
+            pcall(function()
+                local t = S.flashTool:Clone()
+                for _, d in ipairs(t:GetDescendants()) do
+                    if d:IsA("LuaSourceContainer") then d:Destroy() elseif d:IsA("Light") then d.Enabled = true end
+                end
+                t.Parent = LocalPlayer.Backpack
+                local chr = LocalPlayer.Character
+                local hum = chr and chr:FindFirstChildOfClass("Humanoid")
+                if hum then hum:EquipTool(t) end
+                S.flashEquipped = t
+            end)
+        end
+    else
+        if S.flashEquipped then
+            pcall(function() S.flashEquipped:Destroy() end)
+            S.flashEquipped = nil
+        end
+    end
+end
+
+-- ===== HUD: relógio (canto de baixo), CÂMERA, LANTERNA e o MONITOR =====
+function FNAF2.buildHUD(S)
+    local mk = FNAF2.mk
+    local pg = LocalPlayer:WaitForChild("PlayerGui")
+    for _, n in ipairs({ "FNAF2HUD", "FNAF2Monitor" }) do
+        local o = pg:FindFirstChild(n)
+        if o then o:Destroy() end
+    end
+    local WHITE = Color3.new(1, 1, 1)
+
+    -- monitor (só aparece quando você abre a câmera)
+    local mon = mk("ScreenGui", { Name = "FNAF2Monitor", ResetOnSpawn = false, IgnoreGuiInset = true, DisplayOrder = 950, Enabled = false }, pg)
+    local sticker = mk("ImageLabel", { Name = "Sticker", Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1,
+        ImageTransparency = FNAF2.MONITOR_TRANSP, ScaleType = Enum.ScaleType.Stretch, ZIndex = 1 }, mon)
+    local static = mk("Frame", { Name = "Static", Size = UDim2.new(1, 0, 1, 0), BackgroundColor3 = Color3.fromRGB(190, 190, 190),
+        BackgroundTransparency = 1, BorderSizePixel = 0, ZIndex = 2 }, mon)
+    local errFrame = mk("Frame", { Name = "Err", Size = UDim2.new(1, 0, 1, 0), BackgroundColor3 = Color3.new(0, 0, 0),
+        BorderSizePixel = 0, ZIndex = 3, Visible = false }, mon)
+    local errImg = mk("ImageLabel", { Size = UDim2.new(0.5, 0, 0.5, 0), AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.new(0.5, 0, 0.42, 0), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit, ZIndex = 4,
+        Image = "rbxassetid://" .. FNAF2.ERR_ID }, errFrame)
+    S.errFrame = errFrame
+    mk("TextLabel", { Name = "ErrTxt", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0.72, 0),
+        Size = UDim2.new(0.8, 0, 0, 44), BackgroundTransparency = 1, Font = Enum.Font.Arcade, TextSize = 34,
+        TextColor3 = Color3.fromRGB(255, 60, 60), Text = "ERRO DE CÂMERA", ZIndex = 5 }, errFrame)
+    local camLabel = mk("TextLabel", { Name = "CamLabel", Position = UDim2.new(0, 18, 0, 14), Size = UDim2.new(0, 200, 0, 34),
+        BackgroundTransparency = 1, Font = Enum.Font.Arcade, TextSize = 28, TextColor3 = WHITE, TextXAlignment = Enum.TextXAlignment.Left,
+        TextStrokeTransparency = 0.4, Text = "CAM 01", ZIndex = 5 }, mon)
+    mk("TextLabel", { Name = "Rec", Position = UDim2.new(0, 18, 0, 46), Size = UDim2.new(0, 120, 0, 24), BackgroundTransparency = 1,
+        Font = Enum.Font.Arcade, TextSize = 20, TextColor3 = Color3.fromRGB(255, 50, 50), TextXAlignment = Enum.TextXAlignment.Left,
+        Text = "● REC", ZIndex = 5 }, mon)
+    local closeB = mk("TextButton", { Name = "Close", AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -12, 0, 14),
+        Size = UDim2.new(0, 110, 0, 40), BackgroundColor3 = Color3.fromRGB(20, 20, 20), BackgroundTransparency = 0.2,
+        Font = Enum.Font.Arcade, TextSize = 20, TextColor3 = WHITE, Text = "FECHAR", ZIndex = 8 }, mon)
+    closeB.Activated:Connect(function() FNAF2.closeMonitor(S) end)
+
+    -- mapa das câmeras: quadradinhos CAM 01, CAM 02, CAM 03... do lado do monitor
+    local panel = mk("Frame", { Name = "Panel", AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -12, 1, -78),
+        Size = UDim2.new(0, 210, 0, 190), BackgroundColor3 = Color3.fromRGB(10, 10, 10), BackgroundTransparency = 0.35,
+        BorderSizePixel = 0, ZIndex = 6 }, mon)
+    local mapImg = mk("ImageLabel", { Name = "Map", Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1,
+        ImageTransparency = 0.25, ScaleType = Enum.ScaleType.Fit, ZIndex = 6 }, panel)
+    S.camBtns = {}
+    for i = 1, #S.cams do
+        local col, row = (i - 1) % 2, math.floor((i - 1) / 2)
+        local b = mk("TextButton", { Name = "Cam" .. i, Size = UDim2.new(0.44, 0, 0.27, 0),
+            Position = UDim2.new(0.04 + col * 0.5, 0, 0.05 + row * 0.31, 0), BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+            BackgroundTransparency = 0.2, BorderSizePixel = 2, BorderColor3 = WHITE, Font = Enum.Font.Arcade, TextSize = 16,
+            TextColor3 = WHITE, Text = string.format("CAM %02d", i), ZIndex = 8 }, panel)
+        b.Activated:Connect(function() FNAF2.switchCam(S, i) end)
+        S.camBtns[i] = b
+    end
+
+    -- HUD fixo (fica por cima do monitor)
+    local hud = mk("ScreenGui", { Name = "FNAF2HUD", ResetOnSpawn = false, IgnoreGuiInset = true, DisplayOrder = 960 }, pg)
+    S.clock = mk("TextLabel", { Name = "Clock", AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -14, 1, -14),
+        Size = UDim2.new(0, 150, 0, 46), BackgroundTransparency = 1, Font = Enum.Font.Arcade, TextSize = 38, TextColor3 = WHITE,
+        TextStrokeTransparency = 0.3, TextXAlignment = Enum.TextXAlignment.Right, Text = "12 AM" }, hud)
+    local bar = mk("Frame", { Name = "Bar", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -14),
+        Size = UDim2.new(0, 270, 0, 52), BackgroundTransparency = 1 }, hud)
+    mk("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 12),
+        HorizontalAlignment = Enum.HorizontalAlignment.Center }, bar)
+    local camBtn = mk("TextButton", { Name = "CamBtn", Size = UDim2.new(0, 128, 0, 52), BackgroundColor3 = Color3.fromRGB(25, 25, 25),
+        BackgroundTransparency = 0.25, Font = Enum.Font.Arcade, TextSize = 20, TextColor3 = WHITE, Text = "CÂMERA" }, bar)
+    mk("UIStroke", { Color = WHITE, Thickness = 2 }, camBtn)
+    local flashBtn = mk("TextButton", { Name = "FlashBtn", Size = UDim2.new(0, 128, 0, 52), BackgroundColor3 = Color3.fromRGB(25, 25, 25),
+        BackgroundTransparency = 0.25, Font = Enum.Font.Arcade, TextSize = 18, TextColor3 = WHITE, Text = "LANTERNA" }, bar)
+    mk("UIStroke", { Color = WHITE, Thickness = 2 }, flashBtn)
+    camBtn.Activated:Connect(function()
+        if S.monitorOpen then FNAF2.closeMonitor(S) else FNAF2.openMonitor(S) end
+    end)
+    flashBtn.Activated:Connect(function() FNAF2.toggleFlash(S) end)
+
+    S.hud, S.monitorGui, S.camBtn, S.flashBtn, S.camLabel, S.static = hud, mon, camBtn, flashBtn, camLabel, static
+
+    -- imagens (adesivo do monitor, mapa das câmeras) e lanterna carregam em segundo plano
+    task.spawn(function()
+        local ok1, img1 = pcall(resolveImage, FNAF2.MONITOR_IMG)
+        if ok1 and sticker.Parent then sticker.Image = img1 end
+        local ok2, img2 = pcall(resolveImage, FNAF2.CAM_MAP_IMG)
+        if ok2 and mapImg.Parent then mapImg.Image = img2 end
+        local ok3, img3 = pcall(resolveImage, FNAF2.ERR_ID)
+        if ok3 and errImg.Parent then errImg.Image = img3 end
+        local box = FNAF2.loadAsset(FNAF2.FLASH_ID)
+        if box and S.hud then
+            S.flashTool = box:FindFirstChildWhichIsA("Tool", true)
+        end
+    end)
+end
+
+-- ===== relógio: 12 AM -> 6 AM. Nas primeiras horas eles ficam parados; às 6 AM ficam parados de novo =====
+function FNAF2.runClock(S, myToken)
+    S.hour = 0
+    task.spawn(function()
+        while FNAF2.token == myToken and FNAF2.S == S and S.hour < 6 do
+            if S.clock then S.clock.Text = (S.hour == 0 and "12" or tostring(S.hour)) .. " AM" end
+            task.wait(FNAF2.HOUR_SECONDS)
+            S.hour += 1
+        end
+        if FNAF2.token ~= myToken or FNAF2.S ~= S then return end
+        S.frozen, S.chasing = true, false   -- 6 AM: ficam PARADOS, imóveis
+        if S.clock then S.clock.Text = "6 AM" end
+        notify("FNAF 2", "6 AM! Você sobreviveu. Os animatrônicos pararam.")
+        if S.hud then
+            local big = FNAF2.mk("TextLabel", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 0.4, 0),
+                Size = UDim2.new(0, 400, 0, 90), BackgroundTransparency = 1, Font = Enum.Font.Arcade, TextSize = 64,
+                TextColor3 = Color3.new(1, 1, 1), TextStrokeTransparency = 0.2, Text = "6 AM" }, S.hud)
+            game:GetService("Debris"):AddItem(big, 5)
+        end
+    end)
+end
+
+-- a câmera sorteada dá ERRO (imagem + som do ERR_ID) antes do Freddy aparecer nela
+function FNAF2.camError(S, ci, myToken)
+    S.errCam = ci
+    FNAF2.snd("rbxassetid://" .. FNAF2.ERR_ID, 4, 4)   -- se o ID for um som, toca; se for imagem, só aparece na tela
+    local t0, on = tick(), false
+    while tick() - t0 < FNAF2.ERR_TIME do
+        if FNAF2.token ~= myToken or FNAF2.S ~= S then return end
+        on = not on
+        local b = S.camBtns and S.camBtns[ci]
+        if b then b.BackgroundColor3 = on and Color3.fromRGB(170, 20, 20) or Color3.fromRGB(30, 30, 30) end   -- botão da CAM pisca vermelho
+        task.wait(0.3)
+    end
+    local b = S.camBtns and S.camBtns[ci]
+    if b then b.BackgroundColor3 = (S.curCam == ci) and Color3.fromRGB(30, 140, 50) or Color3.fromRGB(30, 30, 30) end
+end
+
+-- teleporta o animatrônico pra frente da câmera ci (com chão e sem parede no meio), virado pra câmera
+function FNAF2.stareAt(S, a, ci)
+    local c = S.cams and S.cams[ci]
+    if not c or not a.model or not a.model.Parent then return false end
+    local cpos = c.cf.Position
+    local fwd = Vector3.new(c.cf.LookVector.X, 0, c.cf.LookVector.Z)
+    if fwd.Magnitude < 0.1 then fwd = Vector3.new(0, 0, -1) end
+    fwd = fwd.Unit
+    local wallRp = RaycastParams.new()
+    wallRp.FilterType = Enum.RaycastFilterType.Include
+    wallRp.FilterDescendantsInstances = { S.map }
+    wallRp.RespectCanCollide = true
+    local spot
+    for _, dist in ipairs({ 24, 18, 12, 8 }) do
+        local px, pz = cpos.X + fwd.X * dist, cpos.Z + fwd.Z * dist
+        local g = workspace:Raycast(Vector3.new(px, cpos.Y, pz), Vector3.new(0, -60, 0), S.rp)
+        if g and cpos.Y - g.Position.Y < 16 then
+            local eye = Vector3.new(px, g.Position.Y + 4, pz)
+            if not workspace:Raycast(cpos, eye - cpos, wallRp) then   -- sem parede entre a câmera e ele
+                spot = Vector3.new(px, g.Position.Y + a.hOff, pz)
+                break
+            end
+        end
+    end
+    if not spot then return false end
+    a.model:PivotTo(CFrame.lookAt(spot, Vector3.new(cpos.X, spot.Y, cpos.Z)))   -- olhando pra câmera
+    return true
+end
+
+-- teleporta o animatrônico pro corredor de ataque (FNAF2.ATTACK_POS), virado pra onde você nasce
+function FNAF2.teleportAttack(S, a, i)
+    local ap = FNAF2.ATTACK_POS
+    local x, z = ap.X + (i - 1) * 6, ap.Z
+    local g = workspace:Raycast(Vector3.new(x, ap.Y + 8, z), Vector3.new(0, -40, 0), S.rp)
+    local y = (g and g.Position.Y or (ap.Y - 3)) + a.hOff
+    pcall(function()
+        a.model:PivotTo(CFrame.lookAt(Vector3.new(x, y, z), Vector3.new(S.spawnCF.X, y, S.spawnCF.Z)))
+    end)
+end
+
+-- Freddy fica CALMO no lugar dele. De tempos em tempos: câmera aleatória dá erro -> ele aparece nela e fica olhando.
+-- Depois da câmera ele teleporta pro ATTACK_POS e persegue o alvo (a partir da hora CHASE_HOUR).
+function FNAF2.runDirector(S, myToken)
+    task.spawn(function()
+        local function alive() return FNAF2.token == myToken and FNAF2.S == S and not S.frozen end
+        local function wait2(t)
+            local t0 = tick()
+            while tick() - t0 < t do
+                if not alive() then return false end
+                task.wait(0.25)
+            end
+            return alive()
+        end
+        if not wait2(FNAF2.CAM_FIRST) then return end
+        while alive() do
+            local hour = S.hour or 0
+            local n = S.cams and #S.cams or 0
+            if n > 0 and S.anims[1] and not S.catching then
+                local ci = math.random(1, n)
+                FNAF2.camError(S, ci, myToken)                  -- 1) a câmera dá ERRO
+                if not alive() then S.errCam = nil return end
+                for _, a in ipairs(S.anims) do FNAF2.stareAt(S, a, ci) end   -- 2) ele teleporta e fica olhando
+                S.errCam = nil
+                if not wait2(math.random(FNAF2.STARE_MIN, FNAF2.STARE_MAX)) then return end
+                if hour >= FNAF2.CHASE_HOUR and not S.catching then          -- 3) teleporta pro corredor e vai atrás do alvo
+                    for i, a in ipairs(S.anims) do FNAF2.teleportAttack(S, a, i) end
+                    S.chasing = true
+                    local t0 = tick()
+                    while alive() and S.chasing and tick() - t0 < FNAF2.CHASE_TIME do task.wait(0.25) end
+                    S.chasing = false
+                end
+                for _, a in ipairs(S.anims) do                                 -- 4) volta calmo pro lugar dele
+                    pcall(function()
+                        a.model:PivotTo(CFrame.lookAt(a.home, Vector3.new(S.spawnCF.X, a.home.Y, S.spawnCF.Z)))
+                    end)
+                end
+            end
+            local gap = math.random(FNAF2.CAM_MIN, FNAF2.CAM_MAX) * math.max(0.4, 1 - 0.1 * hour)
+            if not wait2(gap) then return end
+        end
+    end)
+end
+
+function FNAF2.cleanupHUD(S)
+    pcall(FNAF2.closeMonitor, S)
+    for _, k in ipairs({ "camConn", "flashConn" }) do
+        if S[k] then pcall(function() S[k]:Disconnect() end) S[k] = nil end
+    end
+    if S.flashEquipped then pcall(function() S.flashEquipped:Destroy() end) S.flashEquipped = nil end
+    for _, k in ipairs({ "hud", "monitorGui" }) do
+        if S[k] then pcall(function() S[k]:Destroy() end) S[k] = nil end
+    end
+    S.flashOn = false
+end
+
+function FNAF2.spawn(partnerName)
+    notify("FNAF 2", "Carregando o mapa do FNAF 2...")
+    FNAF2.clear(true)
+    local myToken = FNAF2.token
+    local S = { anims = {}, chasing = false, lastCatch = 0 }
+    FNAF2.S = S
+    local folder = Instance.new("Folder")
+    folder.Name = "FNAF2_World"
+    folder.Parent = workspace
+    S.folder = folder
+
+    local jsnd = Instance.new("Sound")
+    jsnd.Name, jsnd.SoundId, jsnd.Volume = "FNAF2JumpSound", FNAF2.JUMP_SOUND, 10
+    jsnd.Parent = game:GetService("SoundService")
+    S.sound = jsnd
+    task.spawn(function() pcall(function() game:GetService("ContentProvider"):PreloadAsync({ jsnd }) end) end)
+    -- jumpscare (modelo + script): carrega e analisa em segundo plano
+    task.spawn(function()
+        local okj, J = pcall(function() return FNAF2.scanJump(FNAF2.loadAsset(FNAF2.JUMP_ID)) end)
+        if okj and J and FNAF2.token == myToken then
+            S.jump = J
+            notify("FNAF 2", string.format("Jumpscare carregado: %d tela(s), %d som(ns), %d modelo(s) 3D.", #J.guis, #J.sounds, #J.models))
+        elseif not okj then
+            warn("[FNAF2] jumpscare: " .. tostring(J))
+        end
+    end)
+
+    -- ===== mapa =====
+    local model = FNAF2.loadAsset(FNAF2.MAP_ID)
+    if FNAF2.token ~= myToken then return end
+    if not model then
+        notify("FNAF 2", "Não consegui carregar o mapa (ID " .. FNAF2.MAP_ID .. ").")
+        pcall(function() folder:Destroy() end)
+        FNAF2.S = nil
+        return
+    end
+    for _, d in ipairs(model:GetDescendants()) do
+        if d:IsA("BasePart") then
+            d.Anchored = true
+        elseif d:IsA("LuaSourceContainer") then
+            pcall(function() d:Destroy() end)
+        end
+    end
+    local bcf, bs = model:GetBoundingBox()
+    model.WorldPivot = bcf
+    model:PivotTo(CFrame.new(FNAF2.BASE.X, FNAF2.BASE.Y + bs.Y / 2, FNAF2.BASE.Z))
+    model.Parent = folder
+    S.map = model
+    -- você nasce SEMPRE em FNAF2.SPAWN_POS (virado pro corredor); se o mapa não tiver chão ali, usa o spawn automático
+    local rp0 = RaycastParams.new()
+    rp0.FilterType = Enum.RaycastFilterType.Include
+    rp0.FilterDescendantsInstances = { model }
+    local sres = workspace:Raycast(FNAF2.SPAWN_POS + Vector3.new(0, 8, 0), Vector3.new(0, -40, 0), rp0)
+    local spawnCF
+    if sres then
+        local sp0 = Vector3.new(FNAF2.SPAWN_POS.X, sres.Position.Y + 4, FNAF2.SPAWN_POS.Z)
+        spawnCF = CFrame.lookAt(sp0, sp0 + Vector3.new(0, 0, 30))
+    else
+        spawnCF = FNAF2.findSpawn(model)
+    end
+    S.spawnCF = spawnCF
+
+    -- ===== animatrônicos =====
+    local rp = RaycastParams.new()
+    rp.FilterType = Enum.RaycastFilterType.Include
+    rp.FilterDescendantsInstances = { model }
+    S.rp = rp
+    local mbcf, mbs = model:GetBoundingBox()
+    S.topY = mbcf.Position.Y + mbs.Y / 2
+    S.rayLen = mbs.Y + 200
+
+    local animContainer = FNAF2.loadAsset(FNAF2.ANIM_ID)
+    local list = animContainer and FNAF2.splitAnims(animContainer) or {}
+    if #list == 0 then
+        notify("FNAF 2", "Não consegui carregar os animatrônicos (ID " .. FNAF2.ANIM_ID .. "). O mapa vai abrir sem eles.")
+    else
+        local n = #list
+        while #list < FNAF2.MIN_ANIMS do
+            local c = list[(#list % n) + 1]:Clone()
+            table.insert(list, c)
+        end
+        for i, a in ipairs(list) do
+            -- acha a peça-raiz do rig (Motor6D): só ela fica travada, o resto solto pra animação mexer
+            local part1s, root = {}, nil
+            for _, d in ipairs(a:GetDescendants()) do
+                if d:IsA("Motor6D") and d.Part1 then part1s[d.Part1] = true end
+            end
+            for _, d in ipairs(a:GetDescendants()) do
+                if d:IsA("Motor6D") and d.Part0 and not part1s[d.Part0] then root = d.Part0 break end
+            end
+            for _, d in ipairs(a:GetDescendants()) do
+                if d:IsA("BasePart") then
+                    d.Anchored = (root == nil) or (d == root)
+                    d.CanCollide = false
+                elseif d:IsA("LuaSourceContainer") then
+                    pcall(function() d:Destroy() end)
+                end
+            end
+            a.Parent = folder
+            -- peças fora do rig ficam travadas (senão caem no vazio e o Freddy "some")
+            if root then
+                local conn = { [root] = true }
+                for _, cp in ipairs(root:GetConnectedParts(true)) do conn[cp] = true end
+                for _, d in ipairs(a:GetDescendants()) do
+                    if d:IsA("BasePart") and not conn[d] then d.Anchored = true end
+                end
+            end
+            pcall(function()
+                local hum0 = a:FindFirstChildWhichIsA("Humanoid", true)
+                if hum0 then
+                    hum0.BreakJointsOnDeath = false
+                    hum0.RequiresNeck = false
+                    hum0.MaxHealth = 1e9
+                    hum0.Health = 1e9
+                    hum0.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+                end
+            end)
+            -- normaliza o tamanho (se vier minúsculo ou gigante)
+            pcall(function()
+                local _, sz0 = a:GetBoundingBox()
+                if sz0.Y < 3 or sz0.Y > 14 then a:ScaleTo(a:GetScale() * 7 / math.max(sz0.Y, 0.05)) end
+            end)
+            local animator
+            pcall(function()
+                local hum = a:FindFirstChildWhichIsA("Humanoid", true)
+                local holder = hum or a:FindFirstChildWhichIsA("AnimationController", true)
+                if not holder then
+                    holder = Instance.new("AnimationController")
+                    holder.Parent = a
+                end
+                animator = holder:FindFirstChildOfClass("Animator")
+                if not animator then
+                    animator = Instance.new("Animator")
+                    animator.Parent = holder
+                end
+            end)
+            -- animação de andar: carregada no Animator do Freddy (Looped + Priority Movement)
+            local walk
+            pcall(function()
+                local an = Instance.new("Animation")
+                an.AnimationId = FNAF2.WALK_ANIM
+                local ok1, tr = pcall(function() return animator:LoadAnimation(an) end)
+                if ok1 and tr then
+                    walk = tr
+                else
+                    local hum = a:FindFirstChildWhichIsA("Humanoid", true)
+                    if hum then pcall(function() walk = hum:LoadAnimation(an) end) end
+                end
+                if walk then
+                    walk.Looped = true
+                    walk.Priority = Enum.AnimationPriority.Movement
+                end
+            end)
+            local acf, asz = a:GetBoundingBox()
+            if root then a.PrimaryPart = root end
+            if not a.PrimaryPart then a.PrimaryPart = a:FindFirstChildWhichIsA("BasePart", true) end
+            pcall(function()
+                local nParts = 0
+                for _, d in ipairs(a:GetDescendants()) do if d:IsA("BasePart") then nParts += 1 end end
+                notify("FNAF 2", string.format("Freddy carregado: %d peças, altura %.1f", nParts, asz.Y))
+                if a.PrimaryPart then
+                    local pl = Instance.new("PointLight")
+                    pl.Range, pl.Brightness, pl.Color = 18, 2, Color3.fromRGB(255, 230, 200)
+                    pl.Parent = a.PrimaryPart
+                end
+                if FNAF2.HIGHLIGHT then
+                    local hl = Instance.new("Highlight")
+                    hl.FillTransparency, hl.OutlineTransparency = 1, 0.2
+                    hl.OutlineColor = Color3.fromRGB(255, 60, 60)
+                    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                    hl.Parent = a
+                end
+            end)
+            local hOff = a:GetPivot().Position.Y - (acf.Position.Y - asz.Y / 2)   -- distância do pivô até o pé
+
+            -- posição FIXA e calma do Freddy (FNAF2.HOME). Mais de um animatrônico: lado a lado
+            local hx, hz = FNAF2.HOME.X + (i - 1) * 6, FNAF2.HOME.Z
+            local gres = workspace:Raycast(Vector3.new(hx, FNAF2.HOME.Y + 8, hz), Vector3.new(0, -40, 0), rp)
+            local placed = Vector3.new(hx, (gres and gres.Position.Y or (FNAF2.HOME.Y - 3)) + hOff, hz)
+            a:PivotTo(CFrame.lookAt(placed, Vector3.new(spawnCF.X, placed.Y, spawnCF.Z)))
+            a.Parent = folder
+            local entry = { model = a, hOff = hOff, home = placed, animator = animator, walk = walk, height = asz.Y,
+                radius = math.max(2.5, math.min(asz.X, asz.Z) * 0.35) }
+            table.insert(S.anims, entry)
+            task.spawn(function()
+                local t0 = tick()
+                while walk and walk.Length == 0 and tick() - t0 < 4 do task.wait(0.1) end
+                if not walk or walk.Length == 0 then
+                    entry.walkFailed = true
+                    if not S.walkWarned then
+                        S.walkWarned = true
+                        notify("FNAF 2", "A animação de andar não carregou (ID bloqueado?). Usando animação por código.")
+                    end
+                end
+            end)
+        end
+    end
+
+    -- ===== ambiente escuro =====
+    FNAF2.saved = {}
+    for _, k in ipairs({ "ClockTime", "Brightness", "Ambient", "OutdoorAmbient" }) do
+        pcall(function() FNAF2.saved[k] = Lighting[k] end)
+    end
+    pcall(function()
+        Lighting.ClockTime = 0
+        Lighting.Brightness = 0.6
+        Lighting.Ambient = Color3.fromRGB(65, 65, 75)
+        Lighting.OutdoorAmbient = Color3.fromRGB(65, 65, 75)
+    end)
+
+    -- ===== tela preta -> teleporta (você + alvo) -> clareia =====
+    pcall(WORLD.fade, true, 0.8)
+    if FNAF2.token ~= myToken then pcall(WORLD.fade, false, 0.3) return end
+    local chr = LocalPlayer.Character
+    local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        hrp.Anchored = true
+        hrp.AssemblyLinearVelocity = Vector3.zero
+        hrp.CFrame = spawnCF
+        task.wait(0.3)
+        hrp.Anchored = false
+    end
+    if partnerName and partnerName ~= "" then
+        local partner = Players:FindFirstChild(partnerName)
+        if partner and partner.Character and partner.Character:FindFirstChild("HumanoidRootPart") then
+            partner.Character.HumanoidRootPart.CFrame = spawnCF + Vector3.new(4, 0, 4)
+        end
+    end
+    task.wait(0.6)
+    pcall(WORLD.fade, false, 1)
+
+    -- ===== HUD + câmeras nos cantos + relógio =====
+    S.cams = FNAF2.buildCams(S, model, spawnCF)
+    FNAF2.buildHUD(S)
+    FNAF2.runClock(S, myToken)
+    FNAF2.runDirector(S, myToken)
+
+    -- ===== perseguição com PATHFINDING: contorna paredes, não atravessa =====
+    local PathfindingService = game:GetService("PathfindingService")
+    local wallRp = RaycastParams.new()
+    wallRp.FilterType = Enum.RaycastFilterType.Include
+    wallRp.FilterDescendantsInstances = { model }
+    wallRp.RespectCanCollide = true
+    S.hbConn = RunService.Heartbeat:Connect(function(dt)
+        if FNAF2.token ~= myToken then return end
+        local now = tick()
+        if not S.chasing or S.catching then
+            for _, a in ipairs(S.anims) do FNAF2.setWalk(a, false, now) end   -- parado = animação para
+            return
+        end
+        local targets = {}
+        local myChar = LocalPlayer.Character
+        local myHrp = myChar and myChar:FindFirstChild("HumanoidRootPart")
+        if myHrp then table.insert(targets, { hrp = myHrp, me = true }) end
+        if partnerName and partnerName ~= "" then
+            local p = Players:FindFirstChild(partnerName)
+            local ph = p and p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+            if ph and p ~= LocalPlayer then table.insert(targets, { hrp = ph, me = false, name = partnerName }) end
+        end
+        if #targets == 0 then return end
+        local spd = FNAF2.SPEED * (1 + 0.12 * math.max(0, (S.hour or 0) - FNAF2.CHASE_HOUR))   -- fica mais rápido a cada hora
+
+        for _, a in ipairs(S.anims) do
+            local m = a.model
+            if m and m.Parent then
+                local pos = m:GetPivot().Position
+                local best, bestD
+                for _, t in ipairs(targets) do
+                    local d = (Vector3.new(t.hrp.Position.X, 0, t.hrp.Position.Z) - Vector3.new(pos.X, 0, pos.Z)).Magnitude
+                    if not bestD or d < bestD then best, bestD = t, d end
+                end
+                if best then
+                    if bestD <= FNAF2.CATCH then
+                        -- pegou VOCÊ ou o ALVO -> jumpscare (se foi você, você morre)
+                        FNAF2.setWalk(a, false, now)
+                        FNAF2.catch(S, a, best, myToken, spawnCF)
+                        break
+                    else
+                        -- caminho até o alvo (recalcula a cada ~1s)
+                        local tpos = best.hrp.Position
+                        if not a.busy and now >= (a.nextPath or 0) then
+                            a.busy = true
+                            local foot = pos - Vector3.new(0, a.hOff, 0)
+                            local goal = tpos - Vector3.new(0, 3, 0)
+                            task.spawn(function()
+                                pcall(function()
+                                    local path = PathfindingService:CreatePath({
+                                        AgentRadius = a.radius, AgentHeight = math.max(a.height, 5), AgentCanJump = false,
+                                    })
+                                    path:ComputeAsync(foot, goal)
+                                    if path.Status == Enum.PathStatus.Success then
+                                        a.wps, a.wi = path:GetWaypoints(), 2
+                                    else
+                                        a.wps = nil
+                                    end
+                                end)
+                                a.busy = false
+                                a.nextPath = tick() + 1
+                            end)
+                        end
+                        local goalPos, hasPath = tpos, false
+                        if a.wps and a.wps[a.wi] then
+                            goalPos, hasPath = a.wps[a.wi].Position, true
+                            if (Vector3.new(goalPos.X, 0, goalPos.Z) - Vector3.new(pos.X, 0, pos.Z)).Magnitude < 3 then a.wi += 1 end
+                        end
+                        local dvec = Vector3.new(goalPos.X - pos.X, 0, goalPos.Z - pos.Z)
+                        local moved = false
+                        if dvec.Magnitude > 0.1 then
+                            local dir = dvec.Unit
+                            -- sem caminho: só anda reto se NÃO houver parede na frente
+                            local blocked = false
+                            if not hasPath then
+                                local chest = pos + Vector3.new(0, math.max(a.height * 0.4, 2), 0)
+                                blocked = workspace:Raycast(chest, dir * (a.radius + 3), wallRp) ~= nil
+                            end
+                            if not blocked then
+                                local np = pos + dir * math.min(spd * dt, dvec.Magnitude)
+                                -- acompanha o chão (escadas/rampas)
+                                local res = workspace:Raycast(Vector3.new(np.X, np.Y + 2, np.Z), Vector3.new(0, -40, 0), S.rp)
+                                local y = res and (res.Position.Y + a.hOff) or np.Y
+                                local newPos = Vector3.new(np.X, y, np.Z)
+                                m:PivotTo(CFrame.lookAt(newPos, Vector3.new(goalPos.X, y, goalPos.Z)))
+                                moved = true
+                            else
+                                a.nextPath = 0   -- bateu na parede: pede caminho novo já
+                            end
+                        end
+                        FNAF2.setWalk(a, moved, now, spd / FNAF2.SPEED)
+                    end
+                end
+            end
+        end
+    end)
+
+    -- se morrer e renascer, volta pro mapa
+    S.charConn = LocalPlayer.CharacterAdded:Connect(function(c)
+        local h = c:WaitForChild("HumanoidRootPart", 10)
+        if h and FNAF2.token == myToken then
+            task.wait(0.5)
+            h.AssemblyLinearVelocity = Vector3.zero
+            h.CFrame = spawnCF
+        end
+    end)
+    notify("FNAF 2", "Pronto! Você está no FNAF 2. O Freddy está calmo no lugar dele; olhe as câmeras.")
+    return true
+end
+
+-- ================== MUNDOS: ENTRAR JUNTO / SAIR COM TELA PRETA E VOLTAR ONDE ESTAVA ==================
+-- Comandos (minúsculo): ;backrooms nome | ;poolrooms nome | ;level188 nome | ;salabranca nome
+--                       ;ilhadoblox nome | ;brainrot nome     (você entra junto, sem digitar seu nome)
+-- Sair: ;unbackrooms [nome] ... (sem nome = todos). A tela fica preta e o personagem volta pro ponto de antes.
+WORLD = { returnCF = nil, busy = false, stamp = {} }
+
+WORLD.CMD = {
+    backrooms = "BACKROOMS", poolrooms = "POOLROOMS", level188 = "LEVEL188",
+    salabranca = "SALABRANCA", ilhablox = "ILHABLOX", ilhadoblox = "ILHABLOX", brainrot = "BRAINROT",
+    meepcity4 = "MEEPCITY", meepcity = "MEEPCITY",
+    fnaf2 = "FNAF2", fnaf = "FNAF2",
+}
+WORLD.NAME = {
+    BACKROOMS = "backrooms", POOLROOMS = "poolrooms", LEVEL188 = "level188",
+    SALABRANCA = "salabranca", ILHABLOX = "ilhadoblox", BRAINROT = "brainrot", MEEPCITY = "meepcity4",
+    FNAF2 = "fnaf2",
+}
+WORLD.ALIAS = {}
+for cmdName, w in pairs(WORLD.CMD) do
+    WORLD.ALIAS[cmdName] = { w = w, kind = "spawn" }
+    WORLD.ALIAS["un" .. cmdName] = { w = w, kind = "clear" }
+end
+
+WORLD.CLEARERS = {
+    BACKROOMS  = function() if workspace:FindFirstChild("Backrooms_Level0") then clearBackrooms() end end,
+    POOLROOMS  = function() POOL.clear(true) end,
+    LEVEL188   = function() LEVEL188.clear(true) end,
+    SALABRANCA = function() SALABRANCA.clear(true) end,
+    ILHABLOX   = function() ILHABLOX.clear(true) end,
+    BRAINROT   = function() BRAIN.clear(true) end,
+    MEEPCITY   = function() MEEP.clear(true) end,
+    FNAF2      = function() FNAF2.clear(true) end,
+}
+
+-- escreve uma linha só pra você no chat
+function WORLD.localChat(text)
+    pcall(function()
+        local tc = TextChatService:FindFirstChild("TextChannels")
+        local ch = tc and tc:FindFirstChild("RBXGeneral")
+        if ch and TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+            ch:DisplaySystemMessage(text)
+        else
+            StarterGui:SetCore("ChatMakeSystemMessage", { Text = text })
+        end
+    end)
+end
+
+function WORLD.active()
+    return POOL.S ~= nil or LEVEL188.S ~= nil or SALABRANCA.S ~= nil or ILHABLOX.S ~= nil
+        or BRAIN.S ~= nil or MEEP.S ~= nil or FNAF2.S ~= nil or workspace:FindFirstChild("Backrooms_Level0") ~= nil
+end
+
+-- guarda o ponto de onde você estava (só na PRIMEIRA entrada; trocar de mundo mantém o ponto original)
+function WORLD.remember()
+    if WORLD.returnCF and WORLD.active() then return end
+    local chr = LocalPlayer.Character
+    local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
+    if hrp then WORLD.returnCF = hrp.CFrame end
+end
+
+function WORLD.fade(toBlack, t)
+    local TweenService = game:GetService("TweenService")
+    local pg = LocalPlayer:WaitForChild("PlayerGui")
+    local gui = pg:FindFirstChild("WorldExitFade")
+    if not gui then
+        gui = Instance.new("ScreenGui")
+        gui.Name, gui.IgnoreGuiInset, gui.ResetOnSpawn, gui.DisplayOrder = "WorldExitFade", true, false, 1000
+        local f = Instance.new("Frame")
+        f.Name, f.Size, f.BackgroundColor3, f.BackgroundTransparency, f.BorderSizePixel = "F", UDim2.fromScale(1, 1), Color3.new(0, 0, 0), 1, 0
+        f.Parent = gui
+        gui.Parent = pg
+    end
+    local f = gui:FindFirstChild("F")
+    local tw = TweenService:Create(f, TweenInfo.new(t or 0.7, Enum.EasingStyle.Quad), { BackgroundTransparency = toBlack and 0 or 1 })
+    tw:Play()
+    tw.Completed:Wait()
+    if not toBlack then gui:Destroy() end
+end
+
+-- SAIR: tela preta -> limpa o mundo -> volta pro ponto de antes -> tela clareia
+function WORLD.exit(w)
+    if WORLD.busy then return end
+    if not WORLD.returnCF and not WORLD.active() then
+        -- nada pra sair: só garante que o mundo está limpo, sem fade
+        if w and WORLD.CLEARERS[w] then pcall(WORLD.CLEARERS[w]) end
+        return
+    end
+    WORLD.busy = true
+    local ok, err = pcall(function()
+        WORLD.fade(true, 0.6)
+        if w and WORLD.CLEARERS[w] then
+            pcall(WORLD.CLEARERS[w])
+        else
+            for _, fn in pairs(WORLD.CLEARERS) do pcall(fn) end
+        end
+        task.wait(0.3)
+        local cf = WORLD.returnCF
+        if not WORLD.active() then WORLD.returnCF = nil end
+        local chr = LocalPlayer.Character
+        local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
+        if hrp and cf then
+            hrp.Anchored = true
+            hrp.AssemblyLinearVelocity = Vector3.zero
+            hrp.CFrame = cf + Vector3.new(0, 3, 0)
+            task.wait(0.3)
+            hrp.Anchored = false
+        end
+        task.wait(0.3)
+        WORLD.fade(false, 0.8)
+    end)
+    if not ok then
+        warn("[Mundo] " .. tostring(err))
+        pcall(function()
+            local g = LocalPlayer.PlayerGui:FindFirstChild("WorldExitFade")
+            if g then g:Destroy() end
+        end)
+    end
+    WORLD.busy = false
+end
+
+function WORLD.enter(w, partner)
+    pcall(WORLD.remember)
+    task.spawn(function()
+        local ok, err = pcall(function()
+            if w == "BACKROOMS" then
+                pcall(POOL.clear, true)
+                spawnBackrooms(partner)
+            elseif w == "POOLROOMS" then POOL.spawn(partner)
+            elseif w == "LEVEL188" then LEVEL188.spawn(partner)
+            elseif w == "SALABRANCA" then SALABRANCA.spawn(partner)
+            elseif w == "ILHABLOX" then ILHABLOX.spawn(partner)
+            elseif w == "BRAINROT" then roubeUmBrainrot("ON")
+            elseif w == "MEEPCITY" then MEEP.spawn(partner)
+            elseif w == "FNAF2" then FNAF2.spawn(partner)
+            end
+        end)
+        if not ok then warn("[Mundo] " .. tostring(err)) end
+    end)
+end
+
+-- texto (nome minúsculo, começo do nome ou apelido Fantasma1lhub_xxxx) -> nome real de quem está no servidor
+function WORLD.resolve(str)
+    str = string.lower(str or "")
+    if str == "" then return nil end
+    for real, al in pairs(FantasmaTag.aliases) do
+        if string.lower(al) == str and Players:FindFirstChild(real) then return real end
+    end
+    local pref
+    for _, p in ipairs(Players:GetPlayers()) do
+        local n, d = string.lower(p.Name), string.lower(p.DisplayName)
+        if n == str or d == str then return p.Name end
+        if not pref and (string.sub(n, 1, #str) == str or string.sub(d, 1, #str) == str) then pref = p.Name end
+    end
+    return pref
+end
+
+-- roda em TODO cliente quando chega o comando (kind = "spawn" | "clear")
+function WORLD.handle(w, kind, senderName, targetStr)
+    targetStr = string.lower(targetStr or "")
+    if kind == "clear" and targetStr == "" then targetStr = "all" end
+    local iAmSender = (senderName == LocalPlayer.Name)
+    local isAll = (targetStr == "all" or targetStr == "todos")
+    local meTarget = targetStr ~= "" and (targetStr == string.lower(LocalPlayer.Name) or targetStr == string.lower(LocalPlayer.DisplayName))
+    if iAmSender then WORLD.stamp[w .. kind] = os.clock() end
+
+    if kind == "clear" then
+        if iAmSender or isAll or meTarget then WORLD.exit(w) end
+        return
+    end
+    if iAmSender then
+        -- você entra JUNTO com o alvo (sem precisar digitar seu nome)
+        local partner
+        if not isAll and not meTarget and targetStr ~= "" then partner = WORLD.resolve(targetStr) end
+        WORLD.enter(w, partner)
+    elseif isAll or meTarget then
+        WORLD.enter(w, senderName)
+    end
+end
+
+-- chamado pelos botões do painel (manda ;comando nome no chat; se o chat falhar, entra mesmo assim)
+function WORLD.cast(w, name)
+    if not IS_ADMIN or not name or name == "" then return end
+    local lname = string.lower(WORLD.resolve(name) or name)
+    local t0 = os.clock()
+    sendNetCmd(";" .. WORLD.NAME[w] .. " " .. lname)
+    task.delay(2, function()
+        if (WORLD.stamp[w .. "spawn"] or 0) < t0 then WORLD.handle(w, "spawn", LocalPlayer.Name, lname) end
+    end)
+end
+
+function WORLD.uncast(w)
+    if not IS_ADMIN then return end
+    local t0 = os.clock()
+    sendNetCmd(";un" .. WORLD.NAME[w] .. " all")
+    task.delay(2, function()
+        if (WORLD.stamp[w .. "clear"] or 0) < t0 then WORLD.handle(w, "clear", LocalPlayer.Name, "all") end
+    end)
+end
+
 -- ================== RECEPTOR ==================
 function executeActionLocally(action, senderName, extraArg)
     local char = LocalPlayer.Character
@@ -6713,24 +8260,29 @@ function executeActionLocally(action, senderName, extraArg)
     elseif action == "COOLKID_EFFECT" then
         task.spawn(function() pcall(executeCoolkidEffect) end)
     elseif action == "BACKROOMS_SPAWN" then
+        pcall(WORLD.remember)
         task.spawn(function() pcall(POOL.clear, true) pcall(function() spawnBackrooms(extraArg) end) end)
     elseif action == "POOLROOMS_SPAWN" then
+        pcall(WORLD.remember)
         task.spawn(function() pcall(function() POOL.spawn(extraArg) end) end)
     elseif action == "POOLROOMS_CLEAR" then
-        task.spawn(function() pcall(POOL.clear) end)
-    elseif action == "BACKROOMS_CLEAR" then task.spawn(function() pcall(clearBackrooms) end)
+        task.spawn(function() WORLD.exit("POOLROOMS") end)
+    elseif action == "BACKROOMS_CLEAR" then task.spawn(function() WORLD.exit("BACKROOMS") end)
     elseif action == "LEVEL188_SPAWN" then
+        pcall(WORLD.remember)
         task.spawn(function() pcall(function() LEVEL188.spawn(extraArg) end) end)
     elseif action == "LEVEL188_CLEAR" then
-        task.spawn(function() pcall(LEVEL188.clear) end)
+        task.spawn(function() WORLD.exit("LEVEL188") end)
     elseif action == "SALABRANCA_SPAWN" then
+        pcall(WORLD.remember)
         task.spawn(function() pcall(function() SALABRANCA.spawn(extraArg) end) end)
     elseif action == "SALABRANCA_CLEAR" then
-        task.spawn(function() pcall(SALABRANCA.clear) end)
+        task.spawn(function() WORLD.exit("SALABRANCA") end)
     elseif action == "ILHABLOX_SPAWN" then
+        pcall(WORLD.remember)
         task.spawn(function() pcall(function() ILHABLOX.spawn(extraArg) end) end)
     elseif action == "ILHABLOX_CLEAR" then
-        task.spawn(function() pcall(ILHABLOX.clear) end)
+        task.spawn(function() WORLD.exit("ILHABLOX") end)
     elseif action == "LIFEFORM_SPAWN" then
         task.spawn(function()
             local folder = workspace:FindFirstChild("Backrooms_Level0")
@@ -6750,9 +8302,12 @@ function executeActionLocally(action, senderName, extraArg)
     elseif action == "LIFEFORM_CLEAR" then
         task.spawn(function() pcall(clearLifeform) end)
     elseif action == "BRAINROT_SPAWN" then
+        pcall(WORLD.remember)
         task.spawn(function() pcall(roubeUmBrainrot, "ON") end)
     elseif action == "BRAINROT_CLEAR" then
-        task.spawn(function() pcall(roubeUmBrainrot, "OFF") end)
+        task.spawn(function() WORLD.exit("BRAINROT") end)
+    elseif action == "FNAF2_SCARE" then
+        task.spawn(function() FNAF2.scareMe() end)
     -- >>> PATCH v37 - PASSO 3a: TORNADO (antes do FLASH & AURA)
     elseif action == "TORNADO_SPAWN" then
         task.spawn(function() pcall(TORNADO.spawn, senderName) end)
@@ -6858,6 +8413,10 @@ end
 --   tlportser.json  (mesma pasta do hub2.lua). Todo cliente com o hub lê esse arquivo a cada
 --   TLPORTSER_POLL segundos e, se o comando for pra ele, teleporta pro seu servidor.
 TLPORTSER_URL         = "https://raw.githubusercontent.com/feijaocomfarinha869-collab/Fantasma1l-hub/refs/heads/main/tlportser.json"
+TLPORTSER_REPO        = "feijaocomfarinha869-collab/Fantasma1l-hub"   -- usuario/repositorio
+TLPORTSER_BRANCH      = "main"
+TLPORTSER_ARQUIVO     = "tlportser.json"
+TLPORTSER_TOKEN       = nil   -- NÃO cole o token aqui; salve no arquivo fantasma_tlportser_token.txt (pasta workspace do executor)
 TLPORTSER_POLL        = 15    -- segundos entre cada checagem do arquivo
 TLPORTSER_VALIDADE    = 600   -- um comando só vale por 10 min (não puxa ninguém com comando velho)
 HUB_ACEITAR_TLPORTSER = true  -- false = você não aceita ser puxado por ninguém
@@ -6868,6 +8427,51 @@ function TLPORTSER_MATCH(alvo)
     if alvo == "all" or alvo == "todos" then return true end
     local n, dn = string.lower(LocalPlayer.Name), string.lower(LocalPlayer.DisplayName)
     return n == alvo or dn == alvo
+end
+
+-- base64 simples (a API do GitHub exige o conteúdo do arquivo em base64)
+function TLPORTSER_B64(data)
+    local B = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+    local out = {}
+    for i = 1, #data, 3 do
+        local a, b, c = string.byte(data, i, i + 2)
+        local n = a * 65536 + (b or 0) * 256 + (c or 0)
+        local i1, i2, i3, i4 = math.floor(n / 262144) % 64, math.floor(n / 4096) % 64, math.floor(n / 64) % 64, n % 64
+        out[#out + 1] = B:sub(i1 + 1, i1 + 1) .. B:sub(i2 + 1, i2 + 1)
+            .. (b and B:sub(i3 + 1, i3 + 1) or "=") .. (c and B:sub(i4 + 1, i4 + 1) or "=")
+    end
+    return table.concat(out)
+end
+
+-- grava o tlportser.json no GitHub sozinho (precisa do token + executor com request/http_request)
+function TLPORTSER_PUBLICAR(json)
+    local req = (syn and syn.request) or http_request or request or (http and http.request)
+    if not req then return false, "executor sem request" end
+    local token = TLPORTSER_TOKEN
+    if (not token or token == "") and readfile then
+        local okR, t = pcall(readfile, "fantasma_tlportser_token.txt")
+        if okR and type(t) == "string" then token = (t:gsub("%s+", "")) end
+    end
+    if not token or token == "" then return false, "sem token" end
+    local HttpService = game:GetService("HttpService")
+    local api = "https://api.github.com/repos/" .. TLPORTSER_REPO .. "/contents/" .. TLPORTSER_ARQUIVO
+    local headers = {
+        ["Authorization"] = "Bearer " .. token,
+        ["Accept"] = "application/vnd.github+json",
+        ["User-Agent"] = "FantasmaHub",
+        ["Content-Type"] = "application/json",
+    }
+    local sha
+    local okG, resG = pcall(req, { Url = api .. "?ref=" .. TLPORTSER_BRANCH, Method = "GET", Headers = headers })
+    if okG and resG and resG.StatusCode == 200 then
+        local okJ, j = pcall(function() return HttpService:JSONDecode(resG.Body) end)
+        if okJ and type(j) == "table" then sha = j.sha end
+    end
+    local body = { message = "tlportser", content = TLPORTSER_B64(json), branch = TLPORTSER_BRANCH }
+    if sha then body.sha = sha end
+    local okP, resP = pcall(req, { Url = api, Method = "PUT", Headers = headers, Body = HttpService:JSONEncode(body) })
+    if okP and resP and (resP.StatusCode == 200 or resP.StatusCode == 201) then return true end
+    return false, "GitHub respondeu " .. tostring(okP and resP and resP.StatusCode or "erro")
 end
 
 -- ADMIN: gera o comando pra puxar `alvo` (nome do jogador ou "ALL") pro servidor onde você está agora
@@ -6893,27 +8497,37 @@ function tlportser(alvo)
         placeId = game.PlaceId,
         jobId = game.JobId,
     })
-    local copiou = pcall(function() setclipboard(json) end)
-    print("[tlportser] conteúdo do tlportser.json:\n" .. json)
-    notify("tlportser", copiou
-        and "Comando copiado! Cole no tlportser.json do GitHub e dê commit."
-        or "Veja o F9 (console): copie o JSON e cole no tlportser.json do GitHub.")
+    notify("tlportser", "Enviando comando pro GitHub...")
+    task.spawn(function()
+        local ok, why = TLPORTSER_PUBLICAR(json)
+        if ok then
+            notify("tlportser", "Comando enviado! O alvo é puxado em instantes.")
+        else
+            local copiou = pcall(function() setclipboard(json) end)
+            print("[tlportser] conteúdo do tlportser.json:\n" .. json)
+            notify("tlportser", "Envio automático falhou (" .. tostring(why) .. "). "
+                .. (copiou and "JSON copiado: cole no GitHub." or "Veja o F9 (console)."))
+        end
+    end)
     return true
 end
 _G.tlportser = tlportser
 -- ┌──────────────────────────────────────────────────────────────────────────────┐
 -- │ tlportser(alvo)  — O QUE ELA FAZ                                              │
 -- │  Puxa um usuário do hub que está em OUTRO servidor para o SEU servidor.       │
--- │  1) Você chama tlportser("Nome") (ou digita ;tlportser Nome no chat).         │
--- │  2) Ela monta um comando com o SEU servidor atual (placeId + jobId) e copia   │
--- │     o JSON pra área de transferência (também imprime no console F9).          │
--- │  3) Você cola esse JSON no arquivo tlportser.json do GitHub do hub e dá commit│
--- │  4) O hub do alvo (em qualquer servidor) lê o arquivo em até ~15 s e          │
--- │     teleporta ele pro seu servidor com TeleportToPlaceInstance.               │
+-- │  1) Você chama tlportser("Nome") (ou digita ;tlportser Nome / ;tlportser all).│
+-- │  2) Ela monta um comando com o SEU servidor atual (placeId + jobId) e grava   │
+-- │     sozinha o tlportser.json no seu GitHub (precisa do token, ver abaixo).    │
+-- │  3) O hub do alvo (em qualquer servidor) lê o arquivo em segundos e teleporta │
+-- │     ele pro seu servidor com TeleportToPlaceInstance, sem ele clicar em nada. │
 -- │  - alvo = nome ou apelido exato do jogador, ou "ALL" pra puxar todos.         │
--- │  - Só ADMIN pode gerar o comando; se o alvo já está no seu servidor, avisa.   │
+-- │  - Só ADMIN usa. Se o alvo já está no seu servidor, avisa.                    │
 -- │  - Comando vale 10 min, não repete, e ignora quem já está no mesmo servidor.  │
 -- │  - O alvo pode recusar com HUB_ACEITAR_TLPORTSER = false.                     │
+-- │  - TOKEN: crie um token fine-grained do GitHub só pro repositório do hub, com │
+-- │    permissão "Contents: Read and write", e salve no arquivo                   │
+-- │    fantasma_tlportser_token.txt (pasta workspace do executor).                │
+-- │  - Sem token ou sem request no executor: copia o JSON pra você colar à mão.   │
 -- └──────────────────────────────────────────────────────────────────────────────┘
 
 -- receptor: roda em TODO cliente com o hub
@@ -7024,6 +8638,31 @@ function processNetMessage(msg, senderName)
         if REQUIRE_WHITELIST and senderName ~= LocalPlayer.Name and not WHITELIST[senderName] then return end
     end
 
+    -- >>> COMANDOS CURTOS DOS MUNDOS: ;backrooms nome | ;unbackrooms [nome] | ;poolrooms | ;level188 | ;salabranca | ;ilhadoblox | ;brainrot
+    local wa = WORLD.ALIAS[string.lower(parts[1])]
+    if wa then
+        local targetStr = table.concat(parts, " ", 2)
+        targetStr = string.lower((targetStr:gsub("^%s+", "")))
+        targetStr = (targetStr:gsub("%s+$", ""))
+        if senderName == LocalPlayer.Name then
+            if not IS_ADMIN then return end
+            if targetStr ~= "" and targetStr ~= "all" and targetStr ~= "todos" then
+                local real = WORLD.resolve(targetStr)
+                if not real then
+                    notify("ADM", "Jogador não encontrado: " .. targetStr)
+                    return
+                end
+                if string.lower(real) ~= targetStr then
+                    -- apelido (Fantasma1lhub_xxxx) ou começo do nome: reenvia com o nome completo em minúsculo
+                    sendNetCmd(";" .. string.lower(parts[1]) .. " " .. string.lower(real))
+                    return
+                end
+            end
+        end
+        WORLD.handle(wa.w, wa.kind, senderName, targetStr)
+        return
+    end
+
     if FXNET.actions[action] then
         if target then
             task.spawn(function() pcall(executeActionLocally, action, senderName, target) end)
@@ -7048,6 +8687,22 @@ function processNetMessage(msg, senderName)
         if target and senderName ~= LocalPlayer.Name then
             task.spawn(function() pcall(GOJO.run, senderName, target) end)
         end
+        return
+    end
+
+    -- >>> NOLI: todo cliente com o script vê o monstro <<<
+    if action == "NOLI_SPAWN" then
+        if target and senderName ~= LocalPlayer.Name then
+            task.spawn(function() pcall(NOLI.run, senderName, target) end)
+        end
+        return
+    end
+    if action == "NOLI_CLEAR" then
+        NOLI.clearLocal(true)
+        return
+    end
+    if action == "NOLI_FEINT" then
+        NOLI.feintLocal()
         return
     end
 
@@ -8442,10 +10097,682 @@ function FantasmaGoner.relearn()
     FantasmaGoner.activate()
 end
 
+-- ================== MONSTRO: NOLI (modelo 140625681515398) ==================
+-- Poderes: Stab (ataque básico), Nova (projétil Void Star), Void Rush (investida),
+-- Observant (aviso antes de chegar) e Alucinações (efeito só na tela de quem é perseguido).
+NOLI = { busy = false, cancelFlag = false, cdEnd = 0, token = 0, S = nil,
+    MODEL_ID  = "140625681515398",                              -- modelo do Noli
+    JUMP_IDS  = { "110927500079647", "85842282862173" },        -- jumpscares (aparecem com glitch na tela do alvo)
+    LOAD_BG   = "117917201966243",                              -- fundo da tela de carregamento
+    EXTRA_ID  = "83495935870383" }                              -- asset extra: som (tema/jumpscare) ou animação do Noli
+
+do
+    local TweenService = game:GetService("TweenService")
+    local Debris       = game:GetService("Debris")
+
+    local COOLDOWN    = 15     -- recarga (s) depois que o Noli vai embora
+    local DURATION    = 40     -- tempo que ele persegue (s)
+    local SPEED       = 15     -- velocidade normal de aproximação
+    local MELEE_RANGE = 9      -- distância do Stab
+    local NOVA_RANGE  = 70     -- distância máxima da Nova (Void Star)
+    local RUSH_DIST   = 45     -- distância a partir da qual ele faz o Void Rush (corrida, NÃO é teleporte)
+    local RUSH_SPEED  = 55     -- studs/s durante o Void Rush (corrida rápida no chão, não um "pulo" instantâneo)
+    local STAB_CD, NOVA_CD, RUSH_CD = 1.4, 6, 7
+    -- Observant = o ÚNICO teleporte real do Noli, e tem recarga de verdade (como no Forsaken):
+    local OBSERVANT_INITIAL_CD = 25   -- recarga logo no início (a entrada já conta como o 1º uso)
+    local OBSERVANT_CD         = 30   -- recarga normal depois de cada teleporte real
+    local OBSERVANT_FEINT_CD   = 15   -- recarga reduzida se ele fingiu antes (finta)
+    local OBSERVANT_DIST       = 90   -- só teleporta de verdade se o alvo estiver bem longe (tipo "sumiu")
+    local TELEGRAPH_TIME       = 1.1  -- aviso no chão antes do teleporte
+
+    local PURPLE = Color3.fromRGB(168, 85, 247)
+    local DARK   = Color3.fromRGB(18, 8, 28)
+    local VOIDW  = Color3.new(1, 1, 1)
+
+    local function fetchObjects(id)
+        for _, url in ipairs({ "rbxassetid://" .. id, "http://www.roblox.com/asset/?id=" .. id }) do
+            local ok, objs = pcall(function() return game:GetObjects(url) end)
+            if ok and objs and #objs > 0 then return objs end
+        end
+        local ok2, mdl = pcall(function() return game:GetService("InsertService"):LoadAsset(tonumber(id)) end)
+        if ok2 and mdl then
+            local kids = mdl:GetChildren()
+            if #kids > 0 then return kids end
+        end
+        return nil
+    end
+
+    local cache
+    local function loadNoliTemplate()
+        if cache ~= nil then return cache or nil end
+        local objs = fetchObjects(NOLI.MODEL_ID)
+        local tpl
+        if objs then
+            local m = Instance.new("Model")
+            for _, o in ipairs(objs) do o.Parent = m end
+            for _, d in ipairs(m:GetDescendants()) do
+                if d:IsA("LuaSourceContainer") or d:IsA("ProximityPrompt") then pcall(function() d:Destroy() end) end
+            end
+            for _, d in ipairs(m:GetDescendants()) do
+                if d:IsA("BasePart") then tpl = m break end
+            end
+        end
+        cache = tpl or false
+        if not tpl then notify("Noli", "Não consegui carregar o modelo (ID " .. NOLI.MODEL_ID .. ").") end
+        return tpl
+    end
+
+    -- acha o chão abaixo de um ponto (pra ele andar/teleportar grudado no chão, não flutuando)
+    local function groundY(pos, ignoreFolder, fallbackY)
+        local rp = RaycastParams.new()
+        rp.FilterType = Enum.RaycastFilterType.Exclude
+        rp.FilterDescendantsInstances = { ignoreFolder }
+        local res = workspace:Raycast(pos + Vector3.new(0, 6, 0), Vector3.new(0, -60, 0), rp)
+        if res then return res.Position.Y end
+        return fallbackY
+    end
+
+    -- aviso roxo/branco no chão antes dele chegar (Observant)
+    local function warningMark(pos, parent)
+        local p = Instance.new("Part")
+        p.Shape, p.Anchored, p.CanCollide, p.CanQuery, p.CanTouch = Enum.PartType.Cylinder, true, false, false, false
+        p.Material, p.Color, p.Transparency = Enum.Material.Neon, PURPLE, 0.25
+        p.Size = Vector3.new(0.2, 1, 1)
+        p.CFrame = CFrame.new(pos) * CFrame.Angles(0, 0, math.rad(90))
+        p.Parent = parent
+        local l = Instance.new("PointLight", p)
+        l.Color, l.Range, l.Brightness = PURPLE, 14, 3
+        TweenService:Create(p, TweenInfo.new(1.1, Enum.EasingStyle.Quad), { Size = Vector3.new(0.2, 22, 22), Transparency = 1 }):Play()
+        Debris:AddItem(p, 1.3)
+    end
+
+    -- rastro roxo/preto do Void Rush
+    local function rushTrail(model)
+        local root = model.PrimaryPart
+        if not root then return end
+        local a0 = Instance.new("Attachment", root)
+        local tr = Instance.new("Trail")
+        tr.Attachment0, tr.Attachment1 = a0, a0
+        tr.Lifetime, tr.MinLength = 0.35, 0
+        tr.Color = ColorSequence.new(PURPLE, DARK)
+        tr.Transparency = NumberSequence.new(0.2, 1)
+        tr.WidthScale = NumberSequence.new(1, 0)
+        tr.Parent = root
+    end
+
+    -- tentáculo de sombra (Stab)
+    local function stabFX(origin, target)
+        local dist = (target - origin).Magnitude
+        if dist < 0.3 then return end
+        local p = Instance.new("Part")
+        p.Anchored, p.CanCollide, p.CanQuery, p.CanTouch = true, false, false, false
+        p.Material, p.Color, p.Transparency = Enum.Material.Neon, Color3.fromRGB(60, 10, 90), 0.1
+        p.Size = Vector3.new(0.6, 0.6, 0.2)
+        p.CFrame = CFrame.lookAt(origin, target)
+        p.Parent = workspace
+        local goal = p.CFrame * CFrame.new(0, 0, -dist)
+        TweenService:Create(p, TweenInfo.new(0.12, Enum.EasingStyle.Quad), { Size = Vector3.new(0.6, 0.6, dist), CFrame = goal }):Play()
+        task.delay(0.16, function()
+            local okt, t = pcall(function() return TweenService:Create(p, TweenInfo.new(0.15), { Transparency = 1 }) end)
+            if okt then t:Play() end
+        end)
+        Debris:AddItem(p, 0.4)
+    end
+
+    -- Void Star arremessada + onda de choque (Nova)
+    local function novaFX(origin, dest)
+        local star = Instance.new("Part")
+        star.Shape, star.Anchored, star.CanCollide, star.CanQuery, star.CanTouch = Enum.PartType.Ball, true, false, false, false
+        star.Material, star.Color, star.Size = Enum.Material.Neon, VOIDW, Vector3.new(1.4, 1.4, 1.4)
+        star.CFrame = CFrame.new(origin)
+        star.Parent = workspace
+        local l = Instance.new("PointLight", star)
+        l.Color, l.Range, l.Brightness = PURPLE, 18, 4
+        local trw = TweenService:Create(star, TweenInfo.new(0.55, Enum.EasingStyle.Linear), { CFrame = CFrame.new(dest) })
+        trw:Play()
+        trw.Completed:Connect(function()
+            pcall(function() star:Destroy() end)
+            for _, cfg in ipairs({
+                { VOIDW, 0.1, 10 },
+                { PURPLE, 0.3, 16 },
+            }) do
+                local ball = Instance.new("Part")
+                ball.Shape, ball.Anchored, ball.CanCollide, ball.CanQuery, ball.CanTouch = Enum.PartType.Ball, true, false, false, false
+                ball.Material, ball.Color, ball.Transparency = Enum.Material.Neon, cfg[1], cfg[2]
+                ball.Size, ball.CFrame = Vector3.new(1, 1, 1), CFrame.new(dest)
+                ball.Parent = workspace
+                TweenService:Create(ball, TweenInfo.new(0.4, Enum.EasingStyle.Quad), { Size = Vector3.new(1, 1, 1) * cfg[3], Transparency = 1 }):Play()
+                Debris:AddItem(ball, 0.5)
+            end
+        end)
+    end
+
+    -- Alucinações: só na tela de quem está sendo perseguido
+    local function startHallucinations(S)
+        local pg = LocalPlayer:WaitForChild("PlayerGui")
+        local old = pg:FindFirstChild("NoliHallucination")
+        if old then old:Destroy() end
+        local gui = Instance.new("ScreenGui")
+        gui.Name, gui.IgnoreGuiInset, gui.ResetOnSpawn, gui.DisplayOrder = "NoliHallucination", true, false, 500
+        local tint = Instance.new("Frame", gui)
+        tint.Size, tint.BackgroundColor3, tint.BorderSizePixel = UDim2.new(1, 0, 1, 0), Color3.fromRGB(40, 0, 60), 0
+        tint.BackgroundTransparency = 0.9
+        local clockLbl = Instance.new("TextLabel", gui)
+        clockLbl.AnchorPoint, clockLbl.Position = Vector2.new(1, 0), UDim2.new(1, -16, 0, 12)
+        clockLbl.Size, clockLbl.BackgroundTransparency = UDim2.new(0, 140, 0, 32), 1
+        clockLbl.Font, clockLbl.TextSize, clockLbl.TextColor3 = Enum.Font.Code, 22, PURPLE
+        clockLbl.TextXAlignment, clockLbl.Text = Enum.TextXAlignment.Right, "00:00"
+        local clones = {}
+        for i = 1, 3 do
+            local c = Instance.new("Frame", gui)
+            c.Size = UDim2.new(0, 46, 0, 120)
+            c.BackgroundColor3, c.BackgroundTransparency = DARK, 1
+            local strk = Instance.new("UIStroke", c)
+            strk.Color, strk.Thickness, strk.Transparency = PURPLE, 2, 0.3
+            clones[i] = c
+        end
+        gui.Parent = pg
+        S.hallucGui = gui
+        S.hallucConn = RunService.Heartbeat:Connect(function()
+            tint.BackgroundTransparency = (math.random() < 0.06) and (0.75 + math.random() * 0.2) or 0.94
+            if math.random() < 0.03 then
+                clockLbl.Text = string.format("%02d:%02d", math.random(0, 99), math.random(0, 99))
+                clockLbl.TextColor3 = (math.random() < 0.5) and PURPLE or Color3.new(1, 1, 1)
+            end
+            for _, c in ipairs(clones) do
+                if math.random() < 0.015 then
+                    c.Position = UDim2.new(math.random(), math.random(-40, 40), math.random(), math.random(-40, 40))
+                    c.BackgroundTransparency = 0
+                    task.delay(0.12 + math.random() * 0.2, function() if c.Parent then c.BackgroundTransparency = 1 end end)
+                end
+            end
+        end)
+    end
+
+    local function stopHallucinations(S)
+        if S.hallucConn then pcall(function() S.hallucConn:Disconnect() end) S.hallucConn = nil end
+        if S.hallucGui then pcall(function() S.hallucGui:Destroy() end) S.hallucGui = nil end
+    end
+
+    local ContentProvider = game:GetService("ContentProvider")
+    local SoundService    = game:GetService("SoundService")
+
+    local LOADING_TIME = 4.5   -- tempo mínimo da tela de carregamento (s)
+    local JUMP_MIN, JUMP_MAX = 8, 16   -- intervalo (s) entre jumpscares aleatórios na tela do alvo
+    local JUMP_STAB_CHANCE = 0.2       -- chance de dar jumpscare junto com um Stab
+
+    -- imagem (resolve Decal -> textura quando precisa)
+    local function imgOf(id)
+        local ok, r = pcall(resolveImage, id)
+        if ok and r and r ~= "" then return r end
+        return "rbxassetid://" .. tostring(id)
+    end
+
+    -- testa se o ID é um SOM (retorna o Sound carregado) ou não (nil). Scripts de assets NÃO são executados.
+    local function probeSound(id)
+        local sd = Instance.new("Sound")
+        sd.SoundId, sd.Volume = "rbxassetid://" .. id, 1
+        pcall(function() ContentProvider:PreloadAsync({ sd }) end)
+        local t0 = os.clock()
+        while sd.TimeLength <= 0 and os.clock() - t0 < 3 do task.wait(0.1) end
+        if sd.TimeLength > 0 then return sd end
+        pcall(function() sd:Destroy() end)
+        return nil
+    end
+
+    -- tenta usar o ID extra como ANIMAÇÃO no rig do Noli (só se o modelo tiver Motor6D)
+    local function tryAnimation(clone)
+        local motors, isP1, hasJoint = {}, {}, {}
+        for _, d in ipairs(clone:GetDescendants()) do
+            if d:IsA("Motor6D") then
+                table.insert(motors, d)
+                if d.Part1 then isP1[d.Part1] = true; hasJoint[d.Part1] = true end
+                if d.Part0 then hasJoint[d.Part0] = true end
+            elseif d:IsA("Weld") then
+                if d.Part0 then hasJoint[d.Part0] = true end
+                if d.Part1 then hasJoint[d.Part1] = true end
+            elseif d:IsA("WeldConstraint") then
+                if d.Part0 then hasJoint[d.Part0] = true end
+                if d.Part1 then hasJoint[d.Part1] = true end
+            end
+        end
+        if #motors == 0 then return nil end
+        local ac = clone:FindFirstChildWhichIsA("Humanoid", true) or clone:FindFirstChildWhichIsA("AnimationController", true)
+        if not ac then
+            ac = Instance.new("AnimationController")
+            ac.Parent = clone
+        end
+        local animator = ac:FindFirstChildOfClass("Animator") or Instance.new("Animator", ac)
+        local an = Instance.new("Animation")
+        an.AnimationId = "rbxassetid://" .. NOLI.EXTRA_ID
+        local ok, tr = pcall(function() return animator:LoadAnimation(an) end)
+        if not ok or not tr then return nil end
+        local t0 = os.clock()
+        while tr.Length <= 0 and os.clock() - t0 < 3 do task.wait(0.1) end
+        if tr.Length <= 0 then return nil end
+        -- deu certo: solta as peças ligadas por juntas (só a raiz do rig fica travada) pra animação mexer
+        local rigRoots = {}
+        for _, m in ipairs(motors) do
+            if m.Part0 and not isP1[m.Part0] then rigRoots[m.Part0] = true end
+        end
+        for _, d in ipairs(clone:GetDescendants()) do
+            if d:IsA("BasePart") and hasJoint[d] and not rigRoots[d] then d.Anchored = false end
+        end
+        tr.Looped = true
+        tr.Priority = Enum.AnimationPriority.Movement
+        return tr
+    end
+
+    -- TELA DE CARREGAMENTO: fundo com imagem + barra bonita embaixo. Mostra o progresso real (pré-carga) e um tempo mínimo.
+    local function loadingScreen(S, myToken, steps, minTime)
+        local pg = LocalPlayer:WaitForChild("PlayerGui")
+        local old = pg:FindFirstChild("NoliLoading")
+        if old then old:Destroy() end
+        local gui = Instance.new("ScreenGui")
+        gui.Name, gui.IgnoreGuiInset, gui.ResetOnSpawn, gui.DisplayOrder = "NoliLoading", true, false, 2000
+        local root = Instance.new("CanvasGroup", gui)
+        root.Size, root.BackgroundColor3, root.BorderSizePixel, root.GroupTransparency = UDim2.new(1, 0, 1, 0), Color3.new(0, 0, 0), 0, 1
+        local bg = Instance.new("ImageLabel", root)
+        bg.Size, bg.BackgroundTransparency, bg.ScaleType = UDim2.new(1, 0, 1, 0), 1, Enum.ScaleType.Crop
+        local dim = Instance.new("Frame", root)
+        dim.Size, dim.BackgroundColor3, dim.BackgroundTransparency, dim.BorderSizePixel = UDim2.new(1, 0, 1, 0), Color3.new(0, 0, 0), 0.5, 0
+        local shade = Instance.new("Frame", root)
+        shade.AnchorPoint, shade.Position, shade.Size = Vector2.new(0, 1), UDim2.new(0, 0, 1, 0), UDim2.new(1, 0, 0.38, 0)
+        shade.BackgroundColor3, shade.BorderSizePixel = Color3.new(0, 0, 0), 0
+        local sg = Instance.new("UIGradient", shade)
+        sg.Rotation = 90
+        sg.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(1, 0.1) })
+
+        local title = Instance.new("TextLabel", root)
+        title.AnchorPoint, title.Position, title.Size = Vector2.new(0.5, 0.5), UDim2.new(0.5, 0, 0.4, 0), UDim2.new(0.9, 0, 0, 90)
+        title.BackgroundTransparency, title.Font, title.TextSize = 1, Enum.Font.GothamBlack, 78
+        title.TextColor3, title.Text = Color3.new(1, 1, 1), "NOLI"
+        local ts = Instance.new("UIStroke", title)
+        ts.Color, ts.Thickness = PURPLE, 3
+        local sub = Instance.new("TextLabel", root)
+        sub.AnchorPoint, sub.Position, sub.Size = Vector2.new(0.5, 0.5), UDim2.new(0.5, 0, 0.5, 0), UDim2.new(0.9, 0, 0, 30)
+        sub.BackgroundTransparency, sub.Font, sub.TextSize = 1, Enum.Font.GothamMedium, 20
+        sub.TextColor3, sub.Text = Color3.fromRGB(210, 180, 255), "Algo está se aproximando..."
+
+        local label = Instance.new("TextLabel", root)
+        label.AnchorPoint, label.Position, label.Size = Vector2.new(0, 1), UDim2.new(0.2, 0, 0.915, 0), UDim2.new(0.4, 0, 0, 24)
+        label.BackgroundTransparency, label.Font, label.TextSize = 1, Enum.Font.GothamBold, 16
+        label.TextColor3, label.TextXAlignment, label.Text = Color3.new(1, 1, 1), Enum.TextXAlignment.Left, "Carregando..."
+        local pct = Instance.new("TextLabel", root)
+        pct.AnchorPoint, pct.Position, pct.Size = Vector2.new(1, 1), UDim2.new(0.8, 0, 0.915, 0), UDim2.new(0.2, 0, 0, 24)
+        pct.BackgroundTransparency, pct.Font, pct.TextSize = 1, Enum.Font.GothamBold, 16
+        pct.TextColor3, pct.TextXAlignment, pct.Text = PURPLE, Enum.TextXAlignment.Right, "0%"
+
+        local barBg = Instance.new("Frame", root)
+        barBg.AnchorPoint, barBg.Position, barBg.Size = Vector2.new(0.5, 1), UDim2.new(0.5, 0, 0.95, 0), UDim2.new(0.6, 0, 0, 20)
+        barBg.BackgroundColor3, barBg.BorderSizePixel = Color3.fromRGB(16, 6, 28), 0
+        Instance.new("UICorner", barBg).CornerRadius = UDim.new(1, 0)
+        local bs = Instance.new("UIStroke", barBg)
+        bs.Color, bs.Thickness = PURPLE, 2
+        local fill = Instance.new("Frame", barBg)
+        fill.Size, fill.BorderSizePixel = UDim2.new(0, 0, 1, 0), 0
+        fill.BackgroundColor3 = Color3.new(1, 1, 1)
+        Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
+        local fg = Instance.new("UIGradient", fill)
+        fg.Color = ColorSequence.new(Color3.fromRGB(110, 40, 200), Color3.fromRGB(235, 210, 255))
+
+        gui.Parent = pg
+        S.loadGui = gui
+        TweenService:Create(root, TweenInfo.new(0.35), { GroupTransparency = 0 }):Play()
+        task.spawn(function()
+            local im = imgOf(NOLI.LOAD_BG)
+            if bg.Parent then bg.Image = im end
+        end)
+
+        local done, total = 0, #steps
+        for _, fn in ipairs(steps) do
+            task.spawn(function() pcall(fn) done = done + 1 end)
+        end
+        local t0, shown = os.clock(), 0
+        while NOLI.token == myToken do
+            local el = os.clock() - t0
+            local real = (total > 0) and (done / total) or 1
+            local goal = math.min(real, math.clamp(el / minTime, 0, 1))
+            if el > minTime + 10 then goal = 1 end   -- trava de segurança: nunca prende pra sempre
+            local dt = RunService.Heartbeat:Wait()
+            shown = shown + (goal - shown) * math.min(1, dt * 6)
+            fill.Size = UDim2.new(shown, 0, 1, 0)
+            pct.Text = string.format("%d%%", math.floor(shown * 100 + 0.5))
+            if goal >= 1 and shown > 0.995 then break end
+        end
+        if NOLI.token == myToken then
+            fill.Size, pct.Text, label.Text = UDim2.new(1, 0, 1, 0), "100%", "Pronto!"
+            task.wait(0.3)
+            TweenService:Create(root, TweenInfo.new(0.45), { GroupTransparency = 1 }):Play()
+            task.wait(0.5)
+        end
+        pcall(function() gui:Destroy() end)
+        S.loadGui = nil
+    end
+
+    -- JUMPSCARE com GLITCH na tela do alvo: a imagem some e volta várias vezes e não fica parada
+    local function jumpscareGlitch(S)
+        if not S.jumpImgs or #S.jumpImgs == 0 then return end
+        if os.clock() - (S.lastJump or 0) < 2.5 then return end
+        S.lastJump = os.clock()
+        local pg = LocalPlayer:WaitForChild("PlayerGui")
+        local old = pg:FindFirstChild("NoliJumpscare")
+        if old then old:Destroy() end
+        local gui = Instance.new("ScreenGui")
+        gui.Name, gui.IgnoreGuiInset, gui.ResetOnSpawn, gui.DisplayOrder = "NoliJumpscare", true, false, 1500
+        local bgf = Instance.new("Frame", gui)
+        bgf.Size, bgf.BackgroundColor3, bgf.BorderSizePixel, bgf.BackgroundTransparency = UDim2.new(1, 0, 1, 0), Color3.new(0, 0, 0), 0, 0.2
+        local im = Instance.new("ImageLabel", gui)
+        im.AnchorPoint, im.Position, im.Size = Vector2.new(0.5, 0.5), UDim2.new(0.5, 0, 0.5, 0), UDim2.new(1.1, 0, 1.1, 0)
+        im.BackgroundTransparency, im.ScaleType = 1, Enum.ScaleType.Crop
+        im.Image = S.jumpImgs[math.random(1, #S.jumpImgs)]
+        gui.Parent = pg
+        S.jumpGui = gui
+        if S.jumpSound then
+            pcall(function()
+                local c = S.jumpSound:Clone()
+                c.Volume = 4
+                c.Parent = SoundService
+                c:Play()
+                Debris:AddItem(c, 5)
+            end)
+        end
+        task.spawn(function()
+            local tints = { Color3.new(1, 1, 1), Color3.fromRGB(255, 130, 255), Color3.fromRGB(255, 70, 70), Color3.fromRGB(140, 255, 255) }
+            for _ = 1, math.random(12, 18) do
+                if not gui.Parent then return end
+                local on = math.random() < 0.6
+                gui.Enabled = on
+                if on then
+                    local sc = 1.05 + math.random() * 0.25
+                    im.Size = UDim2.new(sc, 0, sc, 0)
+                    im.Position = UDim2.new(0.5, math.random(-35, 35), 0.5, math.random(-35, 35))
+                    im.Rotation = math.random(-4, 4)
+                    im.ImageColor3 = tints[math.random(1, #tints)]
+                    if #S.jumpImgs > 1 and math.random() < 0.3 then im.Image = S.jumpImgs[math.random(1, #S.jumpImgs)] end
+                end
+                task.wait(0.03 + math.random() * 0.09)
+            end
+            pcall(function() gui:Destroy() end)
+            if S.jumpGui == gui then S.jumpGui = nil end
+        end)
+    end
+
+    function NOLI.cooldownLeft()
+        return math.max(NOLI.cdEnd - os.clock(), 0)
+    end
+
+    -- limpa o Noli no cliente atual (roda em todo mundo com o script)
+    function NOLI.clearLocal(silent)
+        NOLI.token = NOLI.token + 1
+        local S = NOLI.S
+        NOLI.S, NOLI.busy = nil, false
+        if S then
+            if S.conn then pcall(function() S.conn:Disconnect() end) end
+            stopHallucinations(S)
+            for _, k in ipairs({ "loadGui", "jumpGui", "theme" }) do
+                if S[k] then pcall(function() S[k]:Destroy() end) S[k] = nil end
+            end
+            if S.animTrack then pcall(function() S.animTrack:Stop() end) end
+            if S.folder then pcall(function() S.folder:Destroy() end) end
+        end
+        if S and not silent then notify("Noli", "O Noli foi embora.") end
+    end
+
+    function NOLI.cancelAll()
+        NOLI.clearLocal(true)
+        sendNetCmd(";NOLI_CLEAR ALL")
+    end
+
+    -- ADMIN: manda o Noli perseguir `target`
+    function NOLI.cast(target)
+        if not target or target == "" then return false end
+        if NOLI.busy then notify("Noli", "O Noli já está ativo.") return false end
+        local left = NOLI.cooldownLeft()
+        if left > 0 then notify("Noli", "Em recarga: " .. math.ceil(left) .. "s") return false end
+        task.spawn(function() pcall(NOLI.run, LocalPlayer.Name, target) end)
+        sendNetCmd(";NOLI_SPAWN " .. target)
+        return true
+    end
+
+    -- roda em TODO cliente com o hub (admin direto + os outros via rede)
+    function NOLI.run(senderName, targetName)
+        -- trava ANTES de qualquer espera (evita 2 Nolis quando duas chamadas chegam quase juntas)
+        if NOLI.busy then return end
+        NOLI.busy = true
+        NOLI.cancelFlag, NOLI.token = false, NOLI.token + 1
+        local myToken = NOLI.token
+        local targetPlr = Players:FindFirstChild(targetName)
+        if not targetPlr then NOLI.clearLocal(true) return end
+        local tChar = targetPlr.Character or targetPlr.CharacterAdded:Wait()
+        local tHrp = tChar:WaitForChild("HumanoidRootPart", 5)
+        local tHum = tChar:FindFirstChildOfClass("Humanoid")
+        if not tHrp or not tHum then NOLI.clearLocal(true) return end
+        if NOLI.token ~= myToken then return end
+
+        -- limpa qualquer Noli esquecido de uma corrida antiga, se sobrou algum
+        for _, f in ipairs(workspace:GetChildren()) do
+            if f.Name:sub(1, 5) == "NOLI_" then pcall(function() f:Destroy() end) end
+        end
+
+        local iAmTarget = (LocalPlayer.Name == targetName)
+        local hearing = iAmTarget or senderName == LocalPlayer.Name   -- quem vê a tela de carregamento / ouve o som
+
+        local folder = Instance.new("Folder")
+        folder.Name = "NOLI_" .. myToken
+        folder.Parent = workspace
+        local S = { folder = folder, tHrp = tHrp, feinted = false, jumpImgs = {} }
+        NOLI.S = S
+
+        -- ===== CARREGAMENTO (barra) + pré-carga do modelo, jumpscares e som/animação extra =====
+        local tpl
+        local steps = {
+            function() tpl = loadNoliTemplate() end,
+            function() for _, id in ipairs(NOLI.JUMP_IDS) do table.insert(S.jumpImgs, imgOf(id)) end end,
+            function()
+                local sd = probeSound(NOLI.EXTRA_ID)
+                if sd then
+                    if sd.TimeLength > 10 then S.themeTpl = sd else S.jumpSound = sd end   -- som longo = tema; curto = som do jumpscare
+                else
+                    S.extraMaybeAnim = true   -- não é som: será testado como animação no rig do Noli
+                end
+            end,
+        }
+        if hearing then
+            loadingScreen(S, myToken, steps, LOADING_TIME)
+        else
+            local done = 0
+            for _, fn in ipairs(steps) do task.spawn(function() pcall(fn) done = done + 1 end) end
+            local t0 = os.clock()
+            while (done < #steps or os.clock() - t0 < LOADING_TIME) and os.clock() - t0 < LOADING_TIME + 10 do
+                task.wait(0.1)
+                if NOLI.token ~= myToken then return end
+            end
+        end
+        if NOLI.token ~= myToken then return end
+        if iAmTarget then startHallucinations(S) end
+
+        -- ===== ENTRADA = o 1º uso do Observant (teleporte real): aviso no chão, depois ele aparece =====
+        local behind = -tHrp.CFrame.LookVector
+        local groundNear = groundY(tHrp.Position + behind * 28, folder, tHrp.Position.Y - 3)
+        local curPos = Vector3.new(tHrp.Position.X + behind.X * 28, groundNear, tHrp.Position.Z + behind.Z * 28)
+        warningMark(tHrp.Position, folder)
+        task.wait(TELEGRAPH_TIME)
+        if NOLI.token ~= myToken then return end
+        S.nextObservant = os.clock() + OBSERVANT_INITIAL_CD
+
+        local model = Instance.new("Model")
+        model.Name = "Noli"
+        local root = Instance.new("Part")
+        root.Name, root.Size, root.Transparency = "Root", Vector3.new(2, 2, 2), 1
+        root.Anchored, root.CanCollide, root.CanTouch = true, false, false
+        root.Parent = model
+        model.PrimaryPart = root
+        local hOff, cloneRef = 0, nil
+        if tpl then
+            local clone = tpl:Clone()
+            for _, d in ipairs(clone:GetDescendants()) do
+                if d:IsA("BasePart") then d.Anchored, d.CanCollide = true, false end
+            end
+            clone.Parent = model
+            local cf, size = clone:GetBoundingBox()
+            root.CFrame = CFrame.new(cf.Position.X, cf.Position.Y - size.Y / 2, cf.Position.Z)
+            hOff = size.Y / 2
+            cloneRef = clone
+        else
+            root.Transparency, root.Size, root.Color, root.Material = 0.2, Vector3.new(3, 7, 3), Color3.fromRGB(20, 5, 35), Enum.Material.Neon
+            hOff = 3.5
+        end
+        local function draw(lookTarget)
+            model:PivotTo(CFrame.lookAt(curPos + Vector3.new(0, hOff, 0), lookTarget + Vector3.new(0, hOff, 0)))
+        end
+        draw(tHrp.Position)
+        model.Parent = folder
+        rushTrail(model)
+
+        -- animação extra (se o ID extra for uma animação que funcione no rig)
+        local animTrack
+        if S.extraMaybeAnim and cloneRef then
+            task.spawn(function()
+                local tr = tryAnimation(cloneRef)
+                if tr and NOLI.token == myToken then animTrack = tr S.animTrack = tr end
+            end)
+        end
+        local function setAnim(on)
+            local tr = animTrack
+            if not tr then return end
+            if on and not tr.IsPlaying then pcall(function() tr:Play() end)
+            elseif not on and tr.IsPlaying then pcall(function() tr:Stop() end) end
+        end
+
+        -- tema sonoro (se o ID extra for um som longo)
+        if hearing and S.themeTpl then
+            pcall(function()
+                local th = S.themeTpl:Clone()
+                th.Looped, th.Volume = true, 0.6
+                th.Parent = SoundService
+                th:Play()
+                S.theme = th
+            end)
+        end
+
+        local rushUntil, nextStab, nextNova = 0, 0, os.clock() + 2
+        local telegraphing = false
+        local startT = os.clock()
+        S.conn = RunService.Heartbeat:Connect(function(dt)
+            if NOLI.token ~= myToken then return end
+            if os.clock() - startT > DURATION then NOLI.clearLocal() return end
+            if not tChar.Parent or tHum.Health <= 0 or not tHrp.Parent then NOLI.clearLocal() return end
+            if telegraphing then setAnim(false) return end
+
+            local dist = (Vector3.new(tHrp.Position.X, curPos.Y, tHrp.Position.Z) - curPos).Magnitude
+            local now = os.clock()
+            local moving = false
+
+            if now < rushUntil then
+                -- Void Rush: CORRIDA rápida (não teleporte), sempre grudado no chão
+                local dir = Vector3.new(tHrp.Position.X - curPos.X, 0, tHrp.Position.Z - curPos.Z)
+                if dir.Magnitude > 0.1 then
+                    dir = dir.Unit
+                    local nx, nz = curPos.X + dir.X * RUSH_SPEED * dt, curPos.Z + dir.Z * RUSH_SPEED * dt
+                    curPos = Vector3.new(nx, groundY(Vector3.new(nx, curPos.Y, nz), folder, curPos.Y), nz)
+                    draw(tHrp.Position)
+                    moving = true
+                end
+            elseif dist > OBSERVANT_DIST and now >= (S.nextObservant or 0) then
+                -- OBSERVANT: o único teleporte real, com a recarga de verdade (telegrafa antes de chegar)
+                telegraphing = true
+                warningMark(tHrp.Position, folder)
+                task.delay(TELEGRAPH_TIME, function()
+                    if NOLI.token ~= myToken then return end
+                    local b2 = -tHrp.CFrame.LookVector
+                    local gy = groundY(tHrp.Position + b2 * (MELEE_RANGE + 6), folder, tHrp.Position.Y - 3)
+                    curPos = Vector3.new(tHrp.Position.X + b2.X * (MELEE_RANGE + 6), gy, tHrp.Position.Z + b2.Z * (MELEE_RANGE + 6))
+                    draw(tHrp.Position)
+                    S.nextObservant = os.clock() + (S.feinted and OBSERVANT_FEINT_CD or OBSERVANT_CD)
+                    S.feinted = false
+                    telegraphing = false
+                end)
+            elseif dist > RUSH_DIST and now >= (S.nextRush or 0) then
+                rushUntil, S.nextRush = now + 1.1, now + RUSH_CD
+            elseif dist <= MELEE_RANGE then
+                if now >= nextStab then
+                    nextStab = now + STAB_CD
+                    stabFX(curPos + Vector3.new(0, hOff, 0), tHrp.Position)
+                    if iAmTarget then
+                        pcall(function() tHum:TakeDamage(18) end)
+                        if math.random() < JUMP_STAB_CHANCE then jumpscareGlitch(S) end
+                    end
+                end
+            else
+                local dir = Vector3.new(tHrp.Position.X - curPos.X, 0, tHrp.Position.Z - curPos.Z)
+                if dir.Magnitude > 0.1 then
+                    dir = dir.Unit
+                    local nx, nz = curPos.X + dir.X * SPEED * dt, curPos.Z + dir.Z * SPEED * dt
+                    curPos = Vector3.new(nx, groundY(Vector3.new(nx, curPos.Y, nz), folder, curPos.Y), nz)
+                    draw(tHrp.Position)
+                    moving = true
+                end
+                if dist <= NOVA_RANGE and now >= nextNova then
+                    nextNova = now + NOVA_CD
+                    local from = curPos + Vector3.new(0, hOff + 1, 0)
+                    novaFX(from, tHrp.Position + Vector3.new(0, 2, 0))
+                    if iAmTarget then
+                        task.delay(0.55, function()
+                            if NOLI.token == myToken then pcall(function() tHum:TakeDamage(22) end) end
+                        end)
+                    end
+                end
+            end
+            setAnim(moving)
+        end)
+
+        -- jumpscares aleatórios (com glitch) na tela do alvo
+        if iAmTarget then
+            task.spawn(function()
+                while NOLI.token == myToken do
+                    task.wait(JUMP_MIN + math.random() * (JUMP_MAX - JUMP_MIN))
+                    if NOLI.token ~= myToken then break end
+                    jumpscareGlitch(S)
+                end
+            end)
+        end
+
+        task.delay(DURATION + 1, function()
+            if NOLI.token == myToken then NOLI.clearLocal() end
+        end)
+        if senderName == LocalPlayer.Name then NOLI.cdEnd = os.clock() + COOLDOWN + DURATION end
+    end
+
+    -- FINTA: mostra o aviso do Observant sem teleportar de verdade. Se o próximo teleporte vier logo
+    -- depois de uma finta, a recarga dele fica mais curta (15s), igual no Forsaken.
+    function NOLI.feintLocal()
+        local S = NOLI.S
+        if not S or not S.tHrp then return end
+        warningMark(S.tHrp.Position, S.folder)
+        S.feinted = true
+    end
+
+    function NOLI.feint()
+        if not NOLI.busy then notify("Noli", "O Noli não está ativo.") return end
+        task.spawn(NOLI.feintLocal)
+        sendNetCmd(";NOLI_FEINT ALL")
+    end
+end
+
 local function triggerCommand(action, target, extraArg)
     if not target or target == "" then return end
     if action == "GOJO_DOMAIN" then
         GOJO.cast(target)
+        return
+    elseif action == "NOLI_SPAWN" then
+        NOLI.cast(target)
+        return
+    elseif action == "NOLI_CLEAR" then
+        NOLI.cancelAll()
+        return
+    elseif action == "NOLI_FEINT" then
+        NOLI.feint()
         return
     elseif BROADCAST_ACTIONS[action] then
         task.spawn(function() pcall(runBroadcast, action, LocalPlayer.Name, target) end)
@@ -8584,12 +10911,19 @@ else
     end
 
     local function sair()
+        if WORLD.returnCF then
+            pcall(TORNADO.clear, true)
+            WORLD.exit()
+            return
+        end
         pcall(POOL.clear, true)
         pcall(roubeUmBrainrot, "OFF")
         pcall(TORNADO.clear, true)
         pcall(LEVEL188.clear, true)
         pcall(SALABRANCA.clear, true)
         pcall(ILHABLOX.clear, true)
+        pcall(FNAF2.clear, true)
+        pcall(MEEP.clear, true)
         if workspace:FindFirstChild("Backrooms_Level0") then pcall(clearBackrooms) end
         task.wait(0.3)
         local chr = LocalPlayer.Character
@@ -8659,11 +10993,10 @@ else
                 cmd(";skyline",  "Atropelar o Jogador com Skyline", function() spawnSkyline(selectedPlayerName) end),
                 exec("kamui",    "KAMUI"),
                 cmd(";backrooms",   "Backrooms (Eu e o Alvo)", function()
-                    triggerCommand("BACKROOMS_SPAWN", selectedPlayerName, selectedPlayerName)
+                    WORLD.cast("BACKROOMS", selectedPlayerName)
                 end),
-                cmd(";unbackrooms", "Limpar Backrooms", function()
-                    task.spawn(function() pcall(clearBackrooms) end)
-                    sendNetCmd(";BACKROOMS_CLEAR ALL")
+                cmd(";unbackrooms", "Sair das Backrooms (tela preta e volta onde estava)", function()
+                    WORLD.uncast("BACKROOMS")
                 end),
                 cmd(";lifeform",   "The Lifeform no Alvo", function()
                     triggerCommand("LIFEFORM_SPAWN", selectedPlayerName, selectedPlayerName)
@@ -8673,35 +11006,58 @@ else
                     sendNetCmd(";LIFEFORM_CLEAR ALL")
                 end),
                 cmd(";poolrooms",   "Poolrooms (Eu e o Alvo)", function()
-                    triggerCommand("POOLROOMS_SPAWN", selectedPlayerName, selectedPlayerName)
+                    WORLD.cast("POOLROOMS", selectedPlayerName)
                 end),
-                cmd(";unpoolrooms", "Limpar Poolrooms", function()
-                    task.spawn(function() pcall(POOL.clear) end)
-                    sendNetCmd(";POOLROOMS_CLEAR ALL")
+                cmd(";unpoolrooms", "Sair das Poolrooms (tela preta e volta onde estava)", function()
+                    WORLD.uncast("POOLROOMS")
                 end),
                 cmd(";level188",   "Level 188 - Courtyard of Windows (Eu e o Alvo)", function()
-                    triggerCommand("LEVEL188_SPAWN", selectedPlayerName, selectedPlayerName)
+                    WORLD.cast("LEVEL188", selectedPlayerName)
                 end),
-                cmd(";unlevel188", "Limpar Level 188", function()
-                    task.spawn(function() pcall(LEVEL188.clear) end)
-                    sendNetCmd(";LEVEL188_CLEAR ALL")
+                cmd(";unlevel188", "Sair do Level 188 (tela preta e volta onde estava)", function()
+                    WORLD.uncast("LEVEL188")
                 end),
                 cmd(";level188all", "Level 188 - Courtyard of Windows (Todos)", function() triggerCommand("LEVEL188_SPAWN", "ALL") end),
                 cmd(";salabranca",    "Sala Branca (Eu e o Alvo)", function()
-                    triggerCommand("SALABRANCA_SPAWN", selectedPlayerName, selectedPlayerName)
+                    WORLD.cast("SALABRANCA", selectedPlayerName)
                 end),
                 cmd(";salabrancaall", "Sala Branca (Todos)", function() triggerCommand("SALABRANCA_SPAWN", "ALL") end),
-                cmd(";unsalabranca",  "Limpar Sala Branca", function()
-                    task.spawn(function() pcall(SALABRANCA.clear) end)
-                    sendNetCmd(";SALABRANCA_CLEAR ALL")
+                cmd(";unsalabranca",  "Sair da Sala Branca (tela preta e volta onde estava)", function()
+                    WORLD.uncast("SALABRANCA")
                 end),
                 cmd(";ilhadoblox",    "Ilha do Blox - mapa Blox Fruits (Eu e o Alvo)", function()
-                    triggerCommand("ILHABLOX_SPAWN", selectedPlayerName, selectedPlayerName)
+                    WORLD.cast("ILHABLOX", selectedPlayerName)
                 end),
                 cmd(";ilhadobloxall", "Ilha do Blox (Todos)", function() triggerCommand("ILHABLOX_SPAWN", "ALL") end),
-                cmd(";unilhadoblox",  "Limpar Ilha do Blox", function()
-                    task.spawn(function() pcall(ILHABLOX.clear) end)
-                    sendNetCmd(";ILHABLOX_CLEAR ALL")
+                cmd(";unilhadoblox",  "Sair da Ilha do Blox (tela preta e volta onde estava)", function()
+                    WORLD.uncast("ILHABLOX")
+                end),
+                cmd(";meepcity4",     "MeepCity4 - teleporta só você pro mapa (modelo 16423000248)", function()
+                    WORLD.handle("MEEPCITY", "spawn", LocalPlayer.Name, "")
+                end),
+                cmd(";unmeepcity4",   "Sair do MeepCity4 (tela preta e volta onde estava)", function()
+                    task.spawn(WORLD.exit, "MEEPCITY")
+                end),
+                cmd(";fnaf2",   "FNAF 2 - animatrônicos perseguem você e o alvo (Eu e o Alvo)", function()
+                    WORLD.cast("FNAF2", selectedPlayerName)
+                end),
+                cmd(";unfnaf2", "Sair do FNAF 2 (tela preta e volta onde estava)", function()
+                    WORLD.uncast("FNAF2")
+                end),
+            },
+        },
+        {
+            name = "Monstros", icon = "ghost",
+            section = "Monstros (vão atrás do alvo selecionado)", sectionIcon = "skull",
+            items = {
+                cmd(";noli",   "Mandar o Noli perseguir e atacar o alvo", function()
+                    NOLI.cast(selectedPlayerName)
+                end),
+                cmd(";unnoli", "Fazer o Noli ir embora", function()
+                    NOLI.cancelAll()
+                end),
+                cmd(";nolifinta", "Finta (mostra o aviso sem teleportar; deixa o próximo teleporte mais rápido)", function()
+                    NOLI.feint()
                 end),
             },
         },
@@ -8717,16 +11073,11 @@ else
                 cmd(";flash",    "Flash (ligar/desligar)", function() toggleFX("FLASH") end),
                 cmd(";goldaura", "Aura Dourada (ligar/desligar)", function() toggleFX("AURA") end),
                 cmd(";brainrot",      "Roube um Brainrot (Eu e Alvo)", function()
-                    task.spawn(function() pcall(roubeUmBrainrot, "ON") end)
-                    if selectedPlayerName ~= LocalPlayer.Name then
-                        sendNetCmd(";BRAINROT_SPAWN " .. selectedPlayerName)
-                    end
-                    notify("ADM", "BRAINROT → " .. selectedPlayerName)
+                    WORLD.cast("BRAINROT", selectedPlayerName)
                 end),
                 cmd(";brainrotall",   "Roube um Brainrot (Todos)", function() triggerCommand("BRAINROT_SPAWN", "ALL") end),
-                cmd(";unbrainrot",    "Roube um Brainrot (Limpar)", function()
-                    task.spawn(function() pcall(roubeUmBrainrot, "OFF") end)
-                    sendNetCmd(";BRAINROT_CLEAR ALL")
+                cmd(";unbrainrot",    "Sair do Brainrot (tela preta e volta onde estava)", function()
+                    WORLD.uncast("BRAINROT")
                 end),
                 cmd(";tornado",       "Tornado EF5 (Eu)", function()
                     task.spawn(function() pcall(TORNADO.spawn, LocalPlayer.Name) end)
@@ -8801,6 +11152,26 @@ else
             Callback = function(v) selectedPlayerName = v end,
         })
         table.insert(dropdowns, dd)
+        tab:Button({
+            Title = "Atualizar lista",
+            Desc  = "Atualiza a lista de Selecionar Alvo com quem está no servidor agora",
+            Icon  = "refresh-cw",
+            Callback = function()
+                local names = getPlayerNames()
+                for _, d in ipairs(dropdowns) do
+                    pcall(function()
+                        if d.Refresh then d:Refresh(names)
+                        elseif d.SetValues then d:SetValues(names) end
+                    end)
+                end
+                local still = false
+                for _, n in ipairs(names) do
+                    if n == selectedPlayerName then still = true break end
+                end
+                if not still then selectedPlayerName = LocalPlayer.Name end
+                notify("ADM", "Lista atualizada (" .. #names .. " jogadores).")
+            end,
+        })
     end
 
     local function addItem(tab, item)
@@ -8819,6 +11190,47 @@ else
         tab:Section({ Title = cat.section, Icon = cat.sectionIcon })
         for _, item in ipairs(cat.items) do addItem(tab, item) end
     end
+
+    -- ================== ABA MAPAS (ícones de mapa) ==================
+    local TabMapas = Window:Tab({ Title = "Mapas", Icon = "map" })
+    addTarget(TabMapas)
+    TabMapas:Section({ Title = "Mapas (você e o alvo entram juntos)", Icon = "map" })
+
+    local lastMap = "BACKROOMS"
+    local MAPAS = {
+        { "Backrooms",     "door-open",  "BACKROOMS",  "Backrooms Level 0" },
+        { "Poolrooms",     "waves",      "POOLROOMS",  "Poolrooms" },
+        { "Brainrot",      "brain",      "BRAINROT",   "Roube um Brainrot" },
+        { "Ilha do Blox",  "tree-palm",  "ILHABLOX",   "Ilha do Blox (Blox Fruits)" },
+        { "Level 188",     "building-2", "LEVEL188",   "Level 188 - Courtyard of Windows" },
+        { "MeepCity 4",    "house",      "MEEPCITY",   "MeepCity 4" },
+        { "FNAF 2",        "ghost",      "FNAF2",      "FNAF 2 - animatrônicos perseguem você e o alvo" },
+    }
+    for _, mp in ipairs(MAPAS) do
+        TabMapas:Button({
+            Title = mp[1],
+            Desc  = mp[4] .. " (Eu e o Alvo)",
+            Icon  = mp[2],
+            Callback = function()
+                lastMap = mp[3]
+                WORLD.cast(mp[3], selectedPlayerName)
+            end,
+        })
+    end
+
+    TabMapas:Section({ Title = "Sair", Icon = "log-out" })
+    TabMapas:Button({
+        Title = "Sair do mapa atual",
+        Desc  = "Tela preta e volta pro lugar onde você estava (tira você e o alvo)",
+        Icon  = "door-closed",
+        Callback = function() WORLD.uncast(lastMap) end,
+    })
+    TabMapas:Button({
+        Title = "Voltar ao spawn (só eu)",
+        Desc  = "Sai de qualquer mapa só pra você",
+        Icon  = "undo-2",
+        Callback = function() task.spawn(sair) end,
+    })
 
     -- ================== ABA CONFIGURAÇÃO ==================
     local TabCfg = Window:Tab({ Title = "Configuração", Icon = "settings" })
@@ -8895,7 +11307,9 @@ else
         ["Halloween"] = 72671289611166,
         ["Dragon"] = 123754864736277,
         ["Ilustração"] = 121502907054918,
+        ["Fantasma1l hub"] = 123594325236260,
     }
+    local BG_NAMES = { "Nenhum", "Fantasma1l hub", "Gojo", "Toji", "Halloween", "Dragon", "Ilustração" }
     local bgTransparency = 0.6
     local bgLabel
 
@@ -8941,6 +11355,11 @@ else
         local id = BG_IDS[name]
         if not id then return end
         local host = findMainFrame()
+        for _ = 1, 6 do
+            if host then break end
+            task.wait(0.5)
+            host = findMainFrame()
+        end
         if not host then
             notify("Fundo", "Não achei o painel pra colocar a imagem.")
             return
@@ -8969,15 +11388,28 @@ else
         end)
     end
 
-    TabCfg:Dropdown({
-        Title  = "Imagem de fundo",
-        Desc   = "Gojo, Toji, Halloween, Dragon ou Ilustração",
-        Values = { "Nenhum", "Gojo", "Toji", "Halloween", "Dragon", "Ilustração" },
-        Value  = "Nenhum",
-        Callback = function(name)
-            task.spawn(function() pcall(setBackground, name) end)
-        end,
-    })
+    local okBG = pcall(function()
+        TabCfg:Dropdown({
+            Title  = "Imagem de fundo",
+            Desc   = "Fantasma1l hub, Gojo, Toji, Halloween, Dragon ou Ilustração",
+            Values = BG_NAMES,
+            Value  = "Nenhum",
+            Callback = function(name)
+                task.spawn(function() pcall(setBackground, name) end)
+            end,
+        })
+    end)
+    if not okBG then
+        -- plano B: se o dropdown não aparecer, cria um botão pra cada imagem
+        for _, n in ipairs(BG_NAMES) do
+            pcall(function()
+                TabCfg:Button({
+                    Title = "Fundo: " .. n, Icon = "image",
+                    Callback = function() task.spawn(function() pcall(setBackground, n) end) end,
+                })
+            end)
+        end
+    end
     TabCfg:Slider({
         Title = "Transparência da imagem",
         Desc  = "0 = imagem forte | 1 = invisível",
