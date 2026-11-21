@@ -591,7 +591,7 @@ Window:AddMinimizeButton({
     Corner = { CornerRadius = UDim.new(35, 1) },
 })
 
-local InfoTab = Window:MakeTab({ Title = "Info", Icon = "rbxassetid://15309138473" })
+local InfoTab = Window:MakeTab({"Info", "info"})
 
 
 
@@ -613,7 +613,7 @@ InfoTab:AddButton({
 
 
 
-local TrollTab = Window:MakeTab({ Title = "Troll Scripts", Icon = "rbxassetid://13364900349" })
+local TrollTab = Window:MakeTab({"Troll Scripts", "flame"})
 
 
 TrollTab:AddSection({ "Black Hole" })
@@ -1203,7 +1203,7 @@ TrollTab:AddToggle({
     end
 })
 
-local Troll = Window:MakeTab({ Title = "Troll Players", Icon = "rbxassetid://131153193945220" })
+local Troll = Window:MakeTab({"Troll Players", "swords"})
 
 
 local Players = game:GetService("Players")
@@ -2711,6 +2711,8 @@ local cam = workspace.CurrentCamera
 local currentPlayers, selectedPlayer = {}, nil
 local viewing = false
 local flingActive = false
+local AutoFlingPower = 300000      -- forca maxima, sem regulagem
+local AutoFlingCatchSpeed = 150    -- captura no maximo, sem regulagem
 
 Troll:AddToggle({
     Name = "Auto Fling ",
@@ -2802,6 +2804,7 @@ task.wait(0.25)
     end
 })
 
+
 local function FlingBall(target)
 
     local players = game:GetService("Players")
@@ -2847,25 +2850,15 @@ local function FlingBall(target)
 
             workspace.CurrentCamera.CameraSubject = thum
             local StartTime = os.time()
+            -- angulo que orbita bem apertado ao redor do alvo: sempre varre a hitbox dele,
+            -- entao a bola encosta mesmo com o alvo parado, andando ou pulando.
+            local angle = 0
             repeat
-                if troot.Velocity.Magnitude > 0 then
-                -- Calculate adjusted position based on target's velocity
-                local pos_x = troot.Position.X + (troot.Velocity.X / 1.5)
-                local pos_y = troot.Position.Y + (troot.Velocity.Y / 1.5)
-                local pos_z = troot.Position.Z + (troot.Velocity.Z / 1.5)
-
-                -- Position the ball directly at the adjusted position
-                local position = Vector3.new(pos_x, pos_y, pos_z)
-                Ball.CFrame = CFrame.new(position)
-                Ball.Orientation += Vector3.new(45, 60, 30)
-else
-for i, v in pairs(tchar:GetChildren()) do
-if v:IsA("BasePart") and v.CanCollide and not v.Anchored then
-Ball.CFrame = v.CFrame
-task.wait(1/6000)
-end
-end
-end
+                angle = (angle + 55) % 360
+                local predicted = troot.Position + (troot.Velocity / 1.2)
+                Ball.CFrame = CFrame.new(predicted)
+                    * CFrame.Angles(math.rad(angle), math.rad(angle * 0.6), 0)
+                    * CFrame.new(0, 0, 1.1)
                 task.wait(1/6000)
             until troot.Velocity.Magnitude > 1000 or thum.Health <= 0 or not tchar:IsDescendantOf(workspace) or target.Parent ~= players
             workspace.CurrentCamera.CameraSubject = humanoid
@@ -3612,19 +3605,14 @@ local function FlingBall(target)
 
             workspace.CurrentCamera.CameraSubject = thum
 
+            -- mesmo angulo orbital da outra Fling Ball: varre a hitbox do alvo sem parar
+            local angle = 0
             repeat
-                if troot.Velocity.Magnitude > 0 then
-                    local pos = troot.Position + (troot.Velocity / 1.5)
-                    Ball.CFrame = CFrame.new(pos)
-                    Ball.Orientation += Vector3.new(45, 60, 30)
-                else
-                    for i, v in pairs(tchar:GetChildren()) do
-                        if v:IsA("BasePart") and v.CanCollide and not v.Anchored then
-                            Ball.CFrame = v.CFrame
-                            task.wait(1/6000)
-                        end
-                    end
-                end
+                angle = (angle + 55) % 360
+                local predicted = troot.Position + (troot.Velocity / 1.2)
+                Ball.CFrame = CFrame.new(predicted)
+                    * CFrame.Angles(math.rad(angle), math.rad(angle * 0.6), 0)
+                    * CFrame.new(0, 0, 1.1)
                 task.wait(1/6000)
             until troot.Velocity.Magnitude > 1000 or thum.Health <= 0 or not tchar:IsDescendantOf(workspace) or target.Parent ~= players
 
@@ -4912,7 +4900,7 @@ workspace.CurrentCamera.CameraSubject=game.Players.LocalPlayer.Character:WaitFor
 })
 
 
-local Tab = Window:MakeTab({"Avatar", "rbxassetid://10734952036"})
+local Tab = Window:MakeTab({"Avatar", "user-round"})
 
 Tab:AddSection({ Name = "Copy Outfit" })
 
@@ -5425,7 +5413,7 @@ function startAutoUnban()
     end
 end
 
-local Tab = Window:MakeTab({"Global Audio", "music"})
+local Tab = Window:MakeTab({"Global Audio", "volume-2"})
 
 -- Create a section
 Tab:AddSection({"Audio for All Players"})
@@ -5474,6 +5462,19 @@ local audios = {
 }
 
 local selectedAudioID
+local GunSoundRemote = game:GetService("ReplicatedStorage"):FindFirstChild("RE") and
+    game:GetService("ReplicatedStorage").RE:FindFirstChild("1Gu1nSound1s")
+    or game:GetService("ReplicatedStorage"):FindFirstChild("1Gu1nSound1s", true)
+
+-- Dispara o remote de som de arma do Brookhaven: e o jeito que faz TODOS ouvirem,
+-- mas o proprio jogo so deixa o audio tocar para o servidor por ~3 segundos.
+-- O primeiro argumento tem que ser game.Players (nao workspace), senao o servidor nao
+-- avisa os outros clientes - esse era o motivo de so voce escutar.
+local function fireGlobalAudio(id)
+    if type(id) ~= "number" then warn("ID de audio invalido!") return end
+    if not GunSoundRemote then warn("Remote de audio nao encontrada (1Gu1nSound1s).") return end
+    pcall(function() GunSoundRemote:FireServer(game:GetService("Players"), id, 1) end)
+end
 
 -- Add a textbox to insert the audio ID
 Tab:AddTextBox({
@@ -5517,14 +5518,9 @@ Tab:AddSection({"Audio Loop"})
 local function playLoopedAudio()
     while audioLoop do
         if selectedAudioID then
-            local args = {
-                [1] = game:GetService("Workspace"),
-                [2] = selectedAudioID,
-                [3] = 1,
-            }
-            game:GetService("ReplicatedStorage").RE:FindFirstChild("1Gu1nSound1s"):FireServer(unpack(args))
+            fireGlobalAudio(selectedAudioID)
 
-            -- Create and play the audio
+            -- Create and play the audio (full duration, mas so para voce apos os 3s do servidor)
             local sound = Instance.new("Sound")
             sound.SoundId = "rbxassetid://" .. selectedAudioID
             sound.Parent = game.Players.LocalPlayer.Character.HumanoidRootPart
@@ -5557,14 +5553,9 @@ Tab:AddParagraph({"Info", "Loop audio playback (All players in the server can he
 -- Function to play normal audio
 local function playAudio()
     if selectedAudioID then
-        local args = {
-            [1] = game:GetService("Workspace"),
-            [2] = selectedAudioID,
-            [3] = 1,
-        }
-        game:GetService("ReplicatedStorage").RE:FindFirstChild("1Gu1nSound1s"):FireServer(unpack(args))
+        fireGlobalAudio(selectedAudioID)
 
-        -- Create and play the audio
+        -- Create and play the audio (full duration, mas so para voce apos os 3s do servidor)
         local sound = Instance.new("Sound")
         sound.SoundId = "rbxassetid://" .. selectedAudioID
         sound.Parent = game.Players.LocalPlayer.Character.HumanoidRootPart
@@ -5581,6 +5572,7 @@ Tab:AddSection({"Play Audio"})
 Tab:AddButton({"Play Audio", function()
     playAudio()
 end})
+Tab:AddParagraph({"Info", "Todos no servidor ouvem os primeiros ~3 segundos (limite do proprio Brookhaven); depois so voce continua ouvindo o resto."})
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local audioID = 6314880174 -- Fixed audio ID
@@ -5619,15 +5611,7 @@ local function Audio_All_ClientSide(ID)
 end
 
 local function Audio_All_ServerSide(ID)
-    if type(ID) ~= "number" then
-        print("Insert a valid number!")
-        return nil
-    end
-
-    local GunSoundEvent = ReplicatedStorage:FindFirstChild("1Gu1nSound1s", true)
-    if GunSoundEvent then
-        GunSoundEvent:FireServer(workspace, ID, 1)
-    end
+    fireGlobalAudio(ID)
 end
 
 -- Toggle for "Burst everyone's eardrums"
@@ -5649,10 +5633,10 @@ Tab:AddToggle({
     end
 })
 
-Tab:AddParagraph({"Info", "Everyone in the server hears the audio"})
+Tab:AddParagraph({"Info", "Todos no servidor ouvem (o Brookhaven libera por ~3s por disparo; por isso repete rapido em loop)."})
 
 
-local Tab = Window:MakeTab({"Lag Server", "bomb"})
+local Tab = Window:MakeTab({"Lag Server", "server-crash"})
 
 
 -- Shutdown Custom Section
@@ -5964,7 +5948,7 @@ Tab:AddParagraph({
     "The script starts to cause lag after 35 seconds"
 })
 
-local Tab = Window:MakeTab({"Names", "Paper"})
+local Tab = Window:MakeTab({"Names", "signature"})
 
 local isNameActive = false
 local isBioActive = false
@@ -6068,7 +6052,7 @@ for _, name in ipairs(names) do
 end
 
 
-local CarTab = Window:MakeTab({"Car", "car"})
+local CarTab = Window:MakeTab({"Car", "car-front"})
 
 -- Colors for RGB
 local colors = {
@@ -7163,7 +7147,7 @@ ChildTab:AddParagraph({
 })
 
 -- Local Player Tab
-local LocalPlayerTab = Window:MakeTab({"Local Player", "user"})
+local LocalPlayerTab = Window:MakeTab({"Local Player", "user-cog"})
 
 local Section = LocalPlayerTab:AddSection({
     Name = "Speed, Gravity and Jump"
@@ -7407,7 +7391,7 @@ LocalPlayerTab:AddButton({
     end
 })
 
-local Tab = Window:MakeTab({"Teleports", "tp"}) -- Icon name: 'portal' in lowercase for teleport
+local Tab = Window:MakeTab({"Teleports", "map-pin"})
 
 -- Teleport Buttons
 local teleportButtons = {
@@ -10354,7 +10338,7 @@ ToolsTab:AddButton({
     end
 })
 
-local UniversalTab = Window:MakeTab({"Scripts Universais", "plane"})
+local UniversalTab = Window:MakeTab({"Scripts Universais", "layers"})
 
 -- Seção para Scripts Universais
 Section = UniversalTab:AddSection({
@@ -10682,7 +10666,7 @@ do
     ----------------------------------------------------------------
     -- ABA: EFEITOS VISUAIS
     ----------------------------------------------------------------
-    local VisualsTab = Window:MakeTab({"Efeitos Visuais", "eye"})
+    local VisualsTab = Window:MakeTab({"Efeitos Visuais", "sparkles"})
 
     VisualsTab:AddSection({"Efeitos na Janela"})
     VisualsTab:AddDropdown({
@@ -10709,7 +10693,7 @@ do
     ----------------------------------------------------------------
     -- ABA: CONFIGURACAO
     ----------------------------------------------------------------
-    local ConfigTab = Window:MakeTab({"Configuracao", "settings"})
+    local ConfigTab = Window:MakeTab({"Configuracao", "settings-2"})
 
     ConfigTab:AddSection({"Tema do Hub"})
     ConfigTab:AddDropdown({
@@ -10750,7 +10734,7 @@ do
     ----------------------------------------------------------------
     -- ABA: PROTECAO
     ----------------------------------------------------------------
-    local TabProt = Window:MakeTab({"Protecao", "shield"})
+    local TabProt = Window:MakeTab({"Protecao", "shield-check"})
     local Lighting = game:GetService("Lighting")
     local LocalPlayer = Players.LocalPlayer
     local function getHRP()
