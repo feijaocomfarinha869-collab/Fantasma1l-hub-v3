@@ -720,7 +720,14 @@ Window:AddMinimizeButton({
 
 local InfoTab = Window:MakeTab({"Info", "info"})
 
-
+pcall(function()
+    InfoTab:AddDiscordInvite({
+        Name = "FANTASMA1L - HUB",
+        Description = "Join server",
+        Logo = "rbxassetid://102668522264689",
+        Invite = "https://discord.gg/jUbgTbJYh",
+    })
+end)
 
 InfoTab:AddSection({ "Script Information" })
 InfoTab:AddParagraph({ "Owner / Developer:", "fantasma1l. " })
@@ -747,37 +754,52 @@ local Section = LocalPlayerTab:AddSection({
     Name = "Speed, Gravity and Jump"
 })
 
-LocalPlayerTab:AddTextBox({
-    Name = "Player Speed",
-    PlaceholderText = "Enter speed",
-    Callback = function(value)
-        local speed = tonumber(value)
-        if speed and pl.Character and pl.Character:FindFirstChild("Humanoid") then
-            pl.Character.Humanoid.WalkSpeed = speed
-        else
-            warn("Invalid speed or character not found!")
-        end
+-- 'pl' era declarado como local MUITO mais abaixo no arquivo, entao aqui ele
+-- era nil e o Speed/Jump nunca aplicava. Agora e definido antes de ser usado.
+pl = game.Players.LocalPlayer
+
+local function getMyHumanoid()
+    local c = pl.Character
+    return c and c:FindFirstChildOfClass("Humanoid")
+end
+
+local speedValue, jumpValue = 16, 50
+
+local speedSlider = LocalPlayerTab:AddSlider({
+    Name = "Speed",
+    Min = 16,
+    Max = 250,
+    Increase = 1,
+    Default = 16,
+    Callback = function(Value)
+        speedValue = Value
+        local hum = getMyHumanoid()
+        if hum then hum.WalkSpeed = Value end
     end
 })
 
 LocalPlayerTab:AddButton({
     Name = "Reset speed",
     Callback = function()
-        if pl.Character and pl.Character:FindFirstChild("Humanoid") then
-            pl.Character.Humanoid.WalkSpeed = 16
-        end
+        speedValue = 16
+        local hum = getMyHumanoid()
+        if hum then hum.WalkSpeed = 16 end
+        pcall(function() speedSlider:Set(16) end)
     end
 })
 
-LocalPlayerTab:AddTextBox({
+local jumpSlider = LocalPlayerTab:AddSlider({
     Name = "Jump Height",
-    PlaceholderText = "Enter jump height",
-    Callback = function(value)
-        local jumpHeight = tonumber(value)
-        if jumpHeight and pl.Character and pl.Character:FindFirstChild("Humanoid") then
-            pl.Character.Humanoid.JumpPower = jumpHeight
-        else
-            warn("Invalid jump height or character not found!")
+    Min = 50,
+    Max = 400,
+    Increase = 5,
+    Default = 50,
+    Callback = function(Value)
+        jumpValue = Value
+        local hum = getMyHumanoid()
+        if hum then
+            hum.UseJumpPower = true
+            hum.JumpPower = Value
         end
     end
 })
@@ -785,22 +807,21 @@ LocalPlayerTab:AddTextBox({
 LocalPlayerTab:AddButton({
     Name = "Reset Jump",
     Callback = function()
-        if pl.Character and pl.Character:FindFirstChild("Humanoid") then
-            pl.Character.Humanoid.JumpPower = 50
-        end
+        jumpValue = 50
+        local hum = getMyHumanoid()
+        if hum then hum.JumpPower = 50 end
+        pcall(function() jumpSlider:Set(50) end)
     end
 })
 
-LocalPlayerTab:AddTextBox({
+local gravitySlider = LocalPlayerTab:AddSlider({
     Name = "Gravity",
-    PlaceholderText = "Enter gravity",
-    Callback = function(value)
-        local gravity = tonumber(value)
-        if gravity then
-            workspace.Gravity = gravity
-        else
-            warn("Invalid gravity!")
-        end
+    Min = 0,
+    Max = 400,
+    Increase = 5,
+    Default = 196,
+    Callback = function(Value)
+        workspace.Gravity = Value
     end
 })
 
@@ -808,8 +829,18 @@ LocalPlayerTab:AddButton({
     Name = "Reset Gravity",
     Callback = function()
         workspace.Gravity = 196.2
+        pcall(function() gravitySlider:Set(196) end)
     end
 })
+
+-- reaplica speed/jump quando voce renasce
+pl.CharacterAdded:Connect(function(char)
+    local hum = char:WaitForChild("Humanoid", 10)
+    if not hum then return end
+    task.wait(0.6)
+    if speedValue ~= 16 then hum.WalkSpeed = speedValue end
+    if jumpValue ~= 50 then hum.UseJumpPower = true hum.JumpPower = jumpValue end
+end)
 
 Section = LocalPlayerTab:AddSection({
     Name = "Spam Chat"
@@ -901,92 +932,7 @@ LocalPlayerTab:AddButton({
 end
 })
 
-Section = LocalPlayerTab:AddSection({
-    Name = "Headsit"
-})
-
-local selectedHeadSit = nil
-local headSitConnection = nil
-
-local headSitDropdown = LocalPlayerTab:AddDropdown({
-    Name = "Select Player",
-    Default = "",
-    Options = players,
-    Callback = function(Value)
-        selectedHeadSit = Value
-    end
-})
-
-LocalPlayerTab:AddToggle({
-    Name = "Head Sit (Piggyback)",
-    Default = false,
-    Callback = function(bool)
-        local player = game.Players.LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
-        local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-        local humanoid = character:WaitForChild("Humanoid")
-
-        if not selectedHeadSit or selectedHeadSit == "" then
-            warn("No player selected for Head Sit!")
-            return false
-        end
-
-        local selectedPlayer = game.Players:FindFirstChild(selectedHeadSit)
-
-        if bool then
-            if selectedPlayer and selectedPlayer.Character then
-                humanoid.Sit = true
-
-                if headSitConnection then
-                    headSitConnection:Disconnect()
-                end
-
-                headSitConnection = game:GetService("RunService").Heartbeat:Connect(function()
-                    if selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("Head") and humanoid.Sit then
-                        local targetHead = selectedPlayer.Character.Head
-                        humanoidRootPart.CFrame = targetHead.CFrame * CFrame.Angles(0, 0, 0) * CFrame.new(0, 1.6, 0.4)
-                    else
-                        if headSitConnection then
-                            headSitConnection:Disconnect()
-                            headSitConnection = nil
-                            humanoid.Sit = false
-                        end
-                    end
-                end)
-            else
-                warn("Selected player not found or has no Character!")
-                return false
-            end
-        else
-            if headSitConnection then
-                headSitConnection:Disconnect()
-                headSitConnection = nil
-            end
-            humanoid.Sit = false
-        end
-    end
-})
-
-LocalPlayerTab:AddButton({
-    Name = "Refresh list",
-    Callback = function()
-        local updatedPlayers = updatePlayerList()
-        if headSitDropdown and updatedPlayers then
-            pcall(function()
-                headSitDropdown:Refresh(updatedPlayers)
-            end)
-            if selectedHeadSit and not game.Players:FindFirstChild(selectedHeadSit) then
-                selectedHeadSit = nil
-                pcall(function()
-                    headSitDropdown:Set("")
-                end)
-            end
-        end
-    end
-})
-
-
-local Tab = Window:MakeTab({"Avatar", "user-round"})
+local Tab = Window:MakeTab({"Avatar", "user"})
 
 Tab:AddSection({ Name = "Copy Outfit" })
 
@@ -1298,192 +1244,241 @@ end
 
 local ChildTab = Window:MakeTab({"Child", "baby"})
 
-local Section = ChildTab:AddSection({
-    Name = "Child"
-})
+do
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local RS = game:GetService("ReplicatedStorage")
+    local LP = Players.LocalPlayer
 
-local chasingplayer = nil
-local playerChild = ChildTab:AddDropdown({
-    Name = "Select a player to chase",
-    Options = players,
-    Default = "",
-    Callback = function(selected)
-        if game.Players:FindFirstChild(selected) then
-            chasingplayer = selected
-        else
-            chasingplayer = nil
+    local childTarget = nil
+    local childConn = nil
+
+    local function getNames()
+        local list = {}
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= LP then table.insert(list, p.Name) end
         end
+        if #list == 0 then table.insert(list, "Ninguem") end
+        return list
     end
-})
 
-ChildTab:AddButton({
-    Name = "Update Player List",
-    Callback = function()
-        local updatedPlayers = updatePlayerList()
-        if playerChild and updatedPlayers then
-            pcall(function()
-                playerChild:Refresh(updatedPlayers)
-            end)
-            if chasingplayer and not game.Players:FindFirstChild(chasingplayer) then
-                chasingplayer = nil
-                pcall(function()
-                    playerChild:Set("")
-                end)
+    ChildTab:AddSection({ Name = "Alvo" })
+
+    local childDropdown = ChildTab:AddDropdown({
+        Name = "Selecionar alvo",
+        Options = getNames(),
+        Default = "",
+        Callback = function(value)
+            if value ~= "Ninguem" and Players:FindFirstChild(value) then
+                childTarget = value
+            else
+                childTarget = nil
             end
         end
-    end
-})
+    })
 
--- Player join/leave events
-game.Players.PlayerAdded:Connect(function()
-    task.wait(0.1)
-    local updatedPlayers = updatePlayerList()
-    if playerChild and updatedPlayers then
-        pcall(function()
-            playerChild:Refresh(updatedPlayers)
-        end)
-    end
-end)
-
-game.Players.PlayerRemoving:Connect(function(player)
-    task.wait(0.1)
-    local updatedPlayers = updatePlayerList()
-    if playerChild and updatedPlayers then
-        pcall(function()
-            playerChild:Refresh(updatedPlayers)
-        end)
-        if chasingplayer == player.Name then
-            chasingplayer = nil
-            pcall(function()
-                playerChild:Set("")
-            end)
+    local function refreshChildList()
+        local list = getNames()
+        pcall(function() childDropdown:Refresh(list) end)
+        if childTarget and not Players:FindFirstChild(childTarget) then
+            childTarget = nil
+            pcall(function() childDropdown:Set("") end)
         end
+        return list
     end
-end)
 
-ChildTab:AddButton({
-    Name = "Send Child",
-    Callback = function()
-        if not chasingplayer then
-            warn("No player selected!")
+    ChildTab:AddButton({
+        Name = "Atualizar lista",
+        Callback = function()
+            local list = refreshChildList()
+            F1L.notify("Child", #list .. " na lista.", 3)
+        end
+    })
+    Players.PlayerAdded:Connect(function() task.delay(0.2, refreshChildList) end)
+    Players.PlayerRemoving:Connect(function() task.delay(0.1, refreshChildList) end)
+    task.delay(2, refreshChildList)
+
+    ChildTab:AddSection({ Name = "Enviar criança" })
+
+    local childActive = false   -- so e true depois de enviar a criança de verdade
+    local childModel = nil
+    local childName, childBio = "", ""
+    local rgbName, rgbConn = false, nil
+    local tagGui, nameLbl, bioLbl
+
+    local function babyRemote()
+        local re = RS:FindFirstChild("RE")
+        return re and re:FindFirstChild("1Bab1yFollo1w")
+    end
+
+    -- ── nome / bio / RGB da criança (etiqueta em cima da cabeça dela) ──
+    -- o remote de nome do Brookhaven (RolePlayName) so muda o nome do PROPRIO
+    -- jogador (era isso que estava trocando o seu). A criança nao tem remote de
+    -- nome, entao a etiqueta e criada no cliente, em cima da cabeça da criança.
+    local function getChildModel()
+        if childModel and childModel.Parent then return childModel end
+        local mine = workspace:FindFirstChild(LP.Name)
+        return mine and mine:FindFirstChild("FollowCharacter")
+    end
+
+    local function destroyTag()
+        if tagGui then pcall(function() tagGui:Destroy() end) end
+        tagGui, nameLbl, bioLbl = nil, nil, nil
+    end
+
+    local function refreshTag()
+        local fc = getChildModel()
+        if not fc or (childName == "" and childBio == "") then
+            destroyTag()
             return
         end
-        if not workspace:FindFirstChild(pl.Name) or not workspace[pl.Name]:FindFirstChild("FollowCharacter") then
-            local args = {
-                [1] = "CharacterFollowSpawnPlayer",
-                [2] = "BabyBoy"
-            }
-            local success, err = pcall(function()
-                game:GetService("ReplicatedStorage").RE:FindFirstChild("1Bab1yFollo1w"):FireServer(unpack(args))
-            end)
-            if not success then
-                warn("Error sending child: " .. err)
-            end
+        local adornee = fc:FindFirstChild("Head") or fc:FindFirstChild("Torso")
+            or fc:FindFirstChildWhichIsA("BasePart")
+        if not adornee then return end
+        if not (tagGui and tagGui.Parent and tagGui.Adornee == adornee) then
+            destroyTag()
+            tagGui = Instance.new("BillboardGui")
+            tagGui.Name = "F1L_ChildTag"
+            tagGui.Adornee = adornee
+            tagGui.Size = UDim2.new(0, 220, 0, 46)
+            tagGui.StudsOffset = Vector3.new(0, 2.2, 0)
+            tagGui.AlwaysOnTop = true
+            tagGui.Parent = adornee
+
+            nameLbl = Instance.new("TextLabel")
+            nameLbl.BackgroundTransparency = 1
+            nameLbl.Size = UDim2.new(1, 0, 0, 26)
+            nameLbl.Font = Enum.Font.GothamBold
+            nameLbl.TextSize = 20
+            nameLbl.TextColor3 = Color3.new(1, 1, 1)
+            nameLbl.TextStrokeTransparency = 0.3
+            nameLbl.Parent = tagGui
+
+            bioLbl = Instance.new("TextLabel")
+            bioLbl.BackgroundTransparency = 1
+            bioLbl.Position = UDim2.new(0, 0, 0, 26)
+            bioLbl.Size = UDim2.new(1, 0, 0, 18)
+            bioLbl.Font = Enum.Font.Gotham
+            bioLbl.TextSize = 13
+            bioLbl.TextColor3 = Color3.fromRGB(220, 220, 220)
+            bioLbl.TextStrokeTransparency = 0.5
+            bioLbl.Parent = tagGui
         end
-        
-        task.wait(0.2)
-        
-        if workspace:FindFirstChild(pl.Name) then
-            for _, v in pairs(workspace[pl.Name]:GetChildren()) do
-                if v:IsA("BasePart") then
-                    v.CanCollide = true
+        nameLbl.Text = childName
+        bioLbl.Text = childBio
+    end
+
+    local function setRgb(on)
+        rgbName = on
+        if rgbConn then rgbConn:Disconnect() rgbConn = nil end
+        if on then
+            rgbConn = RunService.Heartbeat:Connect(function()
+                if nameLbl and nameLbl.Parent then
+                    nameLbl.TextColor3 = Color3.fromHSV((tick() * 0.4) % 1, 1, 1)
                 end
-            end
+            end)
+        elseif nameLbl then
+            nameLbl.TextColor3 = Color3.new(1, 1, 1)
         end
+    end
 
-        local target = chasingplayer
-        if workspace:FindFirstChild(target) and workspace:FindFirstChild(pl.Name) and workspace[pl.Name]:FindFirstChild("FollowCharacter") then
-            workspace[pl.Name].FollowCharacter.Parent = workspace[target]
+    -- ── enviar criança ────────────────────────────────────────
+    local function stopChild()
+        if childConn then childConn:Disconnect() childConn = nil end
+        destroyTag()
+        childModel = nil
+        childActive = false
+        local r = babyRemote()
+        if r then
+            -- a criança so existe enquanto a funcao esta ativa: ao desligar, some
+            pcall(function() r:FireServer("DeleteFollowCharacter") end)
+        end
+    end
 
-            if rawget(getgenv(), "RunService") then
+    ChildTab:AddToggle({
+        Name = "Enviar criança",
+        Description = "Envia a criança pro jogador selecionado acima",
+        Default = false,
+        Callback = function(on)
+            if not on then
+                -- o toggle dispara com false ao ser criado; sem isso a criança
+                -- aparecia sozinha assim que o script era executado
+                if childActive then stopChild() end
                 return
             end
-
-            getgenv().RunService = game:GetService("RunService").Heartbeat:Connect(function()
-                local followCharacter = workspace[target]:FindFirstChild("FollowCharacter")
-                if followCharacter and followCharacter:FindFirstChild("Torso") and followCharacter.Torso:FindFirstChild("BodyPosition") then
-                    local humanoidRootPart = workspace[target]:FindFirstChild("HumanoidRootPart")
-                    if humanoidRootPart then
-                        followCharacter.Torso.BodyPosition.Position = humanoidRootPart.Position - (humanoidRootPart.CFrame.LookVector * 3)
-                        followCharacter.Torso.BodyGyro.CFrame = humanoidRootPart.CFrame
-                    end
+            if not childTarget or not Players:FindFirstChild(childTarget) then
+                F1L.notify("Child", "Selecione um alvo primeiro.", 4)
+                return
+            end
+            local r = babyRemote()
+            if not r then
+                F1L.notify("Child", "Remote da criança nao encontrado.", 4)
+                return
+            end
+            local mine = workspace:FindFirstChild(LP.Name)
+            if not mine or not mine:FindFirstChild("FollowCharacter") then
+                pcall(function() r:FireServer("CharacterFollowSpawnPlayer", "BabyBoy") end)
+                task.wait(0.4)
+            end
+            mine = workspace:FindFirstChild(LP.Name)
+            local target = childTarget
+            local tModel = workspace:FindFirstChild(target)
+            if not (mine and tModel and mine:FindFirstChild("FollowCharacter")) then
+                F1L.notify("Child", "Nao consegui achar a criança ou o alvo.", 4)
+                return
+            end
+            for _, v in ipairs(mine:GetChildren()) do
+                if v:IsA("BasePart") then v.CanCollide = true end
+            end
+            childModel = mine.FollowCharacter
+            childModel.Parent = tModel
+            childActive = true
+            if childConn then childConn:Disconnect() end
+            childConn = RunService.Heartbeat:Connect(function()
+                local tm = workspace:FindFirstChild(target)
+                local fc = tm and tm:FindFirstChild("FollowCharacter")
+                local torso = fc and fc:FindFirstChild("Torso")
+                local hrp = tm and tm:FindFirstChild("HumanoidRootPart")
+                if torso and hrp and torso:FindFirstChild("BodyPosition") then
+                    torso.BodyPosition.Position = hrp.Position - (hrp.CFrame.LookVector * 3)
+                    if torso:FindFirstChild("BodyGyro") then torso.BodyGyro.CFrame = hrp.CFrame end
                 end
             end)
+            refreshTag()
+            F1L.notify("Child", "Criança enviada pra " .. target .. ".", 3)
         end
-    end
-})
+    })
 
-ChildTab:AddButton({
-    Name = "Return Child",
-    Callback = function()
-        if rawget(getgenv(), "RunService") then
-            getgenv().RunService:Disconnect()
-            getgenv().RunService = nil
+    ChildTab:AddSection({ Name = "Nome / Bio da criança" })
+
+    ChildTab:AddTextBox({
+        Name = "Nome",
+        PlaceholderText = "nome da criança",
+        Callback = function(text)
+            childName = tostring(text or "")
+            refreshTag()
         end
+    })
 
-        local args = { [1] = "DeleteFollowCharacter" }
-        local success, err = pcall(function()
-            game:GetService("ReplicatedStorage").RE:FindFirstChild("1Bab1yFollo1w"):FireServer(unpack(args))
-        end)
-        if not success then
-            warn("Error returning child: " .. err)
+    ChildTab:AddTextBox({
+        Name = "Bio",
+        PlaceholderText = "bio da criança",
+        Callback = function(text)
+            childBio = tostring(text or "")
+            refreshTag()
         end
+    })
 
-        local args1 = { [1] = "CharacterFollowSpawnPlayer", [2] = "BabyBoy" }
-        success, err = pcall(function()
-            game:GetService("ReplicatedStorage").RE:FindFirstChild("1Bab1yFollo1w"):FireServer(unpack(args1))
-        end)
-        if not success then
-            warn("Error spawning child: " .. err)
+    ChildTab:AddToggle({
+        Name = "Nome RGB",
+        Description = "O nome da criança fica trocando de cor (arco-iris)",
+        Default = false,
+        Callback = function(on)
+            refreshTag()
+            setRgb(on)
         end
-    end
-})
-
-ChildTab:AddToggle({
-    Name = "Spectate Player",
-    Default = false,
-    Callback = function(Value)
-        local Players = game:GetService("Players")
-        local RunService = game:GetService("RunService")
-        local LocalPlayer = Players.LocalPlayer
-        local Camera = workspace.CurrentCamera
-
-        if Value then
-            if not chasingplayer then
-                warn("No player selected to spectate!")
-                return false
-            end
-
-            if not rawget(getgenv(), "CameraConnection") then
-                getgenv().CameraConnection = RunService.Heartbeat:Connect(function()
-                    local targetPlayer = Players:FindFirstChild(chasingplayer)
-                    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Humanoid") then
-                        Camera.CameraSubject = targetPlayer.Character.Humanoid
-                    else
-                        if rawget(getgenv(), "CameraConnection") then
-                            getgenv().CameraConnection:Disconnect()
-                            getgenv().CameraConnection = nil
-                        end
-                        Camera.CameraSubject = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") or nil
-                    end
-                end)
-            end
-        else
-            if rawget(getgenv(), "CameraConnection") then
-                getgenv().CameraConnection:Disconnect()
-                getgenv().CameraConnection = nil
-            end
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                Camera.CameraSubject = LocalPlayer.Character.Humanoid
-            end
-        end
-    end
-})
-
-ChildTab:AddParagraph({
-    Title = "FE",
-    Content = "FE Features"
-})
+    })
+end
 
 -- Local Player Tab
 
@@ -2078,7 +2073,7 @@ TrollTab:AddToggle({
 })
 
 
-local Troll = Window:MakeTab({"Troll Players", "swords"})
+local Troll = Window:MakeTab({"Troll Players", "skull"})
 
 
 local Players = game:GetService("Players")
@@ -4826,7 +4821,7 @@ print("Kill All Couch button created")
 
 
 
-local CarTab = Window:MakeTab({"Car", "car-front"})
+local CarTab = Window:MakeTab({"Car", "car"})
 
 -- Colors for RGB
 local colors = {
@@ -5716,10 +5711,13 @@ CarTab:AddParagraph({"Information:", "Spam multiple cars"})
 
 -- Global variables
 local pl = game.Players.LocalPlayer
-local players = {}
+-- (sem 'local' de proposito: a aba Child, mais acima no arquivo, ja usa esse
+-- nome antes desta linha rodar; se fosse local, aquele trecho enxergava uma
+-- variavel global vazia e a lista nunca atualizava)
+players = {}
 
 -- Function to update the player list
-local function updatePlayerList()
+function updatePlayerList()
     players = {}
     for _, player in pairs(game.Players:GetPlayers()) do
         table.insert(players, player.Name)
@@ -9211,6 +9209,75 @@ Tab:AddToggle({
 
 Tab:AddParagraph({"Info", "Todos no servidor ouvem (o Brookhaven libera por ~3s por disparo; por isso repete rapido em loop)."})
 
+Tab:AddParagraph({"Aviso", "Tudo que tem ACIMA (Burst Eardrums / Audio ID) e um truque: usa o som de arma do jogo, por isso e so visual/rapido, uns 3 segundos pra quem esta no servidor e depois so voce continua ouvindo."})
+
+Tab:AddSection({"PREMIUM"})
+
+Tab:AddParagraph({"Boombox Oficial", "Toca musica de verdade e continua pro servidor inteiro, pelo Boombox do proprio Brookhaven. Pesquisei antes de mexer: isso exige o Gamepass de Musica do jogo e estar com um carro, casa ou boombox equipado - e assim que o proprio Brookhaven funciona, o script nao contorna essa exigencia."})
+
+local boomboxAudioID
+Tab:AddTextBox({
+    Name = "Audio ID (Boombox)",
+    PlaceholderText = "coloca o id da musica aqui",
+    Callback = function(value)
+        boomboxAudioID = tonumber(value)
+    end
+})
+
+-- Procura o remote do Boombox em TODO o ReplicatedStorage (nao so em RE) e
+-- tambem dentro das ferramentas que voce esta segurando.
+local function findMusicRemotes()
+    local found = {}
+    local function scan(root)
+        if not root then return end
+        for _, d in ipairs(root:GetDescendants()) do
+            if d:IsA("RemoteEvent") or d:IsA("RemoteFunction") then
+                local n = d.Name:lower()
+                if n:find("boom") or n:find("music") or n:find("song") or n:find("radio") then
+                    table.insert(found, d)
+                end
+            end
+        end
+    end
+    scan(game:GetService("ReplicatedStorage"))
+    local lp = game:GetService("Players").LocalPlayer
+    scan(lp.Character)
+    scan(lp:FindFirstChild("Backpack"))
+    return found
+end
+
+Tab:AddButton({"Listar remotes de musica", function()
+    local list = findMusicRemotes()
+    if #list == 0 then
+        F1L.notify("Boombox", "Nenhum remote de musica encontrado. Pelas fontes que achei, o Brookhaven removeu o campo de ID customizado e agora so toca a biblioteca propria (pass Music Unlocked).", 9)
+        return
+    end
+    local names = {}
+    for _, r in ipairs(list) do table.insert(names, r.Name) end
+    F1L.notify("Boombox", "Encontrados: " .. table.concat(names, ", "), 9)
+end})
+
+Tab:AddButton({"Tocar no Boombox", function()
+    if not boomboxAudioID then
+        F1L.notify("Boombox", "Digite um ID de audio valido primeiro.", 4)
+        return
+    end
+    local list = findMusicRemotes()
+    if #list == 0 then
+        F1L.notify("Boombox", "Remote do Boombox nao encontrado (use 'Listar remotes de musica' pra ver o que existe).", 7)
+        return
+    end
+    local sent = 0
+    for _, remote in ipairs(list) do
+        local ok = pcall(function()
+            if remote:IsA("RemoteFunction") then remote:InvokeServer(boomboxAudioID)
+            else remote:FireServer(boomboxAudioID) end
+        end)
+        if ok then sent = sent + 1 end
+    end
+    F1L.notify("Boombox", "Pedido enviado a " .. sent .. " remote(s).", 4)
+end})
+
 
 
 local Tab = Window:MakeTab({"Lag Server", "server-crash"})
@@ -9891,6 +9958,147 @@ do
     end })
 
     notify(HUB_NAME, "Aba Protecao carregada!", 4)
+end
+
+-- ==========================================================
+-- ABA SETTINGS: muda a cor do FUNDO do hub (Dark / Azul / Verde / Roxo)
+-- Em vez de depender do SetTheme da library (que nao repinta tudo e
+-- era muito escuro pra notar), pintamos direto os fundos da janela.
+-- ==========================================================
+do
+    local CoreGuiS = game:GetService("CoreGui")
+    local PlayersS = game:GetService("Players")
+    local SettingsTab = Window:MakeTab({"Settings", "settings"})
+    SettingsTab:AddSection({ Name = "Cor do fundo do hub" })
+
+    -- deep = tom mais escuro (barra lateral/bordas), light = tom mais claro (conteudo)
+    local PALETTES = {
+        Azul  = { deep = Color3.fromRGB(10, 26, 66), light = Color3.fromRGB(24, 58, 128) },
+        Verde = { deep = Color3.fromRGB(8, 44, 24),  light = Color3.fromRGB(20, 92, 50)  },
+        Roxo  = { deep = Color3.fromRGB(30, 12, 58), light = Color3.fromRGB(66, 30, 120) },
+    }
+
+    local orig = setmetatable({}, { __mode = "k" }) -- instancia -> cores originais
+    local hubGui, addedConn
+    local current = "Dark"
+
+    local function isNeutralDark(c)
+        local _, s, v = c:ToHSV()
+        return v < 0.42 and s < 0.45
+    end
+    local function mapColor(c, pal)
+        local _, _, v = c:ToHSV()
+        local t = math.clamp((v - 0.06) / 0.16, 0, 1)
+        return pal.deep:Lerp(pal.light, t)
+    end
+
+    local function paint(d, pal)
+        pcall(function()
+            if d:IsA("GuiObject") then
+                if d.BackgroundTransparency < 1 or orig[d] then
+                    local rec = orig[d] or {}
+                    orig[d] = rec
+                    if rec.bg == nil then rec.bg = d.BackgroundColor3 end
+                    if pal then
+                        if isNeutralDark(rec.bg) then d.BackgroundColor3 = mapColor(rec.bg, pal) end
+                    else
+                        d.BackgroundColor3 = rec.bg
+                    end
+                end
+            elseif d:IsA("UIGradient") then
+                local rec = orig[d] or {}
+                orig[d] = rec
+                if rec.grad == nil then rec.grad = d.Color end
+                if pal then
+                    local kps, any = {}, false
+                    for _, kp in ipairs(rec.grad.Keypoints) do
+                        if isNeutralDark(kp.Value) then
+                            any = true
+                            table.insert(kps, ColorSequenceKeypoint.new(kp.Time, mapColor(kp.Value, pal)))
+                        else
+                            table.insert(kps, kp)
+                        end
+                    end
+                    if any then d.Color = ColorSequence.new(kps) end
+                else
+                    d.Color = rec.grad
+                end
+            elseif d:IsA("UIStroke") then
+                local rec = orig[d] or {}
+                orig[d] = rec
+                if rec.stroke == nil then rec.stroke = d.Color end
+                if pal then
+                    if isNeutralDark(rec.stroke) then d.Color = mapColor(rec.stroke, pal) end
+                else
+                    d.Color = rec.stroke
+                end
+            end
+        end)
+    end
+
+    -- acha a ScreenGui da janela do hub (ignora notificacao e tela de carregamento)
+    local function findHubGui()
+        if hubGui and hubGui.Parent then return hubGui end
+        local roots = {}
+        pcall(function() if gethui then table.insert(roots, gethui()) end end)
+        table.insert(roots, CoreGuiS)
+        local pg = PlayersS.LocalPlayer and PlayersS.LocalPlayer:FindFirstChild("PlayerGui")
+        if pg then table.insert(roots, pg) end
+        for _, root in ipairs(roots) do
+            local okK, kids = pcall(function() return root:GetChildren() end)
+            if okK then
+                for _, g in ipairs(kids) do
+                    if g:IsA("ScreenGui") and g.Name ~= "F1L_Notify" and g.Name ~= "F1L_LoadingScreen" then
+                        local okD, desc = pcall(function() return g:GetDescendants() end)
+                        if okD then
+                            for _, d in ipairs(desc) do
+                                if d:IsA("TextLabel") and d.Text == "Fantasma1l Hub" then
+                                    return g
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        return nil
+    end
+
+    local function applyBackground(choice)
+        local gui = findHubGui()
+        if not gui then return false end
+        if gui ~= hubGui then
+            hubGui = gui
+            if addedConn then addedConn:Disconnect() end
+            -- elementos criados depois (abas novas, popups) tambem recebem a cor
+            addedConn = gui.DescendantAdded:Connect(function(d)
+                task.defer(function()
+                    if current ~= "Dark" then paint(d, PALETTES[current]) end
+                end)
+            end)
+        end
+        current = choice
+        local pal = PALETTES[choice] -- nil no "Dark" = restaura as cores originais
+        for _, d in ipairs(gui:GetDescendants()) do paint(d, pal) end
+        return true
+    end
+
+    SettingsTab:AddDropdown({
+        Name = "Tema",
+        Options = {"Dark", "Azul", "Verde", "Roxo"},
+        Default = "Dark",
+        Callback = function(value)
+            local ok, res = pcall(applyBackground, value)
+            if ok and res then
+                if value ~= "Dark" or hubGui then
+                    F1L.notify("Settings", "Fundo: " .. tostring(value), 3)
+                end
+            elseif value ~= "Dark" then
+                F1L.notify("Settings", "Nao achei a janela do hub pra trocar a cor.", 5)
+                warn("Tema: " .. tostring(res))
+            end
+        end
+    })
 end
 
 -- fecha a tela de carregamento (hub montado)
